@@ -1,0 +1,120 @@
+"""Heatmap, arrows, trail, and label overlays for the DroneRL GUI."""
+
+import numpy as np
+import pygame
+
+from src.config_loader import Config
+from src.environment import CellType
+
+# Cells to skip for heatmap
+_SKIP_HEAT = {CellType.BUILDING, CellType.TRAP, CellType.GOAL}
+
+
+class Overlays:
+    """Draws Q-value heatmap and best-action arrows on the grid."""
+
+    def __init__(self, config: Config):
+        gui = config.gui
+        colors = config.colors
+        self.rows = config.environment.grid_rows
+        self.cols = config.environment.grid_cols
+        self.cs = gui.grid_area_width // self.cols
+        self.c_start = tuple(colors.start_marker)
+        self._label_font = None
+
+        self.low = np.array([15, 20, 200], dtype=float)   # blue
+        self.mid = np.array([240, 220, 30], dtype=float)   # yellow
+        self.high = np.array([240, 50, 20], dtype=float)   # red
+
+    def _heat_color(self, t: float):
+        """Map 0..1 to blue -> yellow -> red."""
+        if t < 0.5:
+            s = t * 2.0
+            c = self.low + s * (self.mid - self.low)
+        else:
+            s = (t - 0.5) * 2.0
+            c = self.mid + s * (self.high - self.mid)
+        return tuple(np.clip(c, 0, 255).astype(int))
+
+    def draw_heatmap(self, surface: pygame.Surface, q_table, grid) -> None:
+        """Color each cell by max Q-value using a 3-color gradient."""
+        max_q = np.max(q_table, axis=2)
+        mask = np.ones((self.rows, self.cols), dtype=bool)
+        for ct in _SKIP_HEAT:
+            mask &= (grid != ct)
+
+        vals = max_q[mask]
+        if vals.size == 0:
+            return
+
+        q_min, q_max = vals.min(), vals.max()
+        q_range = q_max - q_min if q_max != q_min else 1.0
+
+        overlay = pygame.Surface((self.cs, self.cs), pygame.SRCALPHA)
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                ct = CellType(int(grid[row, col]))
+                if ct in _SKIP_HEAT:
+                    continue
+                t = float(np.clip((max_q[row, col] - q_min) / q_range, 0, 1))
+                rgb = self._heat_color(t)
+                overlay.fill((*rgb, 150))
+                surface.blit(overlay, (col * self.cs, row * self.cs))
+
+    def draw_arrows(self, surface: pygame.Surface, q_table, grid) -> None:
+        """Draw arrow polygons pointing in the best action direction."""
+        s = self.cs
+        sz = int(s * 0.4)
+        half = sz // 2
+
+        arrow_surf = pygame.Surface((s, s), pygame.SRCALPHA)
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                if grid[row, col] == CellType.BUILDING:
+                    continue
+
+                best = int(np.argmax(q_table[row, col]))
+                cx, cy = s // 2, s // 2
+
+                if best == 0:    # UP
+                    tri = [(cx, cy - half), (cx - half, cy + half), (cx + half, cy + half)]
+                elif best == 1:  # DOWN
+                    tri = [(cx, cy + half), (cx - half, cy - half), (cx + half, cy - half)]
+                elif best == 2:  # LEFT
+                    tri = [(cx - half, cy), (cx + half, cy - half), (cx + half, cy + half)]
+                else:            # RIGHT
+                    tri = [(cx + half, cy), (cx - half, cy - half), (cx - half, cy + half)]
+
+                arrow_surf.fill((0, 0, 0, 0))
+                pygame.draw.polygon(arrow_surf, (255, 255, 255, 180), tri)
+                pygame.draw.polygon(arrow_surf, (255, 255, 255, 220), tri, 1)
+                surface.blit(arrow_surf, (col * s, row * s))
+
+    def draw_labels(self, surface: pygame.Surface) -> None:
+        """Draw S and G labels on start and goal cells."""
+        if self._label_font is None:
+            self._label_font = pygame.font.SysFont("arial", self.cs // 3, bold=True)
+        s_txt = self._label_font.render("S", True, self.c_start)
+        sx = self.cs // 2 - s_txt.get_width() // 2
+        sy = self.cs // 2 - s_txt.get_height() // 2
+        surface.blit(s_txt, (sx, sy))
+        gr, gc = self.rows - 1, self.cols - 1
+        g_txt = self._label_font.render("G", True, (255, 255, 255))
+        gx = gc * self.cs + self.cs // 2 - g_txt.get_width() // 2
+        gy = gr * self.cs + self.cs // 2 - g_txt.get_height() // 2
+        surface.blit(g_txt, (gx, gy))
+
+    def draw_trail(self, surface: pygame.Surface, trail: list) -> None:
+        """Draw the demo path trail as connected line with dots."""
+        if len(trail) < 2:
+            return
+        cs = self.cs
+        pts = [(c * cs + cs // 2, r * cs + cs // 2) for r, c in trail]
+        glow = pygame.Surface((self.cols * cs, self.rows * cs), pygame.SRCALPHA)
+        pygame.draw.lines(glow, (100, 220, 255, 80), False, pts, 6)
+        surface.blit(glow, (0, 0))
+        pygame.draw.lines(surface, (100, 200, 255), False, pts, 2)
+        for px, py in pts:
+            pygame.draw.circle(surface, (140, 220, 255), (px, py), 3)
