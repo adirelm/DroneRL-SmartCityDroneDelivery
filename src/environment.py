@@ -51,6 +51,10 @@ class Environment:
         self.drone_pos = self.start
         return self.drone_pos
 
+    def _is_protected_cell(self, row: int, col: int) -> bool:
+        """Return True when the cell is reserved for start or goal."""
+        return (row, col) in {self.start, self.goal}
+
     def step(self, action: int) -> tuple[tuple[int, int], float, bool, dict]:
         """Execute an action and return (next_state, reward, done, info).
 
@@ -96,7 +100,7 @@ class Environment:
 
     def set_cell(self, row: int, col: int, cell_type: CellType) -> None:
         """Set the type of a grid cell (used by editor)."""
-        if 0 <= row < self.rows and 0 <= col < self.cols:
+        if 0 <= row < self.rows and 0 <= col < self.cols and not self._is_protected_cell(row, col):
             self.grid[row, col] = int(cell_type)
 
     def get_cell(self, row: int, col: int) -> CellType:

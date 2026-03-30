@@ -27,8 +27,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 git clone <repo-url>
 cd dronerl
 
-# Install dependencies (UV handles everything automatically)
-uv sync
+# Install runtime + validation tooling (recommended for the assignment)
+uv sync --dev
 ```
 
 ## Running
@@ -66,31 +66,32 @@ uv run main.py
 │   ├── renderer.py         # Grid renderer
 │   ├── sdk.py              # Central SDK class
 │   └── trainer.py          # Training orchestration
-├── tests/                  # Unit tests (80 tests, 100% coverage on RL core)
+├── tests/                  # Unit tests (80 tests, 98% total coverage)
 ├── config/
 │   └── config.yaml         # All parameters (grid, rewards, RL hyperparams)
 ├── data/                   # Saved Q-tables
 ├── docs/
 │   ├── PRD.md              # Product Requirements Document
 │   ├── PLAN.md             # Implementation plan
-│   └── TODO.md             # Task list (1100+ tasks, all completed)
+│   └── TODO.md             # Task list (1114 tasks, all completed)
 ├── main.py                 # Entry point
 └── pyproject.toml          # UV project configuration
 ```
 
 ## Configuration
 
-All parameters are in `config/config.yaml` — no hardcoded values. Includes:
+The main tunable parameters are in `config/config.yaml`. Includes:
 - Grid size, start/goal positions
 - Reward values (step, goal, trap, wind, wall collision)
 - RL hyperparameters (learning rate, discount factor, epsilon settings)
-- GUI settings (window size, colors, FPS)
+- GUI settings (window size, colors, FPS, demo speed, fast mode batch size)
+- Save/load path for persisted Q-tables
 
 ## Running Tests
 
 ```bash
 uv run pytest tests/ -v
-uv run pytest tests/ --cov=src --cov-report=html
+uv run pytest tests/ --cov=src --cov-report=term-missing
 ```
 
 ## Tech Stack

@@ -1,6 +1,7 @@
 """Q-Learning agent for drone navigation."""
 
 import random
+from pathlib import Path
 
 import numpy as np
 
@@ -62,6 +63,8 @@ class Agent:
 
     def save(self, path: str) -> None:
         """Save Q-table to a numpy file."""
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
         np.save(path, self.q_table)
 
     def load(self, path: str) -> None:

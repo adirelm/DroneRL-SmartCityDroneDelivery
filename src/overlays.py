@@ -18,13 +18,15 @@ class Overlays:
         colors = config.colors
         self.rows = config.environment.grid_rows
         self.cols = config.environment.grid_cols
-        self.cs = gui.grid_area_width // self.cols
+        self.cs = gui.cell_size
+        self.start = tuple(config.environment.start_position)
+        self.goal = tuple(config.environment.goal_position)
         self.c_start = tuple(colors.start_marker)
         self._label_font = None
 
-        self.low = np.array([15, 20, 200], dtype=float)   # blue
-        self.mid = np.array([240, 220, 30], dtype=float)   # yellow
-        self.high = np.array([240, 50, 20], dtype=float)   # red
+        self.low = np.array(colors.heatmap_low, dtype=float)
+        self.mid = np.array(colors.heatmap_mid, dtype=float)
+        self.high = np.array(colors.heatmap_high, dtype=float)
 
     def _heat_color(self, t: float):
         """Map 0..1 to blue -> yellow -> red."""
@@ -97,10 +99,11 @@ class Overlays:
         if self._label_font is None:
             self._label_font = pygame.font.SysFont("arial", self.cs // 3, bold=True)
         s_txt = self._label_font.render("S", True, self.c_start)
-        sx = self.cs // 2 - s_txt.get_width() // 2
-        sy = self.cs // 2 - s_txt.get_height() // 2
+        sr, sc = self.start
+        sx = sc * self.cs + self.cs // 2 - s_txt.get_width() // 2
+        sy = sr * self.cs + self.cs // 2 - s_txt.get_height() // 2
         surface.blit(s_txt, (sx, sy))
-        gr, gc = self.rows - 1, self.cols - 1
+        gr, gc = self.goal
         g_txt = self._label_font.render("G", True, (255, 255, 255))
         gx = gc * self.cs + self.cs // 2 - g_txt.get_width() // 2
         gy = gr * self.cs + self.cs // 2 - g_txt.get_height() // 2

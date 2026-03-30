@@ -159,13 +159,13 @@ The GUI layer is strictly presentation. `gui.py` translates user input
 and calls renderers/overlays for display. Swapping Pygame for another
 frontend would not require touching any RL code.
 
-### All Parameters from YAML Config
+### Configuration-Driven Behavior
 
-Every tunable value -- grid dimensions, hyperparameters, reward values,
-colors, window sizes, convergence criteria -- lives in
-`config/config.yaml`. No magic numbers are scattered through the code.
-The `Config` class provides dot-access (`config.agent.learning_rate`)
-for ergonomic use throughout the codebase.
+All core runtime parameters -- grid dimensions, start/goal positions,
+hyperparameters, reward values, heatmap colors, save path, window sizes,
+and convergence criteria -- live in `config/config.yaml`. The `Config`
+class provides dot-access (`config.agent.learning_rate`) for ergonomic
+use throughout the codebase.
 
 ### OOP with Single Responsibility per Class
 

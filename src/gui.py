@@ -16,12 +16,14 @@ from src.renderer import Renderer
 class GUI:
     """Top-level orchestrator: event loop, rendering, and action dispatch."""
 
-    BRAIN_PATH = "data/brain.npy"
-
     def __init__(self, config: Config):
         pygame.init()
         self.cfg, gui = config, config.gui
         self.width, self.height = gui.window_width, gui.window_height
+        self.brain_path = config.paths.brain
+        self.fast_step_batch = gui.fast_mode_episodes_per_frame
+        self.status_bar_height = gui.status_bar_height
+        self.status_font_size = gui.status_bar_font_size
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("DroneRL \u2014 Smart City Drone Delivery")
         self.clock, self.fps = pygame.time.Clock(), gui.fps
@@ -55,7 +57,7 @@ class GUI:
             if self.logic.demo_mode:
                 self.logic.demo_step(self.fps)
             elif not self.paused and not self.editor.active:
-                for _ in range(100 if self.fast_mode else 1):
+                for _ in range(self.fast_step_batch if self.fast_mode else 1):
                     self.logic.training_step()
                 if self.logic.check_convergence():
                     self.paused = True
@@ -104,11 +106,17 @@ class GUI:
 
     def _status_bar(self):
         if not self.status_font:
-            self.status_font = pygame.font.SysFont("arial", 13)
-        modes = {"EDIT": self.editor.active, "DEMO": self.logic.demo_mode,
-                 "PAUSED": self.paused, "FAST TRAINING": self.fast_mode}
-        mode = next((m for m, v in modes.items() if v), "TRAINING")
-        y = self.height - 24
-        pygame.draw.rect(self.screen, (12, 14, 28), (0, y, self.width, 24))
-        self.screen.blit(self.status_font.render(
-            f"  [{mode}]  SPACE: primary action", True, (160, 165, 190)), (4, y + 4))
+            self.status_font = pygame.font.SysFont("arial", self.status_font_size)
+        mode = "EDIT" if self.editor.active else "DEMO" if self.logic.demo_mode else "TRAINING"
+        flags = ["PAUSED"] if self.paused else []
+        if self.fast_mode:
+            flags.append("FAST")
+        state = f"Mode: {mode}" + (f" [{' | '.join(flags)}]" if flags else "")
+        shortcuts = (
+            "SPACE Play/Pause  F Fast  H Heatmap  A Arrows  E Editor  "
+            "T Tool  D Demo  S Save  L Load  R Reset"
+        )
+        y = self.height - self.status_bar_height
+        pygame.draw.rect(self.screen, (12, 14, 28), (0, y, self.width, self.status_bar_height))
+        self.screen.blit(self.status_font.render(state, True, (220, 224, 240)), (10, y + 6))
+        self.screen.blit(self.status_font.render(shortcuts, True, (160, 165, 190)), (10, y + 22))

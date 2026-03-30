@@ -42,9 +42,9 @@ def dispatch(gui, a):
         gui.paused = True
         gui.logic.exit_demo()
     elif a == "save":
-        gui.agent.save(gui.BRAIN_PATH)
-    elif a == "load" and os.path.exists(gui.BRAIN_PATH):
-        gui.agent.load(gui.BRAIN_PATH)
+        gui.agent.save(gui.brain_path)
+    elif a == "load" and os.path.exists(gui.brain_path):
+        gui.agent.load(gui.brain_path)
     elif a == "reset":
         from src.agent import Agent
         from src.environment import Environment

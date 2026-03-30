@@ -21,7 +21,7 @@ class Editor:
         colors = config.colors
         self.rows = config.environment.grid_rows
         self.cols = config.environment.grid_cols
-        self.cell_size = gui.grid_area_width // self.cols
+        self.cell_size = gui.cell_size
         self.dashboard_x = gui.grid_area_width
         self.dashboard_w = gui.dashboard_width
         self.active = False

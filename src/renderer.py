@@ -16,7 +16,7 @@ class Renderer:
         c = config.colors
         self.rows = config.environment.grid_rows
         self.cols = config.environment.grid_cols
-        self.cs = gui.grid_area_width // self.cols
+        self.cs = gui.cell_size
         self.frame = 0
         self.c_empty = tuple(c.empty)
         self.c_building = tuple(c.building)

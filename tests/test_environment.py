@@ -104,13 +104,14 @@ class TestWindZone:
         assert reward == -2
 
     def test_wind_drift_event(self, env, monkeypatch):
-        env.set_cell(0, 0, CellType.WIND)
+        env.set_cell(0, 1, CellType.WIND)
+        env.drone_pos = (0, 1)
         # Force drift: random() returns 0.0 < 0.3, randint returns 1 (DOWN)
         monkeypatch.setattr("src.environment.random.random", lambda: 0.0)
         monkeypatch.setattr("src.environment.random.randint", lambda a, b: 1)
         state, reward, done, info = env.step(3)  # intended RIGHT, drifted DOWN
         assert info["event"] == "wind_drift"
-        assert state == (1, 0)  # moved DOWN, not RIGHT
+        assert state == (1, 1)  # moved DOWN, not RIGHT
 
 
 class TestSetGetCell:
@@ -127,3 +128,11 @@ class TestSetGetCell:
 
     def test_get_cell_empty(self, env):
         assert env.get_cell(0, 0) == CellType.EMPTY
+
+    def test_set_cell_does_not_override_start(self, env):
+        env.set_cell(0, 0, CellType.TRAP)
+        assert env.get_cell(0, 0) == CellType.EMPTY
+
+    def test_set_cell_does_not_override_goal(self, env):
+        env.set_cell(11, 11, CellType.TRAP)
+        assert env.get_cell(11, 11) == CellType.GOAL

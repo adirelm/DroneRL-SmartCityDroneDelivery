@@ -91,6 +91,11 @@ class TestSaveLoad:
         agent.load(path)
         assert agent.q_table[2, 3, 1] == 42.0
 
+    def test_save_creates_missing_parent_directory(self, agent, tmp_path):
+        path = tmp_path / "nested" / "brain.npy"
+        agent.save(str(path))
+        assert path.exists()
+
 
 class TestHelpers:
     def test_get_best_action(self, agent):

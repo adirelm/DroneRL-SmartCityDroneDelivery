@@ -17,6 +17,7 @@ class GameLogic:
         self.converge_rate = t.convergence_rate
         self.min_episodes = t.min_episodes_before_converge
         self.max_eps_converge = t.max_epsilon_for_converge
+        self.demo_speed = config.gui.demo_speed
 
         self.episode = 0
         self.steps = 0
@@ -26,7 +27,6 @@ class GameLogic:
 
         self.demo_mode = False
         self.demo_timer = 0
-        self.demo_speed = 8
         self.demo_pause = 0
         self.demo_last_reward = 0.0
         self.demo_trail = []  # path trail for demo visualization

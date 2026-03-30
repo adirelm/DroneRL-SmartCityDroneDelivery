@@ -55,6 +55,10 @@ gui:
   fps: 60
   dashboard_width: 440
   reward_history_size: 100
+  fast_mode_episodes_per_frame: 100
+  demo_speed: 8
+  status_bar_height: 40
+  status_bar_font_size: 12
 
 # Colors (RGB)
 colors:
@@ -76,6 +80,7 @@ colors:
   dashboard_bg: [12, 14, 28]
   panel_border: [45, 50, 75]
   heatmap_low: [15, 20, 90]
+  heatmap_mid: [240, 220, 30]
   heatmap_high: [240, 70, 20]
   accent: [100, 140, 255]
   btn_bg: [35, 38, 60]
@@ -87,3 +92,7 @@ colors:
 logging:
   level: INFO
   file: null
+
+# Paths
+paths:
+  brain: data/brain.npy
