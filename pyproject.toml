@@ -21,7 +21,6 @@ ignore = ["E501"]
 
 [tool.coverage.run]
 source = ["src"]
-omit = ["*/tests/*", "src/gui.py", "src/renderer.py", "src/overlays.py", "src/dashboard.py", "src/editor.py", "src/buttons.py", "src/game_logic.py", "src/actions.py"]
 
 [tool.coverage.report]
 fail_under = 85

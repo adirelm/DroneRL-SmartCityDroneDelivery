@@ -66,7 +66,7 @@ uv run main.py
 │   ├── renderer.py         # Grid renderer
 │   ├── sdk.py              # Central SDK class
 │   └── trainer.py          # Training orchestration
-├── tests/                  # Unit tests (80 tests, 98% total coverage)
+├── tests/                  # Unit tests (104 tests, 99% total coverage)
 ├── config/
 │   └── config.yaml         # All parameters (grid, rewards, RL hyperparams)
 ├── data/                   # Saved Q-tables
