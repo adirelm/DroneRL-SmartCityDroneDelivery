@@ -16,9 +16,6 @@ build/
 venv/
 env/
 
-# UV
-.python-version
-
 # IDE
 .vscode/
 .idea/

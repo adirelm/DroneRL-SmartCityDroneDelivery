@@ -17,7 +17,7 @@ The GUI displays the learning process in real-time with:
 
 ## Installation
 
-Requires **Python 3.11+** and **UV**.
+Requires **Python 3.11-3.13** and **UV**.
 
 ```bash
 # Install UV (if not installed)
@@ -25,7 +25,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
 git clone <repo-url>
-cd dronerl
+cd DroneRL-SmartCityDroneDelivery
 
 # Install runtime + validation tooling (recommended for the assignment)
 uv sync --dev
