@@ -24,7 +24,7 @@ Requires **Python 3.11-3.13** and **UV**.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/adirelm/DroneRL-SmartCityDroneDelivery.git
 cd DroneRL-SmartCityDroneDelivery
 
 # Install runtime + validation tooling (recommended for the assignment)
@@ -96,7 +96,7 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 
 ## Tech Stack
 
-- **Python 3.11+**
+- **Python 3.11-3.13**
 - **Pygame** — GUI rendering
 - **NumPy** — Q-table and grid operations
 - **PyYAML** — configuration loading
