@@ -1,5 +1,6 @@
 # DroneRL Configuration
 # All parameters for the RL engine, environment, and GUI
+version: "1.0.0"
 
 # Grid environment settings
 environment:
