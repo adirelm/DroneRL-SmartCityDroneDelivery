@@ -9,6 +9,8 @@ from src.config_loader import Config
 
 
 class CellType(IntEnum):
+    """Grid cell types with integer encoding for the NumPy grid."""
+
     EMPTY = 0
     BUILDING = 1
     TRAP = 2
