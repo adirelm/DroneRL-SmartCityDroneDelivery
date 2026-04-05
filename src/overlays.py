@@ -14,14 +14,21 @@ class Overlays:
     """Draws Q-value heatmap and best-action arrows on the grid."""
 
     def __init__(self, config: Config):
+        """Initialise overlay settings and colors from config."""
         gui = config.gui
         colors = config.colors
         self.rows = config.environment.grid_rows
         self.cols = config.environment.grid_cols
         self.cs = gui.cell_size
+        self.font_name = gui.font_name
         self.start = tuple(config.environment.start_position)
         self.goal = tuple(config.environment.goal_position)
         self.c_start = tuple(colors.start_marker)
+        self.c_white = tuple(colors.white)
+        self.c_arrow = tuple(colors.arrow_fill)
+        self.c_trail_glow = tuple(colors.trail_glow)
+        self.c_trail_line = tuple(colors.trail_line)
+        self.c_trail_dot = tuple(colors.trail_dot)
         self._label_font = None
 
         self.low = np.array(colors.heatmap_low, dtype=float)
@@ -90,21 +97,21 @@ class Overlays:
                     tri = [(cx + half, cy), (cx - half, cy - half), (cx - half, cy + half)]
 
                 arrow_surf.fill((0, 0, 0, 0))
-                pygame.draw.polygon(arrow_surf, (255, 255, 255, 180), tri)
-                pygame.draw.polygon(arrow_surf, (255, 255, 255, 220), tri, 1)
+                pygame.draw.polygon(arrow_surf, (*self.c_arrow, 180), tri)
+                pygame.draw.polygon(arrow_surf, (*self.c_arrow, 220), tri, 1)
                 surface.blit(arrow_surf, (col * s, row * s))
 
     def draw_labels(self, surface: pygame.Surface) -> None:
         """Draw S and G labels on start and goal cells."""
         if self._label_font is None:
-            self._label_font = pygame.font.SysFont("arial", self.cs // 3, bold=True)
+            self._label_font = pygame.font.SysFont(self.font_name, self.cs // 3, bold=True)
         s_txt = self._label_font.render("S", True, self.c_start)
         sr, sc = self.start
         sx = sc * self.cs + self.cs // 2 - s_txt.get_width() // 2
         sy = sr * self.cs + self.cs // 2 - s_txt.get_height() // 2
         surface.blit(s_txt, (sx, sy))
         gr, gc = self.goal
-        g_txt = self._label_font.render("G", True, (255, 255, 255))
+        g_txt = self._label_font.render("G", True, self.c_white)
         gx = gc * self.cs + self.cs // 2 - g_txt.get_width() // 2
         gy = gr * self.cs + self.cs // 2 - g_txt.get_height() // 2
         surface.blit(g_txt, (gx, gy))
@@ -116,8 +123,8 @@ class Overlays:
         cs = self.cs
         pts = [(c * cs + cs // 2, r * cs + cs // 2) for r, c in trail]
         glow = pygame.Surface((self.cols * cs, self.rows * cs), pygame.SRCALPHA)
-        pygame.draw.lines(glow, (100, 220, 255, 80), False, pts, 6)
+        pygame.draw.lines(glow, (*self.c_trail_glow, 80), False, pts, 6)
         surface.blit(glow, (0, 0))
-        pygame.draw.lines(surface, (100, 200, 255), False, pts, 2)
+        pygame.draw.lines(surface, self.c_trail_line, False, pts, 2)
         for px, py in pts:
-            pygame.draw.circle(surface, (140, 220, 255), (px, py), 3)
+            pygame.draw.circle(surface, self.c_trail_dot, (px, py), 3)

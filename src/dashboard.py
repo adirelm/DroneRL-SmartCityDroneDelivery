@@ -10,11 +10,13 @@ class Dashboard:
     """Renders metrics, reward graph, legend, and buttons on the dashboard."""
 
     def __init__(self, config: Config):
+        """Initialise dashboard layout, colors, and fonts from config."""
         gui = config.gui
         self.x = gui.grid_area_width
         self.width = gui.dashboard_width
         self.height = gui.window_height
         self.history_size = gui.reward_history_size
+        self.font_name = gui.font_name
 
         c = config.colors
         self.bg = tuple(c.dashboard_bg)
@@ -23,6 +25,11 @@ class Dashboard:
         self.accent = tuple(c.accent)
         self.border = tuple(c.panel_border)
         self.goal_color = tuple(c.goal)
+        self.graph_bg = tuple(c.graph_bg)
+        self.graph_zero = tuple(c.graph_zero)
+        self.banner_bg = tuple(c.banner_bg)
+        self.banner_border = tuple(c.banner_border)
+        self.banner_text = tuple(c.banner_text)
 
         self.cell_colors = {
             "Empty": tuple(c.empty), "Building": tuple(c.building),
@@ -34,9 +41,9 @@ class Dashboard:
 
     def _ensure_fonts(self):
         if self.font is None:
-            self.font = pygame.font.SysFont("arial", 18)
-            self.title_font = pygame.font.SysFont("arial", 24, bold=True)
-            self.small_font = pygame.font.SysFont("arial", 14)
+            self.font = pygame.font.SysFont(self.font_name, 18)
+            self.title_font = pygame.font.SysFont(self.font_name, 24, bold=True)
+            self.small_font = pygame.font.SysFont(self.font_name, 14)
 
     def draw(self, surface: pygame.Surface, metrics: dict,
              reward_history: list, state_dict: dict = None) -> None:
@@ -90,7 +97,7 @@ class Dashboard:
         title = self.small_font.render("Reward History (last 100)", True, self.dim)
         surface.blit(title, (gx, y))
         y += 18
-        pygame.draw.rect(surface, (10, 10, 25), (gx, y, gw, gh), border_radius=4)
+        pygame.draw.rect(surface, self.graph_bg, (gx, y, gw, gh), border_radius=4)
         pygame.draw.rect(surface, self.border, (gx, y, gw, gh), 1, border_radius=4)
 
         if len(history) >= 2:
@@ -100,7 +107,7 @@ class Dashboard:
             # Zero line
             if mn < 0 < mx:
                 zy = y + gh - int((0 - mn) / rng * (gh - 6)) - 3
-                pygame.draw.line(surface, (60, 60, 70), (gx + 2, zy), (gx + gw - 2, zy), 1)
+                pygame.draw.line(surface, self.graph_zero, (gx + 2, zy), (gx + gw - 2, zy), 1)
             pts = []
             for i, v in enumerate(data):
                 px = gx + 2 + int(i * (gw - 4) / (len(data) - 1))
@@ -131,10 +138,10 @@ class Dashboard:
 
     def _draw_banner(self, surface, y) -> int:
         bx, bw, bh = self.x + 10, self.width - 20, 38
-        pygame.draw.rect(surface, (30, 90, 55), (bx, y, bw, bh), border_radius=6)
-        pygame.draw.rect(surface, (60, 180, 100), (bx, y, bw, bh), 2, border_radius=6)
+        pygame.draw.rect(surface, self.banner_bg, (bx, y, bw, bh), border_radius=6)
+        pygame.draw.rect(surface, self.banner_border, (bx, y, bw, bh), 2, border_radius=6)
         txt = self.font.render("Converged! Agent found optimal path.", True,
-                               (180, 255, 200))
+                               self.banner_text)
         surface.blit(txt, (bx + (bw - txt.get_width()) // 2,
                            y + (bh - txt.get_height()) // 2))
         return y + bh + 8

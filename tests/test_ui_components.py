@@ -24,7 +24,8 @@ def test_button_helpers_cover_all_state_variants():
          "fast_mode": True, "show_heatmap": True, "show_arrows": False, "has_trained": True},
     ]
 
-    assert all(_get_buttons(state) for state in states)
+    demo_c, primary_c = (40, 120, 180), (45, 110, 65)
+    assert all(_get_buttons(state, demo_c, primary_c) for state in states)
 
 
 def test_button_panel_draw_hover_click_and_custom_button(ui_config, ui_surface):

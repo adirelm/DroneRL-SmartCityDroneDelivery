@@ -17,6 +17,7 @@ class Editor:
     """Handles grid editing via mouse clicks in the GUI."""
 
     def __init__(self, config: Config):
+        """Initialise editor layout and colors from config."""
         gui = config.gui
         colors = config.colors
         self.rows = config.environment.grid_rows
@@ -24,6 +25,7 @@ class Editor:
         self.cell_size = gui.cell_size
         self.dashboard_x = gui.grid_area_width
         self.dashboard_w = gui.dashboard_width
+        self.font_name = gui.font_name
         self.active = False
         self._type_index = 0
         self.type_colors = {
@@ -31,6 +33,14 @@ class Editor:
             CellType.TRAP: tuple(colors.trap),
             CellType.WIND: tuple(colors.wind),
         }
+        self.c_white = tuple(colors.white)
+        self.c_bar_bg = tuple(colors.editor_bar_bg)
+        self.c_border = tuple(colors.panel_border)
+        self.c_dim = tuple(colors.status_dim)
+        self.c_unsel = tuple(colors.editor_unselected)
+        self.c_unsel_border = tuple(colors.editor_unselected_border)
+        self.c_label = tuple(colors.editor_label)
+        self.c_hint = tuple(colors.editor_hint)
         self.font = self.btn_font = None
         self.btn_rects = []
 
@@ -59,8 +69,8 @@ class Editor:
     def draw_ui(self, surface: pygame.Surface, mouse_pos: tuple) -> None:
         """Draw editor cursor overlay and type-selector buttons."""
         if self.font is None:
-            self.font = pygame.font.SysFont("arial", 13)
-            self.btn_font = pygame.font.SysFont("arial", 15, bold=True)
+            self.font = pygame.font.SysFont(self.font_name, 13)
+            self.btn_font = pygame.font.SysFont(self.font_name, 15, bold=True)
         self._draw_cursor(surface, mouse_pos)
         self._draw_type_buttons(surface)
 
@@ -75,7 +85,7 @@ class Editor:
             # White border on hovered cell
             r = pygame.Rect(col * self.cell_size, row * self.cell_size,
                             self.cell_size, self.cell_size)
-            pygame.draw.rect(surface, (255, 255, 255), r, 2)
+            pygame.draw.rect(surface, self.c_white, r, 2)
 
     def _draw_type_buttons(self, surface):
         """Draw type selector in a horizontal bar below the grid."""
@@ -85,13 +95,13 @@ class Editor:
         bar_h = 40
 
         # Background bar across grid area
-        pygame.draw.rect(surface, (20, 22, 38),
+        pygame.draw.rect(surface, self.c_bar_bg,
                          (0, bar_y, self.dashboard_x, bar_h))
-        pygame.draw.line(surface, (45, 50, 75),
+        pygame.draw.line(surface, self.c_border,
                          (0, bar_y), (self.dashboard_x, bar_y))
 
         # Title
-        title = self.font.render("Place:", True, (160, 165, 190))
+        title = self.font.render("Place:", True, self.c_dim)
         surface.blit(title, (10, bar_y + 12))
 
         # Type buttons side by side
@@ -102,17 +112,17 @@ class Editor:
             color = self.type_colors[cell_type]
             selected = i == self._type_index
 
-            bg = color if selected else (40, 42, 62)
+            bg = color if selected else self.c_unsel
             pygame.draw.rect(surface, bg, rect, border_radius=4)
-            border = (255, 255, 255) if selected else (65, 70, 90)
+            border = self.c_white if selected else self.c_unsel_border
             pygame.draw.rect(surface, border, rect, 2, border_radius=4)
 
             # Color dot + label
             pygame.draw.circle(surface, color,
                                (rect.x + 14, rect.y + bh // 2), 6)
-            lbl = self.btn_font.render(TYPE_NAMES[cell_type], True, (220, 222, 240))
+            lbl = self.btn_font.render(TYPE_NAMES[cell_type], True, self.c_label)
             surface.blit(lbl, (rect.x + 26, rect.y + 6))
             self.btn_rects.append((rect, i))
 
-        hint = self.font.render("Click grid to place / remove", True, (100, 105, 130))
+        hint = self.font.render("Click grid to place / remove", True, self.c_hint)
         surface.blit(hint, (bx + len(EDITABLE_TYPES) * (bw + 8) + 12, bar_y + 12))

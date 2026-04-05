@@ -6,6 +6,7 @@ import pygame
 class Button:
     """A single clickable button with label, action, and hover state."""
     def __init__(self, label, action, primary=False, color=None):
+        """Initialise a button with display label, action key, and style."""
         self.label = label
         self.action = action
         self.primary = primary
@@ -34,15 +35,17 @@ class Button:
 
 
 def _brighten(color, amount):
+    """Return a brighter version of an RGB tuple."""
     return tuple(min(255, c + amount) for c in color)
 
 
 def _overlay_btns(hmap, arrows):
+    """Return heatmap/arrows toggle buttons."""
     return [Button(f"Heatmap: {'ON' if hmap else 'OFF'}", "toggle_heatmap"),
             Button(f"Arrows: {'ON' if arrows else 'OFF'}", "toggle_arrows")]
 
-def _get_buttons(s):
-    """Return buttons for current state."""
+def _get_buttons(s, c_demo, c_primary):
+    """Return buttons for current state using config colors."""
     editing, demo, paused = s.get("editor_active"), s.get("demo_mode"), s.get("paused")
     converged, fast = s.get("converged"), s.get("fast_mode")
     hmap, arrows, trained = s.get("show_heatmap"), s.get("show_arrows"), s.get("has_trained")
@@ -50,13 +53,13 @@ def _get_buttons(s):
     ov = _overlay_btns(hmap, arrows)
 
     if converged and paused and not demo and not editing:
-        return [btn("Watch Optimal Path", "start_demo", True, (40, 120, 180)),
-                btn("Continue Training", "resume", color=(45, 110, 65)),
+        return [btn("Watch Optimal Path", "start_demo", True, c_demo),
+                btn("Continue Training", "resume", color=c_primary),
                 *ov, btn("Edit Map", "open_editor"),
                 btn("Save Brain", "save"), btn("Reset", "reset")]
     if demo:
         return [btn("Stop Demo", "stop_demo", True),
-                btn("Continue Training", "continue_training", color=(45, 110, 65)),
+                btn("Continue Training", "continue_training", color=c_primary),
                 *ov, btn("Edit Map", "open_editor"),
                 btn("Save Brain", "save"), btn("Reset", "reset")]
     if editing:
@@ -77,14 +80,18 @@ def _get_buttons(s):
 class ButtonPanel:
     """Manages layout, drawing, and click handling for a set of buttons."""
     def __init__(self, config):
+        """Initialise button panel layout and colors from config."""
         gui = config.gui
         c = config.colors
         self.colors = {
             "btn_bg": tuple(c.btn_bg), "btn_hover": tuple(c.btn_hover),
-            "primary": (45, 110, 65), "primary_hover": (55, 135, 80),
-            "primary_border": (70, 180, 100),
+            "primary": tuple(c.primary_btn), "primary_hover": tuple(c.primary_btn_hover),
+            "primary_border": tuple(c.primary_btn_border),
             "text": tuple(c.text), "border": tuple(c.panel_border),
         }
+        self.c_demo = tuple(c.demo_btn)
+        self.c_primary = tuple(c.primary_btn)
+        self.font_name = gui.font_name
         self.ox = gui.grid_area_width + 15
         self.panel_w = gui.dashboard_width - 30
         self.bw = (self.panel_w - 8) // 2
@@ -93,13 +100,14 @@ class ButtonPanel:
         self.buttons = []
 
     def _ensure_font(self):
+        """Lazily initialise the button font."""
         if self.font is None:
-            self.font = pygame.font.SysFont("arial", 13)
+            self.font = pygame.font.SysFont(self.font_name, 13)
 
     def draw(self, surface, state_dict, y_start):
         """Draw all context-aware buttons and return the next y position."""
         self._ensure_font()
-        self.buttons = _get_buttons(state_dict)
+        self.buttons = _get_buttons(state_dict, self.c_demo, self.c_primary)
         y = y_start
         for i, btn in enumerate(self.buttons):
             if i == 0:

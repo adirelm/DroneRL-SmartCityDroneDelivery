@@ -41,13 +41,13 @@ class GameLogic:
     def training_step(self) -> None:
         """Run one step of training."""
         action = self.agent.choose_action(self.state)
-        next_state, reward, done, _ = self.env.step(action)
+        next_state, reward, done, info = self.env.step(action)
         self.agent.update(self.state, action, reward, next_state, done)
         self.state = next_state
         self.steps += 1
         self.total_reward += reward
         if done or self.steps >= self.max_steps:
-            if done and reward > 0:
+            if info.get("event") == "goal":
                 self.goals_reached += 1
             self.reward_history.append(self.total_reward)
             self.agent.decay_epsilon()

@@ -60,6 +60,7 @@ gui:
   demo_speed: 8
   status_bar_height: 40
   status_bar_font_size: 12
+  font_name: "arial"
 
 # Colors (RGB)
 colors:
@@ -88,6 +89,27 @@ colors:
   btn_hover: [50, 55, 85]
   btn_active: [70, 80, 130]
   start_marker: [100, 200, 255]
+  white: [255, 255, 255]
+  status_text: [220, 224, 240]
+  status_dim: [160, 165, 190]
+  graph_bg: [10, 10, 25]
+  graph_zero: [60, 60, 70]
+  banner_bg: [30, 90, 55]
+  banner_border: [60, 180, 100]
+  banner_text: [180, 255, 200]
+  primary_btn: [45, 110, 65]
+  primary_btn_hover: [55, 135, 80]
+  primary_btn_border: [70, 180, 100]
+  demo_btn: [40, 120, 180]
+  editor_bar_bg: [20, 22, 38]
+  editor_unselected: [40, 42, 62]
+  editor_unselected_border: [65, 70, 90]
+  editor_label: [220, 222, 240]
+  editor_hint: [100, 105, 130]
+  trail_glow: [100, 220, 255]
+  trail_line: [100, 200, 255]
+  trail_dot: [140, 220, 255]
+  arrow_fill: [255, 255, 255]
 
 # Logging
 logging:

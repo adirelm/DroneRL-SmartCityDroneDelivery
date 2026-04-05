@@ -17,6 +17,7 @@ class GUI:
     """Top-level orchestrator: event loop, rendering, and action dispatch."""
 
     def __init__(self, config: Config):
+        """Initialise window, components, and state from config."""
         pygame.init()
         self.cfg, gui = config, config.gui
         self.width, self.height = gui.window_width, gui.window_height
@@ -24,6 +25,11 @@ class GUI:
         self.fast_step_batch = gui.fast_mode_episodes_per_frame
         self.status_bar_height = gui.status_bar_height
         self.status_font_size = gui.status_bar_font_size
+        self.font_name = gui.font_name
+        c = config.colors
+        self.c_status_bg = tuple(c.dashboard_bg)
+        self.c_status_text = tuple(c.status_text)
+        self.c_status_dim = tuple(c.status_dim)
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("DroneRL \u2014 Smart City Drone Delivery")
         self.clock, self.fps = pygame.time.Clock(), gui.fps
@@ -105,8 +111,9 @@ class GUI:
         pygame.display.flip()
 
     def _status_bar(self):
+        """Render the mode indicator and keyboard shortcuts bar."""
         if not self.status_font:
-            self.status_font = pygame.font.SysFont("arial", self.status_font_size)
+            self.status_font = pygame.font.SysFont(self.font_name, self.status_font_size)
         mode = "EDIT" if self.editor.active else "DEMO" if self.logic.demo_mode else "TRAINING"
         flags = ["PAUSED"] if self.paused else []
         if self.fast_mode:
@@ -117,6 +124,6 @@ class GUI:
             "T Tool  D Demo  S Save  L Load  R Reset"
         )
         y = self.height - self.status_bar_height
-        pygame.draw.rect(self.screen, (12, 14, 28), (0, y, self.width, self.status_bar_height))
-        self.screen.blit(self.status_font.render(state, True, (220, 224, 240)), (10, y + 6))
-        self.screen.blit(self.status_font.render(shortcuts, True, (160, 165, 190)), (10, y + 22))
+        pygame.draw.rect(self.screen, self.c_status_bg, (0, y, self.width, self.status_bar_height))
+        self.screen.blit(self.status_font.render(state, True, self.c_status_text), (10, y + 6))
+        self.screen.blit(self.status_font.render(shortcuts, True, self.c_status_dim), (10, y + 22))
