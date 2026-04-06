@@ -115,3 +115,31 @@ The agent uses **Q-Learning** (a model-free RL algorithm) to learn optimal navig
    ```
 4. Epsilon decays over time, shifting from exploration to exploitation
 5. The agent converges to the optimal policy within ~3000 episodes
+
+## Screenshots
+
+| Training in Progress | Converged (Heatmap + Arrows) |
+|:---:|:---:|
+| ![Training](assets/screenshot_training.png) | ![Converged](assets/screenshot_converged.png) |
+
+| Level Editor | Demo Mode |
+|:---:|:---:|
+| ![Editor](assets/screenshot_editor.png) | ![Demo](assets/screenshot_demo.png) |
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Follow coding standards: OOP, max 150 lines/file, no hardcoded values
+4. Write tests first (TDD): `uv run pytest tests/ -v`
+5. Ensure zero linting errors: `uv run ruff check src/`
+6. Commit with clear messages
+7. Open a Pull Request
+
+## License & Credits
+
+- **Author**: Adir Elmakais
+- **Course**: Vibe Coding & Reinforcement Learning Workshop, Bar-Ilan University
+- **Instructor**: Dr. Yoram Segal
+- **License**: MIT
+- Built with assistance from Claude AI (Anthropic)
