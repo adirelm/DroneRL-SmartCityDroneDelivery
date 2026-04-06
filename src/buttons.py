@@ -90,7 +90,6 @@ class ButtonPanel:
             "text": tuple(c.text), "border": tuple(c.panel_border),
         }
         self.c_demo = tuple(c.demo_btn)
-        self.c_primary = tuple(c.primary_btn)
         self.font_name = gui.font_name
         self.ox = gui.grid_area_width + 15
         self.panel_w = gui.dashboard_width - 30
@@ -107,7 +106,7 @@ class ButtonPanel:
     def draw(self, surface, state_dict, y_start):
         """Draw all context-aware buttons and return the next y position."""
         self._ensure_font()
-        self.buttons = _get_buttons(state_dict, self.c_demo, self.c_primary)
+        self.buttons = _get_buttons(state_dict, self.c_demo, self.colors["primary"])
         y = y_start
         for i, btn in enumerate(self.buttons):
             if i == 0:

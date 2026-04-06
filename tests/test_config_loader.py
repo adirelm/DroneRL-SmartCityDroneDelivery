@@ -58,7 +58,7 @@ class TestConfig:
         assert config.agent.learning_rate == 0.1
 
     def test_dot_access_list(self, config):
-        assert config.environment.start_position == [0, 0]
+        assert config.environment.start_position == (0, 0)
 
     def test_missing_key_raises(self, config):
         with pytest.raises(AttributeError):
