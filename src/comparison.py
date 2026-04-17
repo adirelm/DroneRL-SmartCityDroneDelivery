@@ -40,13 +40,13 @@ class ComparisonStore:
 
 
 def smooth(values: list[float], window: int) -> list[float]:
-    """Apply a moving-average smoothing of the given window size."""
+    """Moving-average smoothing; output length == input length so x starts at 0."""
     if len(values) < 2 or window <= 1:
         return list(values)
     arr = np.asarray(values, dtype=float)
     eff = min(window, len(arr))
     kernel = np.ones(eff) / eff
-    return list(np.convolve(arr, kernel, mode="valid"))
+    return list(np.convolve(arr, kernel, mode="same"))
 
 
 def generate_comparison_chart(
@@ -64,7 +64,7 @@ def generate_comparison_chart(
         if not history:
             continue
         smoothed = smooth(history, smoothing_window)
-        x = np.arange(len(smoothed)) + (len(history) - len(smoothed))
+        x = np.arange(len(smoothed))
         ax.plot(
             x, smoothed,
             label=ALGORITHM_LABELS[algo],

@@ -24,6 +24,7 @@ class GameLogic:
         self.total_reward = 0.0
         self.goals_reached = 0
         self.reward_history = []
+        self.goal_history: list[bool] = []
 
         self.demo_mode = False
         self.demo_timer = 0
@@ -47,9 +48,11 @@ class GameLogic:
         self.steps += 1
         self.total_reward += reward
         if done or self.steps >= self.max_steps:
-            if info.get("event") == "goal":
+            reached_goal = info.get("event") == "goal"
+            if reached_goal:
                 self.goals_reached += 1
             self.reward_history.append(self.total_reward)
+            self.goal_history.append(reached_goal)
             self.agent.decay_epsilon()
             self.episode += 1
             self.total_reward, self.steps = 0.0, 0
@@ -64,9 +67,7 @@ class GameLogic:
         if self.agent.epsilon > self.max_eps_converge:
             return False
         w = self.converge_window
-        recent_goals = sum(
-            1 for r in self.reward_history[-w:] if r > 0
-        )
+        recent_goals = sum(self.goal_history[-w:])
         if recent_goals / w >= self.converge_rate:
             self.converged = True
             return True
@@ -117,6 +118,7 @@ class GameLogic:
         self.episode = self.steps = self.goals_reached = 0
         self.total_reward = 0.0
         self.reward_history.clear()
+        self.goal_history.clear()
         self.demo_mode = False
         self.converged = False
         self.state = self.env.reset()
