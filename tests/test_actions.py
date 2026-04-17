@@ -87,3 +87,34 @@ def test_load_without_file_is_a_no_op(pygame_ready, ui_config, tmp_path):
     dispatch(gui, "load")
 
     assert (gui.agent.q_table == snapshot).all()
+
+
+def test_use_q_learning_switches_algorithm(pygame_ready, ui_config):
+    gui = GUI(ui_config)
+    dispatch(gui, "use_q_learning")
+    assert gui.cfg.algorithm.name == "q_learning"
+    assert gui.agent.algorithm_name == "Q-Learning"
+
+
+def test_use_double_q_switches_algorithm(pygame_ready, ui_config):
+    gui = GUI(ui_config)
+    dispatch(gui, "use_double_q")
+    assert gui.cfg.algorithm.name == "double_q"
+    assert gui.agent.algorithm_name == "Double Q-Learning"
+
+
+def test_use_bellman_switches_back(pygame_ready, ui_config):
+    gui = GUI(ui_config)
+    dispatch(gui, "use_q_learning")
+    dispatch(gui, "use_bellman")
+    assert gui.cfg.algorithm.name == "bellman"
+    assert gui.agent.algorithm_name == "Bellman"
+
+
+def test_regenerate_hazards_modifies_grid(pygame_ready, ui_config):
+    gui = GUI(ui_config)
+    gui.hazards.set_density(0.3)
+    gui.hazards.set_difficulty(1.0)
+    before = gui.env.grid.copy()
+    dispatch(gui, "regenerate_hazards")
+    assert (gui.env.grid != before).any()

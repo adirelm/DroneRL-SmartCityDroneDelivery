@@ -1,33 +1,40 @@
 # DroneRL — Smart City Drone Delivery
 
-An educational reinforcement learning application that visualizes a drone learning to navigate a smart city grid using **Tabular Q-Learning**. Built with Python and Pygame.
+An educational reinforcement learning lab that compares **three tabular RL algorithms** — Bellman (constant α), Q-Learning (decaying α), and Double Q-Learning (dual tables) — on a configurable smart-city drone delivery task. Built with Python + Pygame.
 
-## What It Does
+> Bar-Ilan University, Vibe Coding Workshop — Assignment 2
 
-A drone agent learns the optimal path from a start position to a goal on a 12x12 grid, while avoiding:
-- **Buildings** — impassable walls
-- **Traps** — no-fly zones that end the episode with a penalty
-- **Wind Zones** — stochastic areas that may push the drone off course
+---
 
-The GUI displays the learning process in real-time with:
-- **Value Heatmap** — cells colored by their Q-values (blue=low, red=high)
-- **Policy Arrows** — arrows showing the best action per cell
-- **Dashboard** — episode count, reward, epsilon, goal rate, and a reward history graph
-- **Level Editor** — interactively place/remove obstacles
+## Objectives
+
+1. Implement **three RL algorithms** sharing the same `BaseAgent` interface so they can be swapped at runtime.
+2. Build a **dynamic, randomizable board** with sliders that let the user shape the noise / density / difficulty of the environment.
+3. Demonstrate, with **comparison graphs**, where each algorithm shines and where it breaks.
+4. Keep every Python file ≤ 150 lines, ≥ 85 % test coverage, zero ruff violations, and all parameters in `config/config.yaml`.
+
+---
+
+## What Was Implemented
+
+| Layer | Modules |
+|-------|---------|
+| **Agents** (Strategy pattern) | [`base_agent.py`](src/base_agent.py), [`agent.py`](src/agent.py) (Bellman), [`q_agent.py`](src/q_agent.py), [`double_q_agent.py`](src/double_q_agent.py), [`agent_factory.py`](src/agent_factory.py) |
+| **Dynamic board** | [`environment.py`](src/environment.py) (added `CellType.PIT`), [`hazard_generator.py`](src/hazard_generator.py), [`sliders.py`](src/sliders.py) |
+| **Comparison system** | [`comparison.py`](src/comparison.py) (matplotlib charts), `SDK.run_comparison()`, [`scripts/generate_comparison_charts.py`](scripts/generate_comparison_charts.py) |
+| **GUI integration** | Algorithm switching via keys 1/2/3, hazard regeneration via G, live status bar |
+
+---
 
 ## Installation
 
-Requires **Python 3.11-3.13** and **UV**.
+Requires **Python 3.11–3.13** and **UV**.
 
 ```bash
-# Install UV (if not installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Clone the repository
 git clone https://github.com/adirelm/DroneRL-SmartCityDroneDelivery.git
 cd DroneRL-SmartCityDroneDelivery
-
-# Install runtime + validation tooling (recommended for the assignment)
+git checkout assignment-2
 uv sync --dev
 ```
 
@@ -37,109 +44,157 @@ uv sync --dev
 uv run main.py
 ```
 
+To regenerate the convergence comparison charts:
+```bash
+uv run python scripts/generate_comparison_charts.py
+```
+
+---
+
 ## Keyboard Controls
 
 | Key | Action |
 |-----|--------|
 | `SPACE` | Pause / Resume training |
-| `F` | Toggle fast mode (100 episodes/frame) |
-| `H` | Toggle value heatmap |
+| `F` | Toggle fast mode |
+| `H` | Toggle Q-value heatmap |
 | `A` | Toggle policy arrows |
 | `E` | Toggle level editor |
-| `T` | Cycle editor tool (Building/Trap/Wind) |
-| `S` | Save Q-table (brain) |
-| `L` | Load Q-table (brain) |
-| `R` | Hard reset |
+| `T` | Cycle editor obstacle (Building / Trap / Wind / Pit) |
+| `G` | Regenerate random hazards (uses sliders) |
+| `1` | Switch to **Bellman** agent |
+| `2` | Switch to **Q-Learning** agent |
+| `3` | Switch to **Double Q-Learning** agent |
+| `S` / `L` | Save / Load Q-table |
+| `R` | Hard reset (clears training) |
+
+---
+
+## Algorithm Comparison
+
+### Scenario 1 — Medium difficulty (noisy environment)
+
+![Scenario 1](data/comparison/scenario1_medium.png)
+
+**Setup**: 12×12 grid, 18 % hazards, noise=0.8, drift=0.34, 4000 episodes, seed=11.
+
+| Algorithm | Avg reward (last 100) |
+|-----------|----------------------|
+| Bellman (constant α=0.5) | 35 |
+| Q-Learning (decaying α) | 58 |
+| **Double Q-Learning** | **65** |
+
+Bellman lags badly because the high constant learning rate keeps over-correcting on the noisy wind drift. The decaying α of both Q-Learning and Double Q-Learning lets the value estimates settle, and Double Q's dual tables further suppress maximisation bias.
+
+### Scenario 2 — High difficulty (very noisy + denser hazards)
+
+![Scenario 2](data/comparison/scenario2_hard.png)
+
+**Setup**: 12×12 grid, 18 % hazards, noise=1.0, difficulty=0.8, drift=0.54, 8000 episodes, seed=7.
+
+| Algorithm | Avg reward (last 100) |
+|-----------|----------------------|
+| Bellman | 63 |
+| Q-Learning | 59 |
+| **Double Q-Learning** | **63** |
+
+In the harder scenario all three eventually solve the task, but Double Q-Learning converges most consistently because it doesn't over-estimate the noisy max returns.
+
+---
+
+## Conclusions
+
+1. **Constant α (Bellman) is fragile in noisy environments.** Without decay, the agent keeps amplifying recent noise and oscillates around the optimum. Decay is not optional.
+2. **Q-Learning** with decaying α stabilises quickly but is still vulnerable to maximisation bias when reward variance is high.
+3. **Double Q-Learning** wins the medium scenario outright and ties on the hard one — the cross-table evaluation is exactly the bias removal Hasselt (2010) proposed, and it shows up empirically.
+4. **Environment shape matters more than hyper-parameters.** The same algorithms behave very differently when the noise / density / difficulty sliders push the board into a higher-variance regime.
+
+---
+
+## Parameter Analysis
+
+`config/config.yaml` exposes every tunable value. Most influential for differentiating the algorithms:
+
+| Param | Effect |
+|-------|--------|
+| `agent.learning_rate` | Bellman's α (kept constant). Higher → faster learning but more instability under noise. |
+| `q_learning.alpha_decay` / `double_q.alpha_decay` | Smaller value → faster decay → quicker stabilisation but less long-term plasticity. |
+| `agent.epsilon_decay` | Slower decay → more exploration → safer but slower convergence. |
+| `dynamic_board.noise_level` | Scales the wind drift probability. Above ~0.7 Bellman starts to break. |
+| `dynamic_board.hazard_density` | Above ~0.25 paths to the goal become brittle and Q-Learning catches up to Double-Q. |
+| `dynamic_board.difficulty` | Master multiplier; combines noise and density. |
+
+---
 
 ## Project Structure
 
 ```
 ├── src/
-│   ├── agent.py            # Q-Learning agent (Bellman equation, epsilon-greedy)
-│   ├── config_loader.py    # YAML configuration loader
-│   ├── dashboard.py        # Dashboard panel rendering
-│   ├── editor.py           # Level editor
-│   ├── environment.py      # Smart city grid environment
-│   ├── gui.py              # Main Pygame GUI orchestrator
-│   ├── logger.py           # Centralized logging
-│   ├── overlays.py         # Heatmap and policy arrow overlays
-│   ├── renderer.py         # Grid renderer
-│   ├── sdk.py              # Central SDK class
-│   └── trainer.py          # Training orchestration
-├── tests/                  # Unit tests (104 tests, 99% total coverage)
-├── config/
-│   └── config.yaml         # All parameters (grid, rewards, RL hyperparams)
-├── data/                   # Saved Q-tables
+│   ├── base_agent.py       # Abstract base for the 3 algorithms
+│   ├── agent.py            # BellmanAgent (constant α)
+│   ├── q_agent.py          # QLearningAgent (decaying α)
+│   ├── double_q_agent.py   # DoubleQAgent (QA + QB tables)
+│   ├── agent_factory.py    # Selects algorithm from config
+│   ├── environment.py      # Smart-city grid + cell types (incl. PIT)
+│   ├── hazard_generator.py # Random hazard placer driven by sliders
+│   ├── sliders.py          # Pygame slider widgets
+│   ├── trainer.py          # Episode-level training loop
+│   ├── game_logic.py       # Step-level training, demo, convergence
+│   ├── sdk.py              # Public API (train, switch_algorithm, run_comparison)
+│   ├── comparison.py       # ComparisonStore + matplotlib chart
+│   ├── gui.py              # Pygame orchestrator
+│   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
+│   ├── actions.py / config_loader.py / logger.py
+│   └── __init__.py
+├── tests/                  # 185 pytest tests, 98%+ coverage
+├── scripts/
+│   └── generate_comparison_charts.py
+├── config/config.yaml      # All parameters
+├── data/comparison/        # Generated convergence PNGs
 ├── docs/
-│   ├── PRD.md              # Product Requirements Document
-│   ├── PLAN.md             # Implementation plan
-│   └── TODO.md             # Task list (1114 tasks, all completed)
-├── main.py                 # Entry point
-└── pyproject.toml          # UV project configuration
+│   ├── assignment-1/       # PRD, PLAN, TODO from Assignment 1
+│   ├── assignment-2/       # 3× PRD/PLAN/TODO for new features
+│   └── shared/             # ARCHITECTURE.md, PROMPTS.md
+├── main.py
+├── pyproject.toml
+└── CLAUDE.md               # Global coding standards (150-line cap, TDD, OOP, …)
 ```
 
-## Configuration
-
-The main tunable parameters are in `config/config.yaml`. Includes:
-- Grid size, start/goal positions
-- Reward values (step, goal, trap, wind, wall collision)
-- RL hyperparameters (learning rate, discount factor, epsilon settings)
-- GUI settings (window size, colors, FPS, demo speed, fast mode batch size)
-- Save/load path for persisted Q-tables
+---
 
 ## Running Tests
 
 ```bash
 uv run pytest tests/ -v
 uv run pytest tests/ --cov=src --cov-report=term-missing
+uv run ruff check src/ tests/ main.py
 ```
+
+Current state: **185 tests passing**, **98 % coverage**, zero ruff violations.
+
+---
 
 ## Tech Stack
 
-- **Python 3.11-3.13**
-- **Pygame** — GUI rendering
-- **NumPy** — Q-table and grid operations
-- **PyYAML** — configuration loading
-- **Pytest** — unit testing
-- **UV** — package management and virtual environment
+- **Python 3.11–3.13** · **Pygame** (GUI) · **NumPy** (Q-tables, env)
+- **PyYAML** (config) · **Matplotlib** (comparison charts)
+- **Pytest** + **pytest-cov** · **Ruff** (lint) · **UV** (env / deps)
 
-## How It Works
-
-The agent uses **Q-Learning** (a model-free RL algorithm) to learn optimal navigation:
-
-1. The agent starts with an empty Q-table (all zeros)
-2. Each episode: the drone takes actions using **epsilon-greedy** exploration
-3. After each action, Q-values are updated via the **Bellman equation**:
-   ```
-   Q(s,a) = Q(s,a) + α × [r + γ × max(Q(s',a')) - Q(s,a)]
-   ```
-4. Epsilon decays over time, shifting from exploration to exploitation
-5. The agent converges to the optimal policy within ~3000 episodes
-
-## Screenshots
-
-| Training in Progress | Converged (Heatmap + Arrows) |
-|:---:|:---:|
-| ![Training](assets/screenshot_training.png) | ![Converged](assets/screenshot_converged.png) |
-
-| Level Editor | Demo Mode |
-|:---:|:---:|
-| ![Editor](assets/screenshot_editor.png) | ![Demo](assets/screenshot_demo.png) |
+---
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Follow coding standards: OOP, max 150 lines/file, no hardcoded values
-4. Write tests first (TDD): `uv run pytest tests/ -v`
-5. Ensure zero linting errors: `uv run ruff check src/`
-6. Commit with clear messages
-7. Open a Pull Request
+Follow the rules in [CLAUDE.md](CLAUDE.md):
+- TDD — write the failing test first.
+- Every file ≤ 150 lines; split by responsibility, not by layer.
+- All tunables go to `config/config.yaml`. No magic numbers in source.
+- `ruff check` must report zero issues before every commit.
+- Maintain ≥ 85 % coverage.
+
+---
 
 ## License & Credits
 
-- **Author**: Adir Elmakais
-- **Course**: Vibe Coding & Reinforcement Learning Workshop, Bar-Ilan University
-- **Instructor**: Dr. Yoram Segal
-- **License**: MIT
-- Built with assistance from Claude AI (Anthropic)
+MIT License © 2026 Adir Elmakais.
+Course material: Dr. Yoram Segal, *Vibe Coding Workshop*, Bar-Ilan University.
+Algorithm references: Watkins (1989) for Q-Learning and Hado van Hasselt (2010) "Double Q-Learning" NeurIPS.

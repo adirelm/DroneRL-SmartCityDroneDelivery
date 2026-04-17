@@ -7,7 +7,7 @@ from src.config_loader import Config
 from src.environment import CellType
 
 # Cells to skip for heatmap
-_SKIP_HEAT = {CellType.BUILDING, CellType.TRAP, CellType.GOAL}
+_SKIP_HEAT = {CellType.BUILDING, CellType.TRAP, CellType.GOAL, CellType.PIT}
 
 
 class Overlays:
@@ -81,7 +81,7 @@ class Overlays:
 
         for row in range(self.rows):
             for col in range(self.cols):
-                if grid[row, col] == CellType.BUILDING:
+                if grid[row, col] in (CellType.BUILDING, CellType.PIT):
                     continue
 
                 best = int(np.argmax(q_table[row, col]))
