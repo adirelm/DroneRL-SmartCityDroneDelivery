@@ -27,6 +27,8 @@ class Renderer:
         self.c_goal_acc = tuple(c.goal_accent)
         self.c_wind = tuple(c.wind)
         self.c_wind_acc = tuple(c.wind_accent)
+        self.c_pit = tuple(c.pit)
+        self.c_pit_acc = tuple(c.pit_accent)
         self.c_drone = tuple(c.drone)
         self.c_drone_glow = tuple(c.drone_glow)
         self.c_grid = tuple(c.grid_line)
@@ -85,12 +87,19 @@ class Renderer:
             if len(pts) > 1:
                 pygame.draw.lines(surf, self.c_wind_acc, False, pts, 2)
 
+    def _draw_pit(self, surf, x, y):
+        s = self.cs
+        pygame.draw.rect(surf, self.c_pit, (x, y, s, s))
+        cx, cy = x + s // 2, y + s // 2
+        for r in (s // 2, s // 3, s // 5):
+            pygame.draw.circle(surf, self.c_pit_acc, (cx, cy), r, 1)
+
     def draw_grid(self, surface: pygame.Surface, grid) -> None:
         """Draw all grid cells with their visual styles."""
         self.frame += 1
         draw = {CellType.EMPTY: self._draw_empty, CellType.BUILDING: self._draw_building,
                 CellType.TRAP: self._draw_trap, CellType.GOAL: self._draw_goal,
-                CellType.WIND: self._draw_wind}
+                CellType.WIND: self._draw_wind, CellType.PIT: self._draw_pit}
         for row in range(self.rows):
             for col in range(self.cols):
                 ct = CellType(int(grid[row, col]))

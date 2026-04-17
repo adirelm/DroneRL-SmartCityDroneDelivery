@@ -77,6 +77,14 @@ class TestStep:
         assert done is True
         assert info["event"] == "trap"
 
+    def test_pit_terminates(self, env):
+        env.set_cell(1, 0, CellType.PIT)
+        state, reward, done, info = env.step(1)  # DOWN into pit
+        assert state == (1, 0)
+        assert reward == -75
+        assert done is True
+        assert info["event"] == "pit"
+
     def test_goal_terminates(self, env):
         env.drone_pos = (10, 11)
         state, reward, done, info = env.step(1)  # DOWN into goal at (11,11)

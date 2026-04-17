@@ -23,16 +23,33 @@ rewards:
   step_penalty: -1
   goal_reward: 100
   trap_penalty: -50
+  pit_penalty: -75
   wind_penalty: -2
   wall_collision: -5
 
-# RL hyperparameters
+# Algorithm selection (bellman | q_learning | double_q)
+algorithm:
+  name: "bellman"
+
+# RL hyperparameters (shared across algorithms)
 agent:
   learning_rate: 0.1
   discount_factor: 0.95
   epsilon_start: 1.0
   epsilon_end: 0.01
   epsilon_decay: 0.995
+
+# Q-Learning specific hyperparameters (decaying alpha)
+q_learning:
+  alpha_start: 0.5
+  alpha_end: 0.05
+  alpha_decay: 0.9995
+
+# Double Q-Learning specific hyperparameters
+double_q:
+  alpha_start: 0.5
+  alpha_end: 0.05
+  alpha_decay: 0.9995
 
 # Training settings
 training:
@@ -46,6 +63,18 @@ training:
 # Wind zone settings
 wind:
   drift_probability: 0.3
+
+# Dynamic board / hazard generator settings
+dynamic_board:
+  enabled: false
+  noise_level: 0.3        # 0..1 — wind drift intensity multiplier
+  hazard_density: 0.15    # 0..0.5 — fraction of empty cells to fill with hazards
+  difficulty: 0.5         # 0..1 — master multiplier (scales noise + density)
+  trap_ratio: 0.3         # fraction of hazards that become traps
+  pit_ratio: 0.2          # fraction of hazards that become pits
+  wind_ratio: 0.3         # fraction of hazards that become wind
+  building_ratio: 0.2     # fraction of hazards that become buildings
+  seed: null              # integer for reproducibility, null = random
 
 # GUI settings
 gui:
@@ -75,6 +104,8 @@ colors:
   goal_accent: [80, 240, 110]
   wind: [55, 70, 160]
   wind_accent: [80, 100, 200]
+  pit: [20, 20, 30]
+  pit_accent: [80, 30, 90]
   drone: [255, 210, 40]
   drone_glow: [255, 240, 100]
   text: [210, 210, 230]
@@ -115,6 +146,12 @@ colors:
 logging:
   level: INFO
   file: null
+
+# Comparison settings (Assignment 2)
+comparison:
+  max_episodes: 5000
+  smoothing_window: 50
+  output_dir: data/comparison
 
 # Paths
 paths:

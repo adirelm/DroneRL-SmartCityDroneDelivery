@@ -2,6 +2,13 @@
 
 import os
 
+from src.agent_factory import create_agent
+from src.environment import Environment
+
+_ALGO_KEYS = {"use_bellman": "bellman",
+              "use_q_learning": "q_learning",
+              "use_double_q": "double_q"}
+
 
 def dispatch(gui, a):
     """Execute the named action, mutating gui state accordingly."""
@@ -46,11 +53,15 @@ def dispatch(gui, a):
     elif a == "load" and os.path.exists(gui.brain_path):
         gui.agent.load(gui.brain_path)
     elif a == "reset":
-        from src.agent import Agent
-        from src.environment import Environment
-        gui.env, gui.agent = Environment(gui.cfg), Agent(gui.cfg)
+        gui.env, gui.agent = Environment(gui.cfg), create_agent(gui.cfg)
         gui.logic.reset(gui.agent, gui.env)
         gui.paused = gui.editor.active = True
         gui.fast_mode = gui.show_heatmap = gui.show_arrows = False
     elif a == "cycle_type":
         gui.editor.next_type()
+    elif a in _ALGO_KEYS:
+        gui.cfg.algorithm.name = _ALGO_KEYS[a]
+        dispatch(gui, "reset")
+    elif a == "regenerate_hazards":
+        gui.hazards.apply(gui.env)
+        gui.env.drift_probability = gui.hazards.effective_drift()

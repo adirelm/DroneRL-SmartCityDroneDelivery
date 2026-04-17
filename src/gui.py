@@ -3,14 +3,16 @@
 import pygame
 
 from src.actions import dispatch
-from src.agent import Agent
+from src.agent_factory import create_agent
 from src.config_loader import Config
 from src.dashboard import Dashboard
 from src.editor import Editor
 from src.environment import CellType, Environment
 from src.game_logic import GameLogic
+from src.hazard_generator import HazardGenerator
 from src.overlays import Overlays
 from src.renderer import Renderer
+from src.sliders import SliderPanel
 
 
 class GUI:
@@ -33,10 +35,15 @@ class GUI:
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("DroneRL \u2014 Smart City Drone Delivery")
         self.clock, self.fps = pygame.time.Clock(), gui.fps
-        self.env, self.agent = Environment(config), Agent(config)
+        self.env = Environment(config)
+        self.agent = create_agent(config)
         self.logic = GameLogic(self.agent, self.env, config)
         self.renderer, self.overlays = Renderer(config), Overlays(config)
         self.dashboard, self.editor = Dashboard(config), Editor(config)
+        self.hazards = HazardGenerator(config)
+        self.sliders = SliderPanel(config, gui.grid_area_width + 16,
+                                   self.height - self.status_bar_height - 130,
+                                   gui.dashboard_width - 32)
         self.paused, self.editor.active = True, True
         self.fast_mode = self.show_heatmap = self.show_arrows = False
         self.status_font = None
@@ -56,6 +63,8 @@ class GUI:
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
                     running = False
+                elif self.editor.active and self.sliders.handle_event(ev):
+                    self._on_slider_change()
                 elif ev.type == pygame.KEYDOWN:
                     self._on_key(ev.key)
                 elif ev.type == pygame.MOUSEBUTTONDOWN:
@@ -87,9 +96,17 @@ class GUI:
               pygame.K_h: "toggle_heatmap", pygame.K_a: "toggle_arrows",
               pygame.K_e: "open_editor", pygame.K_d: "start_demo",
               pygame.K_s: "save", pygame.K_l: "load",
-              pygame.K_r: "reset", pygame.K_t: "cycle_type"}
+              pygame.K_r: "reset", pygame.K_t: "cycle_type",
+              pygame.K_1: "use_bellman", pygame.K_2: "use_q_learning",
+              pygame.K_3: "use_double_q", pygame.K_g: "regenerate_hazards"}
         if key in km:
             dispatch(self, km[key])
+
+    def _on_slider_change(self):
+        self.hazards.set_noise(self.sliders.get("noise"))
+        self.hazards.set_density(self.sliders.get("density"))
+        self.hazards.set_difficulty(self.sliders.get("difficulty"))
+        self.env.drift_probability = self.hazards.effective_drift()
 
     def _draw(self):
         self.screen.fill(tuple(self.cfg.colors.background))
@@ -107,6 +124,7 @@ class GUI:
                             self.logic.reward_history, self._state())
         if self.editor.active:
             self.editor.draw_ui(self.screen, pygame.mouse.get_pos())
+            self.sliders.draw(self.screen)
         self._status_bar()
         pygame.display.flip()
 
@@ -118,10 +136,12 @@ class GUI:
         flags = ["PAUSED"] if self.paused else []
         if self.fast_mode:
             flags.append("FAST")
-        state = f"Mode: {mode}" + (f" [{' | '.join(flags)}]" if flags else "")
+        algo = self.agent.algorithm_name
+        state = f"Mode: {mode}  Algo: {algo}" + (f" [{' | '.join(flags)}]" if flags else "")
         shortcuts = (
             "SPACE Play/Pause  F Fast  H Heatmap  A Arrows  E Editor  "
-            "T Tool  D Demo  S Save  L Load  R Reset"
+            "T Tool  D Demo  S Save  L Load  R Reset  "
+            "1 Bellman  2 Q-Learn  3 DoubleQ  G Hazards"
         )
         y = self.height - self.status_bar_height
         pygame.draw.rect(self.screen, self.c_status_bg, (0, y, self.width, self.status_bar_height))

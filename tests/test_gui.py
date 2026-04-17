@@ -71,3 +71,15 @@ def test_gui_draw_and_status_bar_render_without_errors(pygame_ready, ui_config):
     gui._status_bar()
 
     assert gui.status_font is not None
+
+
+def test_on_slider_change_updates_drift(pygame_ready, ui_config):
+    gui = GUI(ui_config)
+    gui.sliders.sliders["noise"].value = 0.8
+    gui.sliders.sliders["density"].value = 0.3
+    gui.sliders.sliders["difficulty"].value = 1.0
+    gui._on_slider_change()
+    assert gui.hazards.noise == 0.8
+    assert gui.hazards.density == 0.3
+    assert gui.hazards.difficulty == 1.0
+    assert gui.env.drift_probability == gui.hazards.effective_drift()

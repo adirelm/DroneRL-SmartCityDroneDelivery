@@ -16,6 +16,7 @@ class CellType(IntEnum):
     TRAP = 2
     GOAL = 3
     WIND = 4
+    PIT = 5
 
 
 # Action definitions: UP=0, DOWN=1, LEFT=2, RIGHT=3
@@ -94,6 +95,9 @@ class Environment:
 
         if cell == CellType.TRAP:
             return self.drone_pos, self.rewards.trap_penalty, True, {"event": "trap"}
+
+        if cell == CellType.PIT:
+            return self.drone_pos, self.rewards.pit_penalty, True, {"event": "pit"}
 
         if cell == CellType.WIND:
             return self.drone_pos, self.rewards.wind_penalty, False, info

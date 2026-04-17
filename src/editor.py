@@ -5,11 +5,12 @@ import pygame
 from src.config_loader import Config
 from src.environment import CellType
 
-EDITABLE_TYPES = [CellType.BUILDING, CellType.TRAP, CellType.WIND]
+EDITABLE_TYPES = [CellType.BUILDING, CellType.TRAP, CellType.WIND, CellType.PIT]
 TYPE_NAMES = {
     CellType.BUILDING: "Building",
     CellType.TRAP: "Trap",
     CellType.WIND: "Wind",
+    CellType.PIT: "Pit",
 }
 
 
@@ -32,6 +33,7 @@ class Editor:
             CellType.BUILDING: tuple(colors.building),
             CellType.TRAP: tuple(colors.trap),
             CellType.WIND: tuple(colors.wind),
+            CellType.PIT: tuple(colors.pit),
         }
         self.c_white = tuple(colors.white)
         self.c_bar_bg = tuple(colors.editor_bar_bg)
