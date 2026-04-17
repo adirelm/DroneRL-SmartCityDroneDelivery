@@ -50,18 +50,22 @@ class DroneRLSDK:
         self.logger.info("Switched algorithm to %s", name)
 
     def run_comparison(self, episodes: int | None = None) -> dict[str, list[float]]:
-        """Train each algorithm for `episodes` and return reward histories."""
+        """Train each algorithm for `episodes` on the SAME board; return histories."""
         n = episodes or self.config.comparison.max_episodes
         original = self.config.algorithm.name
+        # Snapshot the current board so all algorithms train on identical hazards
+        shared_grid = self.environment.grid.copy()
+        shared_drift = self.environment.drift_probability
         self.comparison.clear()
         for algo in ("bellman", "q_learning", "double_q"):
             self.switch_algorithm(algo)
-            if self.config.dynamic_board.enabled:
-                self.hazards.apply(self.environment)
-                self.environment.drift_probability = self.hazards.effective_drift()
+            self.environment.grid[:] = shared_grid
+            self.environment.drift_probability = shared_drift
             self.train_batch(n)
             self.comparison.add_run(algo, self.trainer.reward_history)
         self.switch_algorithm(original)
+        self.environment.grid[:] = shared_grid
+        self.environment.drift_probability = shared_drift
         return dict(self.comparison.runs)
 
     def generate_chart(self, output_path: str | None = None, title: str = "") -> str:

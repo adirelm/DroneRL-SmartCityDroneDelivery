@@ -17,6 +17,7 @@ cell_types:
   trap: 2
   goal: 3
   wind: 4
+  pit: 5
 
 # Reward structure
 rewards:

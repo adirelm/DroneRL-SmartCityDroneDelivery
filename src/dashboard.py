@@ -34,7 +34,8 @@ class Dashboard:
         self.cell_colors = {
             "Empty": tuple(c.empty), "Building": tuple(c.building),
             "Trap": tuple(c.trap), "Goal": tuple(c.goal),
-            "Wind": tuple(c.wind), "Drone": tuple(c.drone),
+            "Wind": tuple(c.wind), "Pit": tuple(c.pit),
+            "Drone": tuple(c.drone),
         }
         self.buttons = ButtonPanel(config)
         self.font = self.title_font = self.small_font = None
