@@ -56,6 +56,9 @@ class DroneRLSDK:
         self.comparison.clear()
         for algo in ("bellman", "q_learning", "double_q"):
             self.switch_algorithm(algo)
+            if self.config.dynamic_board.enabled:
+                self.hazards.apply(self.environment)
+                self.environment.drift_probability = self.hazards.effective_drift()
             self.train_batch(n)
             self.comparison.add_run(algo, self.trainer.reward_history)
         self.switch_algorithm(original)
