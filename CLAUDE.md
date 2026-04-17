@@ -60,8 +60,8 @@ Install deps: `uv sync --dev`
 ## Comparison Requirements
 
 Generate TWO comparison scenarios:
-1. Medium difficulty: Bellman struggles, Q-Learning converges, Double Q fastest
-2. High difficulty: Bellman fails, Q-Learning fails, Double Q converges
+1. Medium difficulty: Bellman struggles most, Q-Learning and Double Q converge.
+2. High difficulty: All three eventually solve; Double Q is the most consistent.
 
 Save charts as PNG in `data/comparison/`.
 

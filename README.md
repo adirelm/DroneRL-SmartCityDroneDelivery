@@ -146,7 +146,7 @@ In the harder scenario all three eventually solve the task, but Double Q-Learnin
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 185 pytest tests, 98%+ coverage
+├── tests/                  # 187 pytest tests, 98%+ coverage
 ├── scripts/
 │   └── generate_comparison_charts.py
 ├── config/config.yaml      # All parameters
@@ -170,7 +170,7 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 uv run ruff check src/ tests/ main.py
 ```
 
-Current state: **185 tests passing**, **98 % coverage**, zero ruff violations.
+Current state: **187 tests passing**, **98% coverage**, zero ruff violations.
 
 ---
 
