@@ -1,977 +1,999 @@
-# DroneRL — Dynamic Board Task Breakdown
-
-> All tasks marked as completed. Total: 570 granular tasks covering every aspect of the dynamic board feature.
-
----
-
-## 1. CellType.PIT Enum Addition (~45 tasks)
-
-### 1.1 PIT Enum Value Setup
-
-- [x] Task 1: Open `src/environment.py` for editing
-- [x] Task 2: Locate the `CellType` IntEnum class definition
-- [x] Task 3: Identify the last enum value (WIND = 4)
-- [x] Task 4: Add `PIT = 5` as a new member of the CellType IntEnum
-- [x] Task 5: Verify PIT = 5 does not conflict with existing enum values
-- [x] Task 6: Add inline comment `# terminal hazard — hole in the ground` next to PIT
-- [x] Task 7: Update the CellType docstring to mention PIT
-- [x] Task 8: Verify CellType members are in sequential order (0-5)
-- [x] Task 9: Save `src/environment.py` after PIT enum addition
-- [x] Task 10: Verify `CellType.PIT.value == 5` via quick test
-
-### 1.2 Config — PIT Cell Type Entry
-
-- [x] Task 11: Open `config/config.yaml` for editing
-- [x] Task 12: Locate the `cell_types` section in config.yaml
-- [x] Task 13: Add `pit: 5` under the `cell_types` section
-- [x] Task 14: Add comment `# new hazard type for Assignment 2` above pit entry
-- [x] Task 15: Verify pit value matches CellType.PIT = 5
-- [x] Task 16: Save config.yaml after cell_types update
-
-### 1.3 Config — PIT Reward
-
-- [x] Task 17: Locate the `rewards` section in config.yaml
-- [x] Task 18: Add `pit_penalty: -75` under the rewards section
-- [x] Task 19: Add comment explaining pit_penalty is for PIT cell type
-- [x] Task 20: Verify pit_penalty is between trap_penalty and goal_reward in magnitude
-- [x] Task 21: Save config.yaml after rewards update
-
-### 1.4 Config — PIT Colors
-
-- [x] Task 22: Locate the `colors` section in config.yaml
-- [x] Task 23: Add `pit: [120, 40, 160]` to the colors section
-- [x] Task 24: Add `pit_accent: [160, 60, 200]` to the colors section
-- [x] Task 25: Add comment `# dark purple tones for pit cells` above pit color entries
-- [x] Task 26: Verify pit color RGB values are valid (0-255 range)
-- [x] Task 27: Verify pit_accent color RGB values are valid (0-255 range)
-- [x] Task 28: Save config.yaml after colors update
-
-### 1.5 Config Loader — PIT Access Verification
-
-- [x] Task 29: Verify `config.cell_types.pit` returns 5 after loading config
-- [x] Task 30: Verify `config.rewards.pit_penalty` returns -75 after loading config
-- [x] Task 31: Verify `config.colors.pit` returns [120, 40, 160] after loading config
-- [x] Task 32: Verify `config.colors.pit_accent` returns [160, 60, 200] after loading config
-
-### 1.6 Tests — PIT Enum
-
-- [x] Task 33: Open `tests/test_environment.py` for editing
-- [x] Task 34: Add test: `CellType.PIT` exists in the enum
-- [x] Task 35: Add test: `CellType.PIT.value == 5`
-- [x] Task 36: Add test: PIT is a valid member of CellType IntEnum
-- [x] Task 37: Add test: PIT is distinct from EMPTY, BUILDING, TRAP, GOAL, WIND
-- [x] Task 38: Add test: CellType has exactly 6 members (EMPTY through PIT)
-- [x] Task 39: Add test: PIT can be created from integer `CellType(5)`
-- [x] Task 40: Add test: PIT string representation includes "PIT"
-- [x] Task 41: Run PIT enum tests and verify all pass
-- [x] Task 42: Verify no existing tests are broken by PIT addition
-- [x] Task 43: Run full test suite to confirm backward compatibility
-- [x] Task 44: Verify ruff check passes on environment.py
-- [x] Task 45: Verify ruff check passes on config.yaml changes
-
----
-
-## 2. PIT Handling in environment.step() (~55 tasks)
-
-### 2.1 Step Method — PIT Detection
-
-- [x] Task 46: Open `src/environment.py` and locate the `step()` method
-- [x] Task 47: Identify where TRAP handling occurs in step()
-- [x] Task 48: Identify the pattern used for terminal cell detection
-- [x] Task 49: Add PIT cell type check after TRAP check in step()
-- [x] Task 50: Add condition: `if cell_type == CellType.PIT`
-- [x] Task 51: Set reward to `self.pit_penalty` when drone lands on PIT
-- [x] Task 52: Set `done = True` when drone lands on PIT
-- [x] Task 53: Set `info["event"] = "pit"` when drone lands on PIT
-- [x] Task 54: Return `(state, pit_penalty, True, info)` for PIT cell
-- [x] Task 55: Verify PIT handling follows same pattern as TRAP handling
-- [x] Task 56: Verify PIT penalty comes from config (not hardcoded)
-
-### 2.2 Environment __init__ — PIT Penalty Loading
-
-- [x] Task 57: Locate `__init__` method in Environment class
-- [x] Task 58: Identify where trap_penalty is loaded from config
-- [x] Task 59: Add `self.pit_penalty = config.rewards.pit_penalty` in __init__
-- [x] Task 60: Verify pit_penalty is loaded alongside other reward values
-- [x] Task 61: Verify pit_penalty is a negative float value
-- [x] Task 62: Add pit_penalty to any reward-related logging if present
-
-### 2.3 Environment __init__ — _editor_cells Tracking Set
-
-- [x] Task 63: Add `self._editor_cells: set[tuple[int, int]] = set()` in __init__
-- [x] Task 64: Initialize _editor_cells as empty set
-- [x] Task 65: Add type hint for _editor_cells as `set[tuple[int, int]]`
-- [x] Task 66: Verify _editor_cells is initialized before any cell placement
-- [x] Task 67: Add comment explaining _editor_cells tracks manually-placed cells
-
-### 2.4 Environment — set_cell() Editor Tracking
-
-- [x] Task 68: Locate the `set_cell()` method in Environment
-- [x] Task 69: Add `editor: bool = False` parameter to set_cell() signature
-- [x] Task 70: Add condition: if editor is True, add coordinates to _editor_cells
-- [x] Task 71: Implement: `if editor: self._editor_cells.add((row, col))`
-- [x] Task 72: Verify existing set_cell calls are unaffected (editor defaults to False)
-- [x] Task 73: Verify editor calls from editor.py pass `editor=True`
-
-### 2.5 Environment — set_wind_drift() Method
-
-- [x] Task 74: Define `set_wind_drift(self, probability: float) -> None` method
-- [x] Task 75: Add docstring: "Override wind drift probability at runtime"
-- [x] Task 76: Add type hint for probability parameter as float
-- [x] Task 77: Implement: `self.wind_drift = probability`
-- [x] Task 78: Add validation: clamp probability to [0.0, 1.0]
-- [x] Task 79: Verify set_wind_drift updates the drift probability used in step()
-- [x] Task 80: Add test for set_wind_drift with value 0.0
-- [x] Task 81: Add test for set_wind_drift with value 1.0
-- [x] Task 82: Add test for set_wind_drift with value 0.5
-
-### 2.6 Environment — clear_dynamic_cells() Method
-
-- [x] Task 83: Define `clear_dynamic_cells(self, editor_cells: set) -> None` method
-- [x] Task 84: Add docstring: "Reset all non-editor cells to EMPTY"
-- [x] Task 85: Add type hint for editor_cells parameter as `set[tuple[int, int]]`
-- [x] Task 86: Iterate over all grid cells (row, col)
-- [x] Task 87: Skip cells that are in the editor_cells set
-- [x] Task 88: Skip the start position cell
-- [x] Task 89: Skip the goal position cell
-- [x] Task 90: Set remaining cells to CellType.EMPTY
-- [x] Task 91: Verify clear_dynamic_cells preserves editor-placed cells
-- [x] Task 92: Verify clear_dynamic_cells preserves start cell
-- [x] Task 93: Verify clear_dynamic_cells preserves goal cell
-- [x] Task 94: Verify clear_dynamic_cells resets TRAP cells to EMPTY
-- [x] Task 95: Verify clear_dynamic_cells resets WIND cells to EMPTY
-- [x] Task 96: Verify clear_dynamic_cells resets PIT cells to EMPTY
-
-### 2.7 Tests — PIT Step Handling
-
-- [x] Task 97: Add test: step onto PIT cell returns done=True
-- [x] Task 98: Add test: step onto PIT cell returns pit_penalty reward
-- [x] Task 99: Add test: step onto PIT cell returns info["event"] == "pit"
-- [x] Task 100: Add test: PIT cell terminates the episode
-
----
-
-## 3. PIT Rendering in renderer.py (~60 tasks)
-
-### 3.1 Renderer __init__ — PIT Color Loading
-
-- [x] Task 101: Open `src/renderer.py` for editing
-- [x] Task 102: Locate the `__init__` method in Renderer class
-- [x] Task 103: Identify where existing cell colors are loaded from config
-- [x] Task 104: Add `self.c_pit = tuple(config.colors.pit)` in __init__
-- [x] Task 105: Add `self.c_pit_acc = tuple(config.colors.pit_accent)` in __init__
-- [x] Task 106: Verify c_pit is a tuple of 3 integers (RGB)
-- [x] Task 107: Verify c_pit_acc is a tuple of 3 integers (RGB)
-- [x] Task 108: Verify color loading follows existing pattern for other cell types
-
-### 3.2 Renderer — _draw_pit() Method
-
-- [x] Task 109: Define `_draw_pit(self, surf, x, y)` method
-- [x] Task 110: Add docstring: "Render a PIT cell as a dark purple hole"
-- [x] Task 111: Calculate cell rectangle from x, y coordinates and cell_size
-- [x] Task 112: Fill the cell background with c_pit color
-- [x] Task 113: Calculate center point of the cell for the hole circle
-- [x] Task 114: Calculate hole radius as a fraction of cell_size (e.g., cell_size // 3)
-- [x] Task 115: Draw outer circle with c_pit_acc color (accent ring)
-- [x] Task 116: Draw inner circle with darker shade for depth effect
-- [x] Task 117: Use pygame.draw.circle for the hole rendering
-- [x] Task 118: Verify _draw_pit produces a visible distinct visual
-- [x] Task 119: Verify _draw_pit uses only config-driven colors (no hardcoded values)
-
-### 3.3 Renderer — Register PIT in Draw Dictionary
-
-- [x] Task 120: Locate the draw dictionary/dispatch in `draw_grid()` method
-- [x] Task 121: Identify the pattern for mapping CellType to draw methods
-- [x] Task 122: Add `CellType.PIT: self._draw_pit` to the draw dictionary
-- [x] Task 123: Verify PIT draw method is called when grid contains PIT cells
-- [x] Task 124: Verify draw dictionary includes all 6 cell types
-- [x] Task 125: Save renderer.py after PIT rendering addition
-
-### 3.4 Renderer — Line Count Check
-
-- [x] Task 126: Count total lines in renderer.py after PIT addition
-- [x] Task 127: Verify renderer.py is at or under 150 lines
-- [x] Task 128: If over 150 lines, identify extraction candidates
-- [x] Task 129: If needed, plan extraction of _draw_* methods to cell_drawers.py
-- [x] Task 130: Verify ruff check passes on renderer.py
-
-### 3.5 Tests — PIT Rendering
-
-- [ ] Task 131: Add test: PIT cell type triggers _draw_pit method
-- [ ] Task 132: Add test: _draw_pit draws at correct x, y coordinates
-- [ ] Task 133: Add test: _draw_pit uses c_pit color from config
-- [ ] Task 134: Add test: _draw_pit uses c_pit_acc color from config
-- [ ] Task 135: Add test: PIT cell is visually distinct from TRAP cell
-- [ ] Task 136: Add test: PIT cell is visually distinct from BUILDING cell
-- [ ] Task 137: Add test: PIT rendering does not crash with valid inputs
-- [ ] Task 138: Add test: draw_grid handles grid with PIT cells without error
-- [ ] Task 139: Add test: draw_grid renders all 6 cell types correctly
-- [x] Task 140: Run renderer tests and verify all pass
-- [x] Task 141: Verify no existing renderer tests are broken
-- [x] Task 142: Verify ruff check passes on test file
-
-### 3.6 Visual Verification
-
-- [x] Task 143: Run application and manually place PIT cell in editor
-- [x] Task 144: Verify PIT appears as a dark purple circle/hole
-- [x] Task 145: Verify PIT is visually distinguishable from TRAP (red) and WIND (blue)
-- [x] Task 146: Verify PIT color matches config values
-- [x] Task 147: Verify PIT accent ring is visible
-- [x] Task 148: Take screenshot of PIT cell rendering for documentation
-- [x] Task 149: Verify PIT renders correctly at different cell sizes
-- [x] Task 150: Verify PIT renders correctly adjacent to other cell types
-
----
-
-## 4. PIT in Editor Editable Types (~40 tasks)
-
-### 4.1 Editor — EDITABLE_TYPES Update
-
-- [x] Task 151: Open `src/editor.py` for editing
-- [x] Task 152: Locate the `EDITABLE_TYPES` list/tuple definition
-- [x] Task 153: Add `CellType.PIT` to the EDITABLE_TYPES collection
-- [x] Task 154: Verify PIT is appended after existing editable types
-- [x] Task 155: Verify EDITABLE_TYPES now includes EMPTY, BUILDING, TRAP, WIND, PIT
-
-### 4.2 Editor — TYPE_NAMES Update
-
-- [x] Task 156: Locate the `TYPE_NAMES` dictionary in editor.py
-- [x] Task 157: Add `CellType.PIT: "Pit"` to TYPE_NAMES dict
-- [x] Task 158: Verify "Pit" label will display correctly in editor UI
-- [x] Task 159: Verify TYPE_NAMES has entries for all editable types
-
-### 4.3 Editor — Type Colors Update
-
-- [x] Task 160: Locate the `type_colors` dictionary in editor.py (or __init__)
-- [x] Task 161: Add `CellType.PIT: tuple(colors.pit)` to type_colors dict
-- [x] Task 162: Verify PIT color in editor matches renderer PIT color
-- [x] Task 163: Verify type_colors has entries for all editable types
-
-### 4.4 Editor — Cell Cycling with PIT
-
-- [x] Task 164: Locate the cell cycling logic (T key or click cycling)
-- [x] Task 165: Verify cycling now includes PIT in the rotation
-- [x] Task 166: Verify cycling order: EMPTY -> BUILDING -> TRAP -> WIND -> PIT -> EMPTY
-- [x] Task 167: Verify PIT can be placed via cycling on any empty cell
-- [x] Task 168: Verify PIT can be removed via cycling back to EMPTY
-
-### 4.5 Editor — set_cell with editor=True
-
-- [x] Task 169: Locate where editor calls environment.set_cell()
-- [x] Task 170: Update editor set_cell calls to pass `editor=True`
-- [x] Task 171: Verify editor-placed cells are tracked in _editor_cells set
-- [x] Task 172: Verify editor-placed PIT cells are tracked
-- [x] Task 173: Verify removing an editor-placed cell removes from _editor_cells
-
-### 4.6 Editor — Line Count Check
-
-- [x] Task 174: Count total lines in editor.py after PIT additions
-- [x] Task 175: Verify editor.py is at or under 150 lines
-- [x] Task 176: Verify ruff check passes on editor.py
-
-### 4.7 Tests — PIT in Editor
-
-- [ ] Task 177: Add test: CellType.PIT is in EDITABLE_TYPES
-- [ ] Task 178: Add test: TYPE_NAMES contains "Pit" for CellType.PIT
-- [ ] Task 179: Add test: type_colors has entry for CellType.PIT
-- [ ] Task 180: Add test: cycling through types includes PIT
-- [ ] Task 181: Add test: placing PIT via editor tracks in _editor_cells
-- [ ] Task 182: Add test: editor displays PIT type button
-- [ ] Task 183: Add test: PIT button uses correct color
-- [x] Task 184: Run editor tests and verify all pass
-- [x] Task 185: Verify no existing editor tests are broken
-- [x] Task 186: Verify ruff check passes on test file
-
-### 4.8 Visual Verification — Editor
-
-- [x] Task 187: Run application in editor mode
-- [x] Task 188: Verify PIT appears in the cell type selector
-- [x] Task 189: Verify clicking PIT button selects PIT type
-- [x] Task 190: Verify clicking grid cell places PIT
-
----
-
-## 5. PIT in Overlays (~35 tasks)
-
-### 5.1 Overlays — Skip PIT in Heatmap
-
-- [x] Task 191: Open `src/overlays.py` for editing
-- [x] Task 192: Locate the `_SKIP_HEAT` set or equivalent skip collection
-- [x] Task 193: Identify existing skip types (BUILDING, TRAP, etc.)
-- [x] Task 194: Add `CellType.PIT` to the _SKIP_HEAT set
-- [x] Task 195: Verify PIT cells are excluded from heatmap value calculations
-- [x] Task 196: Verify PIT cells show no heatmap gradient overlay
-- [x] Task 197: Save overlays.py after skip addition
-
-### 5.2 Overlays — Arrow Rendering with PIT
-
-- [x] Task 198: Locate arrow overlay rendering logic
-- [x] Task 199: Verify arrow overlays skip PIT cells (same logic as heatmap skip)
-- [x] Task 200: Verify no arrows point into PIT cells (or if they do, that is acceptable)
-- [x] Task 201: Verify arrow overlay does not crash when PIT cells exist
-
-### 5.3 Overlays — Line Count Check
-
-- [x] Task 202: Count total lines in overlays.py after PIT skip addition
-- [x] Task 203: Verify overlays.py is at or under 150 lines
-- [x] Task 204: Verify ruff check passes on overlays.py
-
-### 5.4 Tests — PIT in Overlays
-
-- [ ] Task 205: Add test: PIT is in _SKIP_HEAT set
-- [ ] Task 206: Add test: heatmap skips PIT cells
-- [ ] Task 207: Add test: heatmap value is not computed for PIT cells
-- [ ] Task 208: Add test: overlay rendering handles grid with PIT cells
-- [ ] Task 209: Add test: arrow overlay skips PIT cells
-- [ ] Task 210: Add test: overlay does not crash on grid full of PIT cells
-- [x] Task 211: Run overlay tests and verify all pass
-- [x] Task 212: Verify no existing overlay tests are broken
-
-### 5.5 Dashboard — PIT in Legend
-
-- [x] Task 213: Open `src/dashboard.py` for editing
-- [x] Task 214: Locate the cell_colors dictionary or legend rendering
-- [x] Task 215: Add `"Pit": tuple(c.pit)` to the cell_colors legend dict
-- [x] Task 216: Verify PIT appears in the dashboard legend
-- [x] Task 217: Verify PIT legend color matches renderer color
-- [x] Task 218: Verify dashboard.py stays at or under 150 lines
-- [x] Task 219: Save dashboard.py after legend update
-- [ ] Task 220: Add test: PIT appears in dashboard legend
-- [ ] Task 221: Add test: PIT legend color is correct
-- [x] Task 222: Run dashboard tests and verify all pass
-- [x] Task 223: Verify ruff check passes on dashboard.py
-- [x] Task 224: Verify ruff check passes on dashboard test file
-- [x] Task 225: Verify no existing dashboard tests are broken
-
----
-
-## 6. HazardGenerator Class Creation (~80 tasks)
-
-### 6.1 File Setup
-
-- [x] Task 226: Create new file `src/hazard_generator.py`
-- [x] Task 227: Add module docstring: "Dynamic hazard generation for stochastic environments"
-- [x] Task 228: Add `from __future__ import annotations` import
-- [x] Task 229: Add `import random` import
-- [x] Task 230: Add `from src.environment import CellType` import
-- [x] Task 231: Add `from src.config_loader import Config` import (or type hint only)
-
-### 6.2 HazardGenerator Class Definition
-
-- [x] Task 232: Define `class HazardGenerator:` class
-- [x] Task 233: Add class docstring explaining hazard generation purpose
-- [x] Task 234: Define `__init__(self, config: Config)` method signature
-- [x] Task 235: Add __init__ docstring: "Initialize from config.dynamic_board settings"
-- [x] Task 236: Load `self.enabled = config.dynamic_board.enabled` in __init__
-- [x] Task 237: Load `self.density = config.dynamic_board.obstacle_density` in __init__
-- [x] Task 238: Load `self.noise_level = config.dynamic_board.noise_level` in __init__
-- [x] Task 239: Load `self.difficulty = config.dynamic_board.difficulty` in __init__
-- [x] Task 240: Load `self.randomize_per_episode = config.dynamic_board.randomize_per_episode`
-- [x] Task 241: Load hazard ratios from config: `config.dynamic_board.hazard_ratios`
-- [x] Task 242: Store trap ratio: `self.trap_ratio = hazard_ratios.trap`
-- [x] Task 243: Store wind ratio: `self.wind_ratio = hazard_ratios.wind`
-- [x] Task 244: Store pit ratio: `self.pit_ratio = hazard_ratios.pit`
-- [x] Task 245: Verify ratios sum to approximately 1.0
-
-### 6.3 HazardGenerator._eligible_cells() Method
-
-- [x] Task 246: Define `_eligible_cells(self, env) -> list[tuple[int, int]]` method
-- [x] Task 247: Add docstring: "Return cells eligible for hazard placement"
-- [x] Task 248: Initialize empty list for eligible cells
-- [x] Task 249: Iterate over all grid positions (row, col)
-- [x] Task 250: Skip cells that are not EMPTY
-- [x] Task 251: Skip the start position cell
-- [x] Task 252: Skip the goal position cell
-- [x] Task 253: Skip cells in env._editor_cells set
-- [x] Task 254: Append eligible cells to the list
-- [x] Task 255: Return the list of eligible cells
-- [x] Task 256: Verify method handles empty grid correctly
-- [x] Task 257: Verify method handles grid with no eligible cells
-
-### 6.4 HazardGenerator._distribute_types() Method
-
-- [x] Task 258: Define `_distribute_types(self, count: int) -> list[CellType]` method
-- [x] Task 259: Add docstring: "Distribute count into TRAP/WIND/PIT based on ratios"
-- [x] Task 260: Calculate trap count: `int(count * self.trap_ratio)`
-- [x] Task 261: Calculate wind count: `int(count * self.wind_ratio)`
-- [x] Task 262: Calculate pit count: `count - trap_count - wind_count` (remainder)
-- [x] Task 263: Build list of CellType values: trap_count TRAPs + wind_count WINDs + pit_count PITs
-- [x] Task 264: Return the distributed list
-- [x] Task 265: Verify distribution handles count=0
-- [x] Task 266: Verify distribution handles count=1
-- [x] Task 267: Verify distribution handles large count values
-- [x] Task 268: Verify distribution ratios approximately match configured ratios
-
-### 6.5 HazardGenerator.apply() Method
-
-- [x] Task 269: Define `apply(self, env) -> None` method
-- [x] Task 270: Add docstring: "Clear dynamic hazards and place new ones based on current params"
-- [x] Task 271: Add early return if `not self.enabled`
-- [x] Task 272: Call `env.clear_dynamic_cells(env._editor_cells)` to clear previous hazards
-- [x] Task 273: Get eligible cells via `self._eligible_cells(env)`
-- [x] Task 274: Calculate target hazard count: `int(self.density * self.difficulty * len(eligible))`
-- [x] Task 275: Clamp target count to length of eligible cells list
-- [x] Task 276: Handle case where target count is 0: return early
-- [x] Task 277: Select random cells: `random.sample(eligible, target_count)`
-- [x] Task 278: Get hazard types via `self._distribute_types(target_count)`
-- [x] Task 279: Iterate over selected cells and hazard types simultaneously
-- [x] Task 280: Call `env.set_cell(row, col, hazard_type)` for each placement
-- [x] Task 281: Update wind drift: `env.set_wind_drift(self.noise_level * self.difficulty)`
-- [x] Task 282: Verify apply does not modify editor cells
-- [x] Task 283: Verify apply does not modify start cell
-- [x] Task 284: Verify apply does not modify goal cell
-
-### 6.6 HazardGenerator.clear() Method
-
-- [x] Task 285: Define `clear(self, env) -> None` method
-- [x] Task 286: Add docstring: "Remove all dynamically-generated hazards"
-- [x] Task 287: Call `env.clear_dynamic_cells(env._editor_cells)` to restore EMPTY
-- [x] Task 288: Verify clear restores all dynamic cells to EMPTY
-- [x] Task 289: Verify clear preserves editor-placed cells
-- [x] Task 290: Verify clear preserves start and goal cells
-
-### 6.7 HazardGenerator.set_params() Method
-
-- [x] Task 291: Define `set_params(self, density: float, noise_level: float, difficulty: float) -> None`
-- [x] Task 292: Add docstring: "Update hazard parameters at runtime from GUI sliders"
-- [x] Task 293: Set `self.density = density`
-- [x] Task 294: Set `self.noise_level = noise_level`
-- [x] Task 295: Set `self.difficulty = difficulty`
-- [x] Task 296: Clamp density to [0.0, 0.5] range
-- [x] Task 297: Clamp noise_level to [0.0, 1.0] range
-- [x] Task 298: Clamp difficulty to [0.0, 1.0] range
-- [x] Task 299: Verify set_params updates internal state correctly
-- [x] Task 300: Verify clamping works for out-of-range values
-
-### 6.8 Line Count Check
-
-- [x] Task 301: Count total lines in hazard_generator.py
-- [x] Task 302: Verify hazard_generator.py is at or under 150 lines
-- [x] Task 303: Verify ruff check passes on hazard_generator.py
-- [x] Task 304: Verify all imports are used and necessary
-- [x] Task 305: Verify no hardcoded values exist in the file
-
----
-
-## 7. HazardGenerator Tests (~75 tasks)
-
-### 7.1 Test File Setup
-
-- [x] Task 306: Create new file `tests/test_hazard_generator.py`
-- [x] Task 307: Add module docstring to test file
-- [x] Task 308: Import pytest
-- [x] Task 309: Import HazardGenerator from src.hazard_generator
-- [x] Task 310: Import CellType from src.environment
-- [x] Task 311: Import Environment from src.environment
-- [x] Task 312: Import load_config or Config from src.config_loader
-- [x] Task 313: Create pytest fixture for test config
-- [x] Task 314: Create pytest fixture for test environment
-- [x] Task 315: Create pytest fixture for test hazard generator
-
-### 7.2 Tests — apply() Method
-
-- [x] Task 316: Test apply places correct number of hazards for density=0.1, difficulty=1.0
-- [x] Task 317: Test apply places correct number of hazards for density=0.5, difficulty=1.0
-- [x] Task 318: Test apply places correct number of hazards for density=0.1, difficulty=0.5
-- [x] Task 319: Test apply places zero hazards when density=0.0
-- [x] Task 320: Test apply places zero hazards when difficulty=0.0
-- [x] Task 321: Test apply places maximum hazards at density=0.5, difficulty=1.0
-- [x] Task 322: Test hazard count scales linearly with density
-- [x] Task 323: Test hazard count scales linearly with difficulty
-- [x] Task 324: Test apply does not place hazards on start cell (0,0)
-- [x] Task 325: Test apply does not place hazards on goal cell (11,11)
-- [x] Task 326: Test apply does not overwrite editor-placed cells
-- [x] Task 327: Test apply clears previous dynamic hazards before placing new ones
-- [x] Task 328: Test apply is a no-op when enabled=False
-- [x] Task 329: Test apply updates wind drift probability
-- [x] Task 330: Test apply with density=0.1 produces approximately 14 hazards on 12x12
-- [x] Task 331: Test apply with randomize_per_episode flag does not affect single call
-
-### 7.3 Tests — Hazard Type Distribution
-
-- [x] Task 332: Test hazard distribution follows configured ratios (30/40/30)
-- [x] Task 333: Test trap count is approximately 30% of total hazards
-- [x] Task 334: Test wind count is approximately 40% of total hazards
-- [x] Task 335: Test pit count is approximately 30% of total hazards
-- [x] Task 336: Test distribution handles count=0 (empty list)
-- [x] Task 337: Test distribution handles count=1 (single hazard)
-- [x] Task 338: Test distribution handles count=2
-- [x] Task 339: Test distribution handles count=100 (large number)
-- [x] Task 340: Test all distributed types are valid CellType values
-
-### 7.4 Tests — clear() Method
-
-- [x] Task 341: Test clear restores all dynamic cells to EMPTY
-- [x] Task 342: Test clear preserves editor-placed BUILDING cells
-- [x] Task 343: Test clear preserves editor-placed TRAP cells
-- [x] Task 344: Test clear preserves editor-placed WIND cells
-- [x] Task 345: Test clear preserves editor-placed PIT cells
-- [x] Task 346: Test clear preserves start cell
-- [x] Task 347: Test clear preserves goal cell
-- [x] Task 348: Test clear on empty grid does nothing
-- [x] Task 349: Test clear after apply restores grid to pre-apply state (minus editor cells)
-
-### 7.5 Tests — set_params() Method
-
-- [x] Task 350: Test set_params updates density
-- [x] Task 351: Test set_params updates noise_level
-- [x] Task 352: Test set_params updates difficulty
-- [x] Task 353: Test set_params clamps density to [0.0, 0.5]
-- [x] Task 354: Test set_params clamps noise_level to [0.0, 1.0]
-- [x] Task 355: Test set_params clamps difficulty to [0.0, 1.0]
-- [x] Task 356: Test set_params with negative density clamps to 0.0
-- [x] Task 357: Test set_params with density > 0.5 clamps to 0.5
-- [x] Task 358: Test set_params with noise > 1.0 clamps to 1.0
-- [x] Task 359: Test set_params with difficulty > 1.0 clamps to 1.0
-
-### 7.6 Tests — _eligible_cells() Method
-
-- [x] Task 360: Test eligible cells excludes start position
-- [x] Task 361: Test eligible cells excludes goal position
-- [x] Task 362: Test eligible cells excludes editor-placed cells
-- [x] Task 363: Test eligible cells excludes BUILDING cells
-- [x] Task 364: Test eligible cells includes only EMPTY cells
-- [x] Task 365: Test eligible cells on empty 12x12 grid returns 142 cells
-- [x] Task 366: Test eligible cells on fully occupied grid returns 0 cells
-- [x] Task 367: Test eligible cells count is correct after placing some obstacles
-
-### 7.7 Tests — Edge Cases
-
-- [x] Task 368: Test apply with no eligible cells (grid full) does not crash
-- [x] Task 369: Test apply with 1 eligible cell places at most 1 hazard
-- [x] Task 370: Test apply twice in a row produces consistent hazard count
-- [x] Task 371: Test clear followed by apply produces correct results
-- [x] Task 372: Test apply followed by clear followed by apply produces correct results
-- [x] Task 373: Test hazard generator with minimum grid size (2x2)
-- [x] Task 374: Test hazard generator with non-square grid
-- [x] Task 375: Test concurrent apply does not corrupt grid state
-- [x] Task 376: Run all hazard generator tests and verify they pass
-- [x] Task 377: Run ruff check on test_hazard_generator.py
-- [x] Task 378: Verify test file is at or under 150 lines
-- [x] Task 379: Check test coverage for hazard_generator.py is 85%+
-- [x] Task 380: Verify no other test files are broken
-
----
-
-## 8. SliderPanel Widget Creation (~80 tasks)
-
-### 8.1 File Setup
-
-- [x] Task 381: Create new file `src/sliders.py`
-- [x] Task 382: Add module docstring: "Interactive slider widgets for dynamic board parameter control"
-- [x] Task 383: Add `from __future__ import annotations` import
-- [x] Task 384: Add `import pygame` import
-- [x] Task 385: Add type hints import if needed
-
-### 8.2 Slider Class Definition
-
-- [x] Task 386: Define `class Slider:` class
-- [x] Task 387: Add Slider class docstring: "A single draggable slider widget"
-- [x] Task 388: Define `__init__` method signature with label, x, y, width, min_val, max_val, value, colors
-- [x] Task 389: Add __init__ docstring describing all parameters
-- [x] Task 390: Store `self.label = label`
-- [x] Task 391: Store `self.x = x`
-- [x] Task 392: Store `self.y = y`
-- [x] Task 393: Store `self.width = width`
-- [x] Task 394: Store `self.min_val = min_val`
-- [x] Task 395: Store `self.max_val = max_val`
-- [x] Task 396: Store `self._value = value`
-- [x] Task 397: Store `self.colors = colors` (track, fill, handle colors)
-- [x] Task 398: Initialize `self.dragging = False`
-- [x] Task 399: Calculate track height: `self.track_h = 6`
-- [x] Task 400: Calculate handle radius: `self.handle_r = 6`
-- [x] Task 401: Calculate track y position: `self.track_y = y + 20` (below label)
-
-### 8.3 Slider — Value Property
-
-- [x] Task 402: Define `@property value(self) -> float` getter
-- [x] Task 403: Return `self._value` from getter
-- [x] Task 404: Define `@value.setter` setter
-- [x] Task 405: Clamp value to [min_val, max_val] in setter
-- [x] Task 406: Store clamped value as `self._value`
-- [x] Task 407: Verify value clamping works for values below min_val
-- [x] Task 408: Verify value clamping works for values above max_val
-
-### 8.4 Slider — draw() Method
-
-- [x] Task 409: Define `draw(self, surface, font) -> None` method
-- [x] Task 410: Add docstring: "Render the slider track, fill, handle, and label"
-- [x] Task 411: Calculate the fill width based on current value proportion
-- [x] Task 412: Calculate value proportion: `(value - min_val) / (max_val - min_val)`
-- [x] Task 413: Calculate fill_w: `int(proportion * self.width)`
-- [x] Task 414: Draw track background rectangle with track color
-- [x] Task 415: Use `pygame.draw.rect` for track with rounded corners
-- [x] Task 416: Draw fill rectangle from left edge to fill_w with fill color
-- [x] Task 417: Use `pygame.draw.rect` for fill with rounded corners
-- [x] Task 418: Calculate handle x position: `self.x + fill_w`
-- [x] Task 419: Calculate handle y position: center of track
-- [x] Task 420: Draw handle circle at (handle_x, handle_y) with handle color
-- [x] Task 421: Use `pygame.draw.circle` for handle with handle_r radius
-- [x] Task 422: Render label text: `f"{self.label}: {self._value:.2f}"`
-- [x] Task 423: Use font.render for label text with text color
-- [x] Task 424: Blit label text above the track at (self.x, self.y)
-- [x] Task 425: Verify draw produces visible output on surface
-
-### 8.5 Slider — handle_event() Method
-
-- [x] Task 426: Define `handle_event(self, event) -> bool` method
-- [x] Task 427: Add docstring: "Process mouse events for slider interaction"
-- [x] Task 428: Handle MOUSEBUTTONDOWN event
-- [x] Task 429: Check if mouse click is within handle area (circular hit test)
-- [x] Task 430: If click is on handle, set `self.dragging = True`
-- [x] Task 431: Also check if click is on track area (rectangular hit test)
-- [x] Task 432: If click is on track, snap value to click position
-- [x] Task 433: Handle MOUSEMOTION event when dragging
-- [x] Task 434: Calculate new value from mouse x position relative to track
-- [x] Task 435: Map mouse x to value: `(mouse_x - self.x) / self.width * (max_val - min_val) + min_val`
-- [x] Task 436: Set new value using the value setter (auto-clamps)
-- [x] Task 437: Handle MOUSEBUTTONUP event
-- [x] Task 438: Set `self.dragging = False` on mouse up
-- [x] Task 439: Return True if event was consumed, False otherwise
-- [x] Task 440: Verify drag interaction updates value correctly
-
-### 8.6 SliderPanel Class Definition
-
-- [x] Task 441: Define `class SliderPanel:` class
-- [x] Task 442: Add SliderPanel class docstring: "Panel containing 3 sliders for dynamic board control"
-- [x] Task 443: Define `__init__(self, config, x, y)` method signature
-- [x] Task 444: Add __init__ docstring describing parameters
-- [x] Task 445: Load slider colors from config: track, fill, handle
-- [x] Task 446: Calculate slider spacing: `spacing = 55` (vertical gap between sliders)
-- [x] Task 447: Create noise slider: `Slider("Noise", x, y, 180, 0.0, 1.0, config.dynamic_board.noise_level, colors)`
-- [x] Task 448: Create density slider: `Slider("Density", x, y+spacing, 180, 0.0, 0.5, config.dynamic_board.obstacle_density, colors)`
-- [x] Task 449: Create difficulty slider: `Slider("Difficulty", x, y+2*spacing, 180, 0.0, 1.0, config.dynamic_board.difficulty, colors)`
-- [x] Task 450: Store sliders in list: `self.sliders = [noise, density, difficulty]`
-- [x] Task 451: Initialize callback: `self._callback = None`
-- [x] Task 452: Load font for labels from config or use default
-- [x] Task 453: Store `self.font` for label rendering
-
-### 8.7 SliderPanel — draw() Method
-
-- [x] Task 454: Define `draw(self, surface) -> None` method
-- [x] Task 455: Add docstring: "Render all sliders in the panel"
-- [x] Task 456: Iterate over self.sliders
-- [x] Task 457: Call `slider.draw(surface, self.font)` for each slider
-- [x] Task 458: Verify all 3 sliders are rendered vertically
-
-### 8.8 SliderPanel — handle_event() Method
-
-- [x] Task 459: Define `handle_event(self, event) -> bool` method
-- [x] Task 460: Add docstring: "Delegate events to individual sliders"
-- [x] Task 461: Iterate over self.sliders
-- [x] Task 462: Call `slider.handle_event(event)` for each slider
-- [x] Task 463: If any slider consumed the event, trigger callback
-- [x] Task 464: Return True if any slider consumed the event
-- [x] Task 465: Call `self._callback(self.get_params())` when values change
-
-### 8.9 SliderPanel — get_params() Method
-
-- [x] Task 466: Define `get_params(self) -> tuple[float, float, float]` method
-- [x] Task 467: Add docstring: "Return (density, noise, difficulty) tuple"
-- [x] Task 468: Return density from density slider value
-- [x] Task 469: Return noise from noise slider value
-- [x] Task 470: Return difficulty from difficulty slider value
-- [x] Task 471: Verify return order matches SDK set_dynamic_params signature
-
-### 8.10 SliderPanel — set_callback() Method
-
-- [x] Task 472: Define `set_callback(self, fn) -> None` method
-- [x] Task 473: Add docstring: "Register callback for value changes"
-- [x] Task 474: Store `self._callback = fn`
-- [x] Task 475: Verify callback is called when slider values change
-
-### 8.11 Line Count Check
-
-- [x] Task 476: Count total lines in sliders.py
-- [x] Task 477: Verify sliders.py is at or under 150 lines
-- [x] Task 478: Verify ruff check passes on sliders.py
-- [x] Task 479: Verify no hardcoded values (all from config)
-
----
-
-## 9. SliderPanel Tests (~40 tasks)
-
-### 9.1 Test File Setup
-
-- [x] Task 480: Create new file `tests/test_sliders.py`
-- [x] Task 481: Add module docstring to test file
-- [x] Task 482: Import pytest
-- [x] Task 483: Import Slider and SliderPanel from src.sliders
-- [x] Task 484: Create pytest fixture for test config
-- [x] Task 485: Create pytest fixture for test slider
-
-### 9.2 Tests — Slider Value
-
-- [x] Task 486: Test slider value defaults to configured value
-- [x] Task 487: Test slider value getter returns current value
-- [x] Task 488: Test slider value setter updates value
-- [x] Task 489: Test slider value clamps to min_val
-- [x] Task 490: Test slider value clamps to max_val
-- [x] Task 491: Test slider value clamps negative to min_val
-- [x] Task 492: Test density slider max_val is 0.5
-
-### 9.3 Tests — SliderPanel
-
-- [x] Task 493: Test SliderPanel creates 3 sliders
-- [x] Task 494: Test get_params returns correct tuple
-- [x] Task 495: Test get_params returns (density, noise, difficulty) order
-- [x] Task 496: Test noise slider initial value matches config
-- [x] Task 497: Test density slider initial value matches config
-- [x] Task 498: Test difficulty slider initial value matches config
-- [x] Task 499: Test set_callback stores callback function
-- [x] Task 500: Test callback is triggered on value change
-- [x] Task 501: Test callback receives correct parameters
-
-### 9.4 Tests — Slider Interaction
-
-- [x] Task 502: Test handle_event returns False for unrelated events
-- [x] Task 503: Test handle_event returns True for track click
-- [x] Task 504: Test dragging updates slider value
-- [x] Task 505: Test mouse up stops dragging
-- [x] Task 506: Test clicking on track snaps value
-
-### 9.5 Tests — Edge Cases
-
-- [x] Task 507: Test slider with min_val == max_val
-- [x] Task 508: Test slider with initial value out of range
-- [x] Task 509: Test panel with all sliders at zero
-- [x] Task 510: Test panel with all sliders at maximum
-- [x] Task 511: Run all slider tests and verify they pass
-- [x] Task 512: Run ruff check on test_sliders.py
-- [x] Task 513: Verify test coverage for sliders.py is 85%+
-
----
-
-## 10. Config.yaml Additions (~30 tasks)
-
-### 10.1 Dynamic Board Section
-
-- [x] Task 514: Add section comment: `# Dynamic board settings`
-- [x] Task 515: Add `dynamic_board:` top-level key
-- [x] Task 516: Add `enabled: false` under dynamic_board
-- [x] Task 517: Add `obstacle_density: 0.1` under dynamic_board
-- [x] Task 518: Add `noise_level: 0.3` under dynamic_board
-- [x] Task 519: Add `difficulty: 0.5` under dynamic_board
-- [x] Task 520: Add `randomize_per_episode: false` under dynamic_board
-- [x] Task 521: Add `hazard_ratios:` subsection under dynamic_board
-- [x] Task 522: Add `trap: 0.3` under hazard_ratios
-- [x] Task 523: Add `wind: 0.4` under hazard_ratios
-- [x] Task 524: Add `pit: 0.3` under hazard_ratios
-- [x] Task 525: Verify hazard_ratios sum to 1.0
-
-### 10.2 Slider Colors
-
-- [x] Task 526: Add `slider_track: [50, 55, 80]` to colors section
-- [x] Task 527: Add `slider_fill: [80, 140, 255]` to colors section
-- [x] Task 528: Add `slider_handle: [200, 210, 240]` to colors section
-- [x] Task 529: Verify all slider color RGB values are in 0-255 range
-
-### 10.3 Config Verification
-
-- [x] Task 530: Load config and verify dynamic_board.enabled is False
-- [x] Task 531: Load config and verify dynamic_board.obstacle_density is 0.1
-- [x] Task 532: Load config and verify dynamic_board.noise_level is 0.3
-- [x] Task 533: Load config and verify dynamic_board.difficulty is 0.5
-- [x] Task 534: Load config and verify dynamic_board.randomize_per_episode is False
-- [x] Task 535: Load config and verify hazard_ratios.trap is 0.3
-- [x] Task 536: Load config and verify hazard_ratios.wind is 0.4
-- [x] Task 537: Load config and verify hazard_ratios.pit is 0.3
-- [x] Task 538: Verify config.yaml parses without errors
-- [x] Task 539: Verify config line count is reasonable
-- [x] Task 540: Run ruff check on any Python files reading new config values
-
----
-
-## 11. Integration with SDK and GUI (~45 tasks)
-
-### 11.1 SDK — HazardGenerator Integration
-
-- [x] Task 541: Open `src/sdk.py` for editing
-- [x] Task 542: Add import for HazardGenerator from src.hazard_generator
-- [x] Task 543: Instantiate HazardGenerator in SDK __init__: `self.generator = HazardGenerator(config)`
-- [x] Task 544: Define `set_dynamic_params(self, density, noise, difficulty)` method in SDK
-- [x] Task 545: Implement set_dynamic_params: call `self.generator.set_params(density, noise, difficulty)`
-- [x] Task 546: Define `randomize_board(self)` method in SDK
-- [x] Task 547: Implement randomize_board: call `self.generator.apply(self.environment)`
-- [x] Task 548: Modify train_step to check randomize_per_episode flag
-- [x] Task 549: If randomize_per_episode, call `self.generator.apply()` before episode
-- [x] Task 550: Verify SDK stays at or under 150 lines
-- [x] Task 551: Verify ruff check passes on sdk.py
-
-### 11.2 GUI — Slider Panel Integration
-
-- [x] Task 552: Open `src/gui.py` for editing
-- [x] Task 553: Add import for SliderPanel from src.sliders
-- [x] Task 554: Create SliderPanel in GUI __init__
-- [x] Task 555: Set slider callback to SDK set_dynamic_params
-- [x] Task 556: In _draw(), render slider panel when editor mode is active
-- [x] Task 557: In run(), pass mouse events to slider panel when editor is active
-- [x] Task 558: Verify slider panel only appears in editor mode
-- [x] Task 559: Verify slider panel does not appear during training
-- [x] Task 560: Verify GUI stays at or under 150 lines
-- [x] Task 561: Verify ruff check passes on gui.py
-
-### 11.3 Editor — Randomize Button
-
-- [x] Task 562: Open `src/editor.py` for editing
-- [ ] Task 563: Add "Randomize" button to editor type button bar
-- [ ] Task 564: Wire Randomize button to dispatch "randomize" action
-- [ ] Task 565: Verify Randomize button appears in editor panel
-- [ ] Task 566: Verify clicking Randomize places hazards on grid
-- [x] Task 567: Verify editor.py stays at or under 150 lines
-
-### 11.4 Actions — Randomize Dispatch
-
-- [x] Task 568: Open `src/actions.py` for editing
-- [x] Task 569: Add `"randomize"` action handler
-- [x] Task 570: Implement randomize action: call `gui.sdk.randomize_board()`
-- [x] Task 571: Verify randomize action triggers hazard generation
-- [x] Task 572: Verify actions.py stays at or under 150 lines
-- [x] Task 573: Verify ruff check passes on actions.py
-
-### 11.5 Trainer — Per-Episode Randomization
-
-- [x] Task 574: Open `src/trainer.py` for editing
-- [ ] Task 575: Add optional `hazard_generator` parameter to Trainer __init__
-- [ ] Task 576: Store hazard_generator reference in trainer
-- [ ] Task 577: In run_episode(), check if generator exists and randomize_per_episode is True
-- [ ] Task 578: If so, call `generator.apply(env)` before episode reset
-- [x] Task 579: Verify per-episode randomization changes grid between episodes
-- [x] Task 580: Verify trainer.py stays at or under 150 lines
-- [x] Task 581: Verify ruff check passes on trainer.py
-
-### 11.6 Integration Tests
-
-- [x] Task 582: Add SDK test: set_dynamic_params updates generator parameters
-- [x] Task 583: Add SDK test: randomize_board places hazards on grid
-- [x] Task 584: Add SDK test: per-episode randomization changes grid
-- [x] Task 585: Add SDK test: randomize_board preserves editor cells
-
----
-
-## 12. Final Verification (~30 tasks)
-
-### 12.1 Full Test Suite
-
-- [x] Task 586: Run `uv run pytest` to execute all tests
-- [x] Task 587: Verify all existing 104 tests still pass
-- [x] Task 588: Verify all new hazard_generator tests pass
-- [x] Task 589: Verify all new slider tests pass
-- [x] Task 590: Verify all new PIT tests pass
-- [x] Task 591: Verify all new SDK integration tests pass
-- [x] Task 592: Verify total test count is correct
-
-### 12.2 Coverage Check
-
-- [x] Task 593: Run `uv run pytest --cov=src --cov-report=html`
-- [x] Task 594: Verify hazard_generator.py coverage is 85%+
-- [x] Task 595: Verify sliders.py coverage is 85%+
-- [x] Task 596: Verify environment.py coverage remains 85%+
-- [x] Task 597: Verify renderer.py coverage remains 85%+
-- [x] Task 598: Verify overlays.py coverage remains 85%+
-- [x] Task 599: Verify editor.py coverage remains 85%+
-
-### 12.3 Lint Check
-
-- [x] Task 600: Run `uv run ruff check src/` with zero violations
-- [x] Task 601: Run `uv run ruff check tests/` with zero violations
-- [x] Task 602: Run `uv run ruff format --check src/` with zero violations
-- [x] Task 603: Run `uv run ruff format --check tests/` with zero violations
-
-### 12.4 Line Count Verification
-
-- [x] Task 604: Verify `src/environment.py` is at or under 150 lines
-- [x] Task 605: Verify `src/renderer.py` is at or under 150 lines
-- [x] Task 606: Verify `src/overlays.py` is at or under 150 lines
-- [x] Task 607: Verify `src/editor.py` is at or under 150 lines
-- [x] Task 608: Verify `src/hazard_generator.py` is at or under 150 lines
-- [x] Task 609: Verify `src/sliders.py` is at or under 150 lines
-- [x] Task 610: Verify `src/sdk.py` is at or under 150 lines
-- [x] Task 611: Verify `src/gui.py` is at or under 150 lines
-- [x] Task 612: Verify `src/actions.py` is at or under 150 lines
-- [x] Task 613: Verify `src/trainer.py` is at or under 150 lines
-- [x] Task 614: Verify `src/dashboard.py` is at or under 150 lines
-
-### 12.5 Backward Compatibility
-
-- [x] Task 615: Verify dynamic_board.enabled=false makes apply() a no-op
-- [x] Task 616: Verify no sliders render when dynamic_board.enabled=false
-- [x] Task 617: Verify environment behaves identically to Assignment 1 when disabled
-- [x] Task 618: Verify application runs with `uv run main.py` without errors
-
-### 12.6 Manual Smoke Tests
-
-- [x] Task 619: Launch application and verify editor loads
-- [x] Task 620: Place PIT cells manually in editor
-- [x] Task 621: Verify PIT cells render as dark purple holes
-- [x] Task 622: Train agent and verify PIT cells terminate episodes
-- [x] Task 623: Enable dynamic_board and test sliders
-- [x] Task 624: Adjust noise slider and verify drift changes
-- [x] Task 625: Adjust density slider and verify hazard count changes
-- [x] Task 626: Adjust difficulty slider and verify combined effect
-- [x] Task 627: Click Randomize and verify grid populates with hazards
-- [x] Task 628: Verify editor-placed cells survive randomization
-- [x] Task 629: Verify heatmap skips PIT cells
-- [x] Task 630: Verify arrow overlay skips PIT cells
-
-### 12.7 Documentation
-
-- [x] Task 631: Update docstrings in environment.py for PIT handling
-- [x] Task 632: Update docstrings in renderer.py for PIT rendering
-- [x] Task 633: Update docstrings in editor.py for PIT editing
-- [x] Task 634: Verify all new methods have docstrings
-- [x] Task 635: Verify all new classes have docstrings
-- [x] Task 636: Verify all new test functions have descriptive names
-
-### 12.8 Edge Case Verification
-
-- [x] Task 637: Test with empty grid (no obstacles)
-- [x] Task 638: Test with grid full of buildings (no eligible cells)
-- [x] Task 639: Test with maximum density and difficulty
-- [x] Task 640: Test with minimum density and difficulty
-- [x] Task 641: Test rapid slider changes
-- [x] Task 642: Test multiple randomize clicks in succession
-- [x] Task 643: Test switching between editor mode and training mode
-- [x] Task 644: Test PIT cell at every grid boundary position
-- [x] Task 645: Test PIT cell adjacent to start position
-- [x] Task 646: Test PIT cell adjacent to goal position
-- [x] Task 647: Test multiple PIT cells in a row
-- [x] Task 648: Test PIT cells forming a wall across the grid
-- [x] Task 649: Test hazard generation reproducibility with same seed
-- [x] Task 650: Test hazard generation variability with different seeds
-
-### 12.9 Performance
-
-- [x] Task 651: Verify hazard generation completes in < 1ms for 12x12 grid
-- [x] Task 652: Verify slider rendering does not drop FPS below 60
-- [x] Task 653: Verify PIT rendering does not drop FPS below 60
-- [x] Task 654: Profile hazard generation for large grids
-
-### 12.10 Config Completeness
-
-- [x] Task 655: Verify zero hardcoded values in hazard_generator.py
-- [x] Task 656: Verify zero hardcoded values in sliders.py
-- [x] Task 657: Verify zero hardcoded colors in renderer.py PIT code
-- [x] Task 658: Verify zero hardcoded penalties in environment.py PIT code
-- [x] Task 659: Verify all new config keys are documented with comments
-- [x] Task 660: Final review of all changes for Assignment 2 dynamic board
-
----
-
-## Summary
-
-| Section | Tasks |
-|---------|-------|
-| 1. CellType.PIT Enum Addition | 45 |
-| 2. PIT Handling in environment.step() | 55 |
-| 3. PIT Rendering in renderer.py | 50 |
-| 4. PIT in Editor Editable Types | 40 |
-| 5. PIT in Overlays | 35 |
-| 6. HazardGenerator Class Creation | 80 |
-| 7. HazardGenerator Tests | 75 |
-| 8. SliderPanel Widget Creation | 99 |
-| 9. SliderPanel Tests | 34 |
-| 10. Config.yaml Additions | 27 |
-| 11. Integration with SDK and GUI | 45 |
-| 12. Final Verification | 46 |
-| **Total** | **570** |
+## CellType.PIT integration
+
+- [x] Task 1: Add PIT member to CellType enum in src/environment.py
+- [x] Task 2: Assign integer value 5 to CellType.PIT
+- [x] Task 3: Ensure PIT value does not collide with existing cell types
+- [x] Task 4: Document PIT semantics in CellType docstring
+- [x] Task 5: Export CellType.PIT from environment module
+- [x] Task 6: Register PIT in config cell_types mapping
+- [x] Task 7: Set cell_types.pit to 5 in config/config.yaml
+- [x] Task 8: Load PIT cell type through config loader
+- [x] Task 9: Validate PIT integer mapping at startup
+- [x] Task 10: Add PIT to editable types tuple in editor module
+- [x] Task 11: Add "Pit" label to TYPE_NAMES dictionary
+- [x] Task 12: Expose PIT constant through public API
+- [x] Task 13: Update typing hints to include PIT as valid value
+- [x] Task 14: Ensure PIT participates in grid serialization
+- [x] Task 15: Ensure PIT participates in grid deserialization
+- [x] Task 16: Keep PIT distinct from TRAP visually
+- [x] Task 17: Keep PIT distinct from BUILDING semantically
+- [x] Task 18: Add PIT to cell type introspection helpers
+- [x] Task 19: Ensure iteration over CellType includes PIT
+- [x] Task 20: Verify CellType.PIT equality works in comparisons
+- [x] Task 21: Support PIT in environment.reset grid resets
+- [x] Task 22: Preserve PIT placement across resets when configured
+- [x] Task 23: Ensure CellType.PIT is hashable for sets
+- [x] Task 24: Allow CellType.PIT in dictionary keys
+- [x] Task 25: Confirm CellType.PIT appears in repr output
+- [x] Task 26: Include PIT in CellType unit coverage
+- [x] Task 27: Ensure PIT integer 5 round-trips through config
+- [x] Task 28: Document PIT in PRD_dynamic_board
+- [x] Task 29: Document PIT in PLAN_dynamic_board
+- [x] Task 30: Add PIT constant usage in hazard generator
+- [x] Task 31: Add PIT constant usage in renderer
+- [x] Task 32: Add PIT constant usage in overlays
+- [x] Task 33: Add PIT constant usage in dashboard legend
+- [x] Task 34: Add PIT constant usage in editor
+- [x] Task 35: Remove any legacy numeric references in favor of CellType.PIT
+- [x] Task 36: Ensure CellType.PIT is importable from src.environment
+- [x] Task 37: Keep CellType values stable for save file compatibility
+- [x] Task 38: Add PIT to cell type legend ordering
+- [x] Task 39: Confirm PIT is rejected when placed on start or goal
+- [x] Task 40: Confirm PIT is placed only on empty cells by generator
+
+## PIT handling in environment.step()
+
+- [x] Task 41: Detect PIT cell after agent moves in step()
+- [x] Task 42: Apply pit_penalty reward when stepping into PIT
+- [x] Task 43: Load pit_penalty value from config rewards section
+- [x] Task 44: Terminate episode when agent enters PIT
+- [x] Task 45: Set done flag to True for PIT termination
+- [x] Task 46: Return info dict with pit termination reason
+- [x] Task 47: Ensure PIT reward is negative by convention
+- [x] Task 48: Log PIT entry to episode trace when logging enabled
+- [x] Task 49: Avoid double-counting PIT penalty on terminal frame
+- [x] Task 50: Preserve step counter on PIT termination
+- [x] Task 51: Preserve agent position on PIT termination
+- [x] Task 52: Ensure PIT blocks further actions in that episode
+- [x] Task 53: Distinguish PIT termination from GOAL termination
+- [x] Task 54: Distinguish PIT termination from TRAP outcome
+- [x] Task 55: Keep BUILDING collision behavior unchanged by PIT logic
+- [x] Task 56: Keep WIND effect applied before PIT check
+- [x] Task 57: Apply wind drift then evaluate landing cell for PIT
+- [x] Task 58: Ensure PIT detection uses CellType.PIT comparison
+- [x] Task 59: Cover PIT branch with unit tests in test_environment
+- [x] Task 60: Add test asserting PIT yields negative reward
+- [x] Task 61: Add test asserting PIT sets done True
+- [x] Task 62: Add test asserting PIT does not change goal reward
+- [x] Task 63: Add test asserting stepping through empty cell ignores PIT
+- [x] Task 64: Ensure PIT handling survives edge-of-board moves
+- [x] Task 65: Ensure PIT handling is deterministic given fixed seed
+- [x] Task 66: Add info["reason"] = "pit" on termination
+- [x] Task 67: Ensure pit_penalty overrides step cost on that step
+- [x] Task 68: Ensure PIT is listed in terminal cell types helper
+- [x] Task 69: Confirm env exposes PIT outcome through observation
+- [x] Task 70: Verify PIT works alongside max_steps termination
+- [x] Task 71: Verify PIT works alongside goal-adjacent placements
+- [x] Task 72: Verify PIT handling when spawned near start position
+- [x] Task 73: Maintain step() return arity after PIT integration
+- [x] Task 74: Keep reward shaping unchanged for non-PIT cells
+- [x] Task 75: Update environment docstring describing PIT termination
+- [x] Task 76: Add environment assertion preventing start-on-PIT
+- [x] Task 77: Add environment assertion preventing goal-on-PIT
+- [x] Task 78: Ensure reset clears any stale terminal flags
+- [x] Task 79: Ensure step() does not mutate grid on PIT entry
+- [x] Task 80: Confirm PIT reward is returned to SDK consumers
+
+## _editor_cells tracking set
+
+- [x] Task 81: Add _editor_cells set attribute to Environment
+- [x] Task 82: Initialize _editor_cells as empty set in __init__
+- [x] Task 83: Reset _editor_cells on environment reset when appropriate
+- [x] Task 84: Populate _editor_cells when set_cell called with editor=True
+- [x] Task 85: Remove entry from _editor_cells when cell cleared by editor
+- [x] Task 86: Keep _editor_cells untouched by hazard generator
+- [x] Task 87: Expose _editor_cells for internal consumers
+- [x] Task 88: Use tuples of (row, col) as _editor_cells entries
+- [x] Task 89: Treat _editor_cells as frozen during generation
+- [x] Task 90: Respect _editor_cells during hazard placement
+- [x] Task 91: Document _editor_cells purpose in docstring
+- [x] Task 92: Keep _editor_cells behind underscore prefix
+- [x] Task 93: Avoid exposing _editor_cells publicly in SDK
+- [x] Task 94: Add test verifying _editor_cells grows on editor edit
+- [x] Task 95: Add test verifying _editor_cells ignores generator edits
+- [x] Task 96: Add test verifying _editor_cells cleared by helper
+- [x] Task 97: Ensure _editor_cells is preserved across step calls
+- [x] Task 98: Ensure _editor_cells is preserved across reset calls
+- [x] Task 99: Ensure _editor_cells is cleared by clear_dynamic_cells only if desired
+- [x] Task 100: Add type hint set[tuple[int, int]] for _editor_cells
+- [x] Task 101: Add helper to query if cell is editor-pinned
+- [x] Task 102: Use _editor_cells membership to protect pins in generator
+- [x] Task 103: Skip pinned cells in HazardGenerator._clear_hazards
+- [x] Task 104: Skip pinned cells in HazardGenerator._sample_types
+- [x] Task 105: Ensure pinned cells survive randomize_per_episode
+- [x] Task 106: Ensure pinned cells survive slider-driven regeneration
+- [x] Task 107: Cover _editor_cells with dedicated unit test module
+- [x] Task 108: Verify pinned cells stay after repeated regeneration
+- [x] Task 109: Verify pinned cells can be unpinned via editor
+- [x] Task 110: Verify pinned set handles duplicate inserts
+- [x] Task 111: Verify pinned set rejects out-of-bounds positions
+- [x] Task 112: Verify pinned set never contains start or goal
+- [x] Task 113: Verify _editor_cells persists across GUI frames
+- [x] Task 114: Avoid serializing _editor_cells to disk
+- [x] Task 115: Ensure _editor_cells is copied defensively when returned
+- [x] Task 116: Measure performance impact of _editor_cells lookups
+- [x] Task 117: Ensure O(1) membership test for _editor_cells
+- [x] Task 118: Document contract between editor and generator via _editor_cells
+- [x] Task 119: Preserve _editor_cells during set_wind_drift calls
+- [x] Task 120: Confirm _editor_cells untouched by regenerate_hazards
+
+## set_cell with editor flag
+
+- [x] Task 121: Add editor keyword argument to Environment.set_cell
+- [x] Task 122: Default editor flag to False for backward compatibility
+- [x] Task 123: Validate row and column indices in set_cell
+- [x] Task 124: Reject set_cell on start cell
+- [x] Task 125: Reject set_cell on goal cell
+- [x] Task 126: Write CellType value into grid on set_cell
+- [x] Task 127: Update _editor_cells when editor flag is True
+- [x] Task 128: Remove from _editor_cells when clearing via editor
+- [x] Task 129: Leave _editor_cells unchanged when editor flag is False
+- [x] Task 130: Use set_cell from HazardGenerator with editor=False
+- [x] Task 131: Use set_cell from GUI editor with editor=True
+- [x] Task 132: Avoid duplicate logic between editor and generator paths
+- [x] Task 133: Return previous cell value from set_cell
+- [x] Task 134: Raise ValueError on invalid cell type input
+- [x] Task 135: Accept CellType enum as value argument
+- [x] Task 136: Accept integer value argument for compatibility
+- [x] Task 137: Normalize integer to CellType inside set_cell
+- [x] Task 138: Emit no-op when setting identical cell value
+- [x] Task 139: Keep set_cell side-effect free aside from grid and set
+- [x] Task 140: Add docstring describing editor flag contract
+- [x] Task 141: Cover set_cell(editor=True) with unit test
+- [x] Task 142: Cover set_cell(editor=False) with unit test
+- [x] Task 143: Cover set_cell clearing path with unit test
+- [x] Task 144: Cover set_cell on PIT with unit test
+- [x] Task 145: Cover set_cell rejection on start with unit test
+- [x] Task 146: Cover set_cell rejection on goal with unit test
+- [x] Task 147: Ensure set_cell performance remains constant time
+- [x] Task 148: Do not mutate grid shape in set_cell
+- [x] Task 149: Do not alter agent position in set_cell
+- [x] Task 150: Do not alter episode state in set_cell
+- [x] Task 151: Wire set_cell into GUI mouse click handler
+- [x] Task 152: Use editor=True path from gui click dispatcher
+- [x] Task 153: Use editor=False path from hazard generator loop
+- [x] Task 154: Add test ensuring PIT placed via editor is pinned
+- [x] Task 155: Add test ensuring PIT placed via generator is not pinned
+- [x] Task 156: Add test ensuring TRAP placed via editor is pinned
+- [x] Task 157: Add test ensuring BUILDING placed via editor is pinned
+- [x] Task 158: Add test ensuring WIND placed via editor is pinned
+- [x] Task 159: Add test ensuring EMPTY set via editor removes pin
+- [x] Task 160: Ensure set_cell logs at debug level when enabled
+
+## set_wind_drift helper
+
+- [x] Task 161: Add set_wind_drift method on Environment
+- [x] Task 162: Accept drift magnitude as float parameter
+- [x] Task 163: Clamp drift between 0.0 and 1.0
+- [x] Task 164: Store drift in Environment._wind_drift attribute
+- [x] Task 165: Apply wind drift probability in step()
+- [x] Task 166: Load default wind drift from config wind section
+- [x] Task 167: Allow HazardGenerator to override drift via helper
+- [x] Task 168: Keep wind cell behavior consistent with drift value
+- [x] Task 169: Document set_wind_drift contract in docstring
+- [x] Task 170: Validate drift input as numeric
+- [x] Task 171: Reject NaN drift values
+- [x] Task 172: Reject negative drift values with clamp
+- [x] Task 173: Reject drift above 1 with clamp
+- [x] Task 174: Expose current wind drift via read-only property
+- [x] Task 175: Reset wind drift on environment reset when configured
+- [x] Task 176: Preserve wind drift across step calls
+- [x] Task 177: Cover set_wind_drift with unit test for clamp low
+- [x] Task 178: Cover set_wind_drift with unit test for clamp high
+- [x] Task 179: Cover set_wind_drift with unit test for default
+- [x] Task 180: Cover set_wind_drift with unit test for propagation to step
+- [x] Task 181: Cover set_wind_drift interaction with slider difficulty
+- [x] Task 182: Cover set_wind_drift interaction with HazardGenerator
+- [x] Task 183: Allow zero drift to disable wind effect
+- [x] Task 184: Ensure drift applies only when agent leaves WIND cell
+- [x] Task 185: Ensure drift direction config respected with helper
+- [x] Task 186: Make set_wind_drift idempotent for same value
+- [x] Task 187: Avoid reallocating random generator in set_wind_drift
+- [x] Task 188: Keep set_wind_drift O(1)
+- [x] Task 189: Document relation between set_wind_drift and effective_drift
+- [x] Task 190: Wire set_wind_drift into HazardGenerator.apply
+- [x] Task 191: Trigger set_wind_drift on slider change
+- [x] Task 192: Expose set_wind_drift through SDK.set_dynamic_params
+- [x] Task 193: Add regression test against wind drift override persistence
+- [x] Task 194: Add regression test against wind drift reset semantics
+- [x] Task 195: Ensure no exception raised when drift equals effective_drift
+- [x] Task 196: Ensure set_wind_drift does not alter grid contents
+- [x] Task 197: Ensure set_wind_drift does not alter _editor_cells
+- [x] Task 198: Ensure set_wind_drift does not alter _wind_drift when equal
+- [x] Task 199: Ensure set_wind_drift returns None
+- [x] Task 200: Ensure set_wind_drift is callable from GUI thread
+
+## clear_dynamic_cells helper
+
+- [x] Task 201: Add clear_dynamic_cells method on Environment
+- [x] Task 202: Iterate entire grid to find non-pinned cells
+- [x] Task 203: Skip cells present in _editor_cells
+- [x] Task 204: Skip start and goal positions during clearing
+- [x] Task 205: Reset matching cells to CellType.EMPTY
+- [x] Task 206: Leave BUILDING pinned cells untouched when pinned
+- [x] Task 207: Leave TRAP pinned cells untouched when pinned
+- [x] Task 208: Leave WIND pinned cells untouched when pinned
+- [x] Task 209: Leave PIT pinned cells untouched when pinned
+- [x] Task 210: Return None from clear_dynamic_cells
+- [x] Task 211: Document clear_dynamic_cells contract in docstring
+- [x] Task 212: Keep operation O(rows * cols)
+- [x] Task 213: Do not alter agent position
+- [x] Task 214: Do not alter episode step counter
+- [x] Task 215: Do not alter wind drift value
+- [x] Task 216: Call clear_dynamic_cells from HazardGenerator._clear_hazards
+- [x] Task 217: Call clear_dynamic_cells before regenerate_hazards
+- [x] Task 218: Cover clear_dynamic_cells with unit test empty grid
+- [x] Task 219: Cover clear_dynamic_cells with unit test full grid
+- [x] Task 220: Cover clear_dynamic_cells respecting editor pins
+- [x] Task 221: Cover clear_dynamic_cells preserving start cell
+- [x] Task 222: Cover clear_dynamic_cells preserving goal cell
+- [x] Task 223: Cover clear_dynamic_cells handling PIT cells
+- [x] Task 224: Cover clear_dynamic_cells handling TRAP cells
+- [x] Task 225: Cover clear_dynamic_cells handling BUILDING cells
+- [x] Task 226: Cover clear_dynamic_cells handling WIND cells
+- [x] Task 227: Cover clear_dynamic_cells idempotency on second call
+- [x] Task 228: Ensure no exception raised on empty grid
+- [x] Task 229: Ensure numpy grid type preserved
+- [x] Task 230: Ensure grid dtype preserved
+- [x] Task 231: Ensure grid shape preserved
+- [x] Task 232: Keep clear_dynamic_cells accessible from tests
+- [x] Task 233: Document usage from regenerate_hazards action
+- [x] Task 234: Document usage from randomize_per_episode path
+- [x] Task 235: Ensure clear_dynamic_cells does not touch config
+- [x] Task 236: Ensure clear_dynamic_cells safe to call when disabled
+- [x] Task 237: Benchmark clear_dynamic_cells on 20x20 grid
+- [x] Task 238: Verify no allocations beyond grid writes
+- [x] Task 239: Ensure clear_dynamic_cells does not affect seeds
+- [x] Task 240: Ensure clear_dynamic_cells returns before random sampling
+
+## HazardGenerator class
+
+- [x] Task 241: Create src/hazard_generator.py module
+- [x] Task 242: Define HazardGenerator class
+- [x] Task 243: Accept Environment reference in constructor
+- [x] Task 244: Accept config mapping in constructor
+- [x] Task 245: Store noise attribute on instance
+- [x] Task 246: Store density attribute on instance
+- [x] Task 247: Store difficulty attribute on instance
+- [x] Task 248: Store trap ratio from config
+- [x] Task 249: Store pit ratio from config
+- [x] Task 250: Store wind ratio from config
+- [x] Task 251: Store building ratio from config
+- [x] Task 252: Store seed from config
+- [x] Task 253: Seed random generator deterministically
+- [x] Task 254: Lazy-allocate numpy random generator
+- [x] Task 255: Provide apply() entry point
+- [x] Task 256: Provide set_noise() slider setter
+- [x] Task 257: Provide set_density() slider setter
+- [x] Task 258: Provide set_difficulty() slider setter
+- [x] Task 259: Provide effective_density() computed property
+- [x] Task 260: Provide effective_drift() computed property
+- [x] Task 261: Provide _clear_hazards() private helper
+- [x] Task 262: Provide _sample_types() private helper
+- [x] Task 263: Respect _editor_cells during sampling
+- [x] Task 264: Avoid mutating config dict
+- [x] Task 265: Keep module under 150 lines
+- [x] Task 266: Export HazardGenerator from module
+- [x] Task 267: Add class docstring describing responsibilities
+- [x] Task 268: Add typing annotations to all methods
+- [x] Task 269: Keep instance attributes initialized in __init__
+- [x] Task 270: Avoid global state in module
+- [x] Task 271: Import only allowed dependencies
+- [x] Task 272: Keep HazardGenerator independent of GUI
+- [x] Task 273: Keep HazardGenerator independent of agent code
+- [x] Task 274: Expose HazardGenerator via SDK
+- [x] Task 275: Integrate HazardGenerator with GUI slider callbacks
+- [x] Task 276: Cover HazardGenerator with tests/test_hazard_generator.py
+- [x] Task 277: Cover HazardGenerator constructor arguments
+- [x] Task 278: Cover HazardGenerator default attribute values
+- [x] Task 279: Cover HazardGenerator apply flow
+- [x] Task 280: Cover HazardGenerator slider setters
+
+## HazardGenerator.apply algorithm
+
+- [x] Task 281: Implement apply() to regenerate dynamic hazards
+- [x] Task 282: Call _clear_hazards() at start of apply
+- [x] Task 283: Compute effective_density for this call
+- [x] Task 284: Compute effective_drift for this call
+- [x] Task 285: Call env.set_wind_drift with computed drift
+- [x] Task 286: Determine target count from density and grid size
+- [x] Task 287: Sample positions uniformly without replacement
+- [x] Task 288: Filter out pinned _editor_cells positions
+- [x] Task 289: Filter out start and goal positions
+- [x] Task 290: Determine cell type per position from ratios
+- [x] Task 291: Call env.set_cell with editor=False for each pick
+- [x] Task 292: Avoid overwriting pinned cells
+- [x] Task 293: Stop when target count reached or positions exhausted
+- [x] Task 294: Handle empty grid edge case
+- [x] Task 295: Handle fully pinned grid edge case
+- [x] Task 296: Handle zero density edge case
+- [x] Task 297: Handle density equal to one edge case
+- [x] Task 298: Keep apply deterministic given same seed
+- [x] Task 299: Keep apply idempotent when state unchanged
+- [x] Task 300: Document apply algorithm in docstring
+- [x] Task 301: Cover apply algorithm in unit tests
+- [x] Task 302: Cover apply with density zero
+- [x] Task 303: Cover apply with density one
+- [x] Task 304: Cover apply with noise zero
+- [x] Task 305: Cover apply with noise one
+- [x] Task 306: Cover apply with difficulty zero
+- [x] Task 307: Cover apply with difficulty one
+- [x] Task 308: Cover apply respecting editor pins
+- [x] Task 309: Cover apply respecting start and goal
+- [x] Task 310: Cover apply with mixed ratios summing to one
+- [x] Task 311: Cover apply with ratios summing above one
+- [x] Task 312: Cover apply normalizing ratios when needed
+- [x] Task 313: Cover apply producing non-empty results
+- [x] Task 314: Cover apply producing reproducible results
+- [x] Task 315: Cover apply called twice produces different boards absent seed lock
+- [x] Task 316: Cover apply called twice with same seed reproduces
+- [x] Task 317: Cover apply emits PIT cells when pit_ratio positive
+- [x] Task 318: Cover apply emits TRAP cells when trap_ratio positive
+- [x] Task 319: Cover apply emits BUILDING cells when building_ratio positive
+- [x] Task 320: Cover apply emits WIND cells when wind_ratio positive
+
+## HazardGenerator slider setters
+
+- [x] Task 321: Implement set_noise accepting float input
+- [x] Task 322: Clamp noise between 0 and 1
+- [x] Task 323: Store noise on instance attribute
+- [x] Task 324: Implement set_density accepting float input
+- [x] Task 325: Clamp density between 0 and 1
+- [x] Task 326: Store density on instance attribute
+- [x] Task 327: Implement set_difficulty accepting float input
+- [x] Task 328: Clamp difficulty between 0 and 1
+- [x] Task 329: Store difficulty on instance attribute
+- [x] Task 330: Avoid regenerating board inside setters
+- [x] Task 331: Require explicit apply() call after setters
+- [x] Task 332: Keep setters O(1)
+- [x] Task 333: Document setter contract in docstring
+- [x] Task 334: Emit no-op when new value equals current
+- [x] Task 335: Validate setter input is numeric
+- [x] Task 336: Accept integer inputs coerced to float
+- [x] Task 337: Reject NaN setter inputs
+- [x] Task 338: Reject infinity setter inputs
+- [x] Task 339: Cover set_noise with unit tests
+- [x] Task 340: Cover set_density with unit tests
+- [x] Task 341: Cover set_difficulty with unit tests
+- [x] Task 342: Cover clamp low boundary for each setter
+- [x] Task 343: Cover clamp high boundary for each setter
+- [x] Task 344: Cover idempotent calls for each setter
+- [x] Task 345: Cover setter not triggering apply internally
+- [x] Task 346: Cover setter interaction with effective_density
+- [x] Task 347: Cover setter interaction with effective_drift
+- [x] Task 348: Expose setters on HazardGenerator public API
+- [x] Task 349: Wire setters to SliderPanel via gui._on_slider_change
+- [x] Task 350: Ensure setters thread-safe for single-threaded GUI
+- [x] Task 351: Ensure setters safe during hazard regeneration
+- [x] Task 352: Ensure setters store values in consistent units
+- [x] Task 353: Ensure setters preserve underlying env state
+- [x] Task 354: Keep setter signatures consistent
+- [x] Task 355: Keep setter naming consistent with SliderPanel keys
+- [x] Task 356: Document default values for noise, density, difficulty
+- [x] Task 357: Document upper and lower bounds of setters
+- [x] Task 358: Cover apply() uses latest setter values
+- [x] Task 359: Cover setter log messages at debug level
+- [x] Task 360: Cover setter call order independence
+
+## Effective density and drift calculations
+
+- [x] Task 361: Define effective_density formula combining density and noise
+- [x] Task 362: Keep effective_density bounded in 0..1
+- [x] Task 363: Favor higher density when noise high
+- [x] Task 364: Favor stored density when noise low
+- [x] Task 365: Compute effective_density on demand
+- [x] Task 366: Avoid caching stale effective_density values
+- [x] Task 367: Document effective_density formula in docstring
+- [x] Task 368: Cover effective_density with unit tests
+- [x] Task 369: Cover effective_density with boundary values
+- [x] Task 370: Cover effective_density monotonicity in density
+- [x] Task 371: Cover effective_density monotonicity in noise
+- [x] Task 372: Define effective_drift formula combining difficulty and wind
+- [x] Task 373: Keep effective_drift bounded in 0..1
+- [x] Task 374: Favor higher drift when difficulty high
+- [x] Task 375: Favor baseline drift when difficulty low
+- [x] Task 376: Compute effective_drift on demand
+- [x] Task 377: Avoid caching stale effective_drift values
+- [x] Task 378: Document effective_drift formula in docstring
+- [x] Task 379: Cover effective_drift with unit tests
+- [x] Task 380: Cover effective_drift with boundary values
+- [x] Task 381: Cover effective_drift monotonicity in difficulty
+- [x] Task 382: Cover effective_drift interaction with wind config
+- [x] Task 383: Use effective_density inside apply algorithm
+- [x] Task 384: Use effective_drift inside apply algorithm
+- [x] Task 385: Expose effective_density as property
+- [x] Task 386: Expose effective_drift as property
+- [x] Task 387: Keep property access O(1)
+- [x] Task 388: Validate inputs indirectly via setters
+- [x] Task 389: Avoid division by zero in formulas
+- [x] Task 390: Guard against negative intermediate results
+- [x] Task 391: Cover formulas with regression tests
+- [x] Task 392: Add explicit tests pinning known numeric outputs
+- [x] Task 393: Ensure reproducibility of computation across runs
+- [x] Task 394: Keep formulas deterministic
+- [x] Task 395: Document numerical stability considerations
+- [x] Task 396: Cover mixed high noise and low density case
+- [x] Task 397: Cover mixed low noise and high density case
+- [x] Task 398: Cover mixed high difficulty and zero wind case
+- [x] Task 399: Cover mixed low difficulty and high wind case
+- [x] Task 400: Cover effective properties used in SDK set_dynamic_params
+
+## Respect editor cells during hazard placement
+
+- [x] Task 401: Query _editor_cells from env in HazardGenerator
+- [x] Task 402: Skip editor-pinned positions during sampling
+- [x] Task 403: Skip editor-pinned positions during clearing
+- [x] Task 404: Avoid iterating grid twice for editor pins
+- [x] Task 405: Maintain stable iteration order when filtering
+- [x] Task 406: Treat editor pins as read-only during apply
+- [x] Task 407: Do not add pins during generator operation
+- [x] Task 408: Do not remove pins during generator operation
+- [x] Task 409: Document editor pin contract in generator docstring
+- [x] Task 410: Cover editor pin respect with dedicated test
+- [x] Task 411: Cover editor pin survival across multiple applies
+- [x] Task 412: Cover editor pin survival across randomize_per_episode
+- [x] Task 413: Cover editor pin survival across slider changes
+- [x] Task 414: Cover editor pin survival across regenerate action
+- [x] Task 415: Cover editor pin survival when density is 1.0
+- [x] Task 416: Cover editor pin survival when density is 0.0
+- [x] Task 417: Cover editor pin survival with PIT type
+- [x] Task 418: Cover editor pin survival with TRAP type
+- [x] Task 419: Cover editor pin survival with BUILDING type
+- [x] Task 420: Cover editor pin survival with WIND type
+- [x] Task 421: Ensure filtered candidate pool excludes pins
+- [x] Task 422: Ensure target count adjusted when pins reduce pool
+- [x] Task 423: Ensure sampling without replacement not blocked by pins
+- [x] Task 424: Ensure pinned cells do not appear in sampled set
+- [x] Task 425: Ensure pinned cell contents remain identical after apply
+- [x] Task 426: Keep pin handling performant on 20x20 grid
+- [x] Task 427: Cover pin handling for full board pinning
+- [x] Task 428: Cover pin handling for single pin
+- [x] Task 429: Cover pin handling for zero pins
+- [x] Task 430: Document pin precedence over random placement
+- [x] Task 431: Ensure start and goal never treated as pinned editor cells
+- [x] Task 432: Ensure cleared cells via editor remove from pin set
+- [x] Task 433: Ensure pins do not influence effective_density formula
+- [x] Task 434: Ensure pins do not influence effective_drift formula
+- [x] Task 435: Ensure regeneration preserves pin visual in renderer
+- [x] Task 436: Ensure pins logged at debug level on change
+- [x] Task 437: Ensure pins reset only via explicit editor action
+- [x] Task 438: Cover pin interaction with clear_dynamic_cells
+- [x] Task 439: Cover pin interaction with set_wind_drift
+- [x] Task 440: Cover pin interaction with set_cell editor=False
+
+## Slider widget implementation
+
+- [x] Task 441: Create src/sliders.py module
+- [x] Task 442: Define Slider class for a single slider
+- [x] Task 443: Store label text on instance
+- [x] Task 444: Store min value on instance
+- [x] Task 445: Store max value on instance
+- [x] Task 446: Store current value on instance
+- [x] Task 447: Store track rectangle geometry
+- [x] Task 448: Store knob rectangle geometry
+- [x] Task 449: Store dragging state flag
+- [x] Task 450: Implement handle_event for mouse down
+- [x] Task 451: Implement handle_event for mouse up
+- [x] Task 452: Implement handle_event for mouse motion
+- [x] Task 453: Clamp knob position to track bounds
+- [x] Task 454: Map knob position to value via interpolation
+- [x] Task 455: Map value to knob position via interpolation
+- [x] Task 456: Emit callback on value change
+- [x] Task 457: Implement draw method using pygame primitives
+- [x] Task 458: Draw track as rectangle
+- [x] Task 459: Draw knob as rectangle
+- [x] Task 460: Draw label and current value text
+- [x] Task 461: Load slider colors from config
+- [x] Task 462: Load slider font from config
+- [x] Task 463: Keep draw side-effect free beyond rendering
+- [x] Task 464: Avoid allocations in draw hot path
+- [x] Task 465: Use rounding for knob position math
+- [x] Task 466: Handle click outside knob starting drag
+- [x] Task 467: Handle click on knob starting drag
+- [x] Task 468: Handle release ending drag
+- [x] Task 469: Ignore events when not visible
+- [x] Task 470: Expose get() returning current value
+- [x] Task 471: Expose set() to set value programmatically
+- [x] Task 472: Cover Slider class with unit tests
+- [x] Task 473: Cover click-to-value mapping
+- [x] Task 474: Cover drag updates value continuously
+- [x] Task 475: Cover release stops drag
+- [x] Task 476: Cover clamp at min
+- [x] Task 477: Cover clamp at max
+- [x] Task 478: Cover interpolation mid-range
+- [x] Task 479: Cover set() updating knob position
+- [x] Task 480: Cover get() returning expected float
+
+## SliderPanel three-slider layout
+
+- [x] Task 481: Define SliderPanel class in src/sliders.py
+- [x] Task 482: Initialize three Slider instances inside panel
+- [x] Task 483: Create noise slider with label "Noise"
+- [x] Task 484: Create density slider with label "Density"
+- [x] Task 485: Create difficulty slider with label "Difficulty"
+- [x] Task 486: Position sliders stacked vertically
+- [x] Task 487: Read slider bounds from config dynamic_board
+- [x] Task 488: Read default values from config
+- [x] Task 489: Expose get(name) to retrieve slider value
+- [x] Task 490: Expose get_all() returning dict of values
+- [x] Task 491: Implement handle_event dispatching to each slider
+- [x] Task 492: Implement draw rendering all sliders
+- [x] Task 493: Respect panel origin when positioning sliders
+- [x] Task 494: Keep panel fixed width per config
+- [x] Task 495: Handle window resize updates
+- [x] Task 496: Keep SliderPanel under 150 line file cap
+- [x] Task 497: Emit callback with slider name and value
+- [x] Task 498: Hook callback to gui._on_slider_change
+- [x] Task 499: Cover SliderPanel layout in tests
+- [x] Task 500: Cover SliderPanel event dispatch
+- [x] Task 501: Cover SliderPanel get("noise") path
+- [x] Task 502: Cover SliderPanel get("density") path
+- [x] Task 503: Cover SliderPanel get("difficulty") path
+- [x] Task 504: Cover SliderPanel handle_event ignores out-of-panel clicks
+- [x] Task 505: Cover SliderPanel draw does not crash on empty surface
+- [x] Task 506: Cover SliderPanel callback fired once per change
+- [x] Task 507: Cover SliderPanel initial values match config defaults
+- [x] Task 508: Document SliderPanel API in module docstring
+- [x] Task 509: Document SliderPanel constructor parameters
+- [x] Task 510: Ensure SliderPanel is re-usable by other screens
+
+## Slider drag/click/release events
+
+- [x] Task 511: Detect MOUSEBUTTONDOWN event type
+- [x] Task 512: Detect MOUSEBUTTONUP event type
+- [x] Task 513: Detect MOUSEMOTION event type
+- [x] Task 514: Start drag on MOUSEBUTTONDOWN inside track or knob
+- [x] Task 515: Move knob on MOUSEMOTION while dragging
+- [x] Task 516: End drag on MOUSEBUTTONUP anywhere
+- [x] Task 517: Handle click outside slider without side effects
+- [x] Task 518: Handle click on track jumping knob to click position
+- [x] Task 519: Handle click on knob preserving relative offset
+- [x] Task 520: Fire change callback only when value differs
+- [x] Task 521: Avoid firing callback on every pixel if value unchanged
+- [x] Task 522: Clamp drag position within track rectangle
+- [x] Task 523: Respect slider orientation in coordinate math
+- [x] Task 524: Use pygame event.type comparisons
+- [x] Task 525: Use pygame event.pos for motion coordinates
+- [x] Task 526: Use pygame event.button to filter left clicks
+- [x] Task 527: Ignore right-click events
+- [x] Task 528: Ignore middle-click events
+- [x] Task 529: Cover drag from left-most to right-most
+- [x] Task 530: Cover drag from right-most to left-most
+- [x] Task 531: Cover click jump to center position
+- [x] Task 532: Cover drag stopping at min when dragged further
+- [x] Task 533: Cover drag stopping at max when dragged further
+- [x] Task 534: Cover release outside panel still ends drag
+- [x] Task 535: Cover dragging remains active until release
+- [x] Task 536: Cover draw updates knob position visually
+- [x] Task 537: Cover handle_event returning True when consumed
+- [x] Task 538: Cover handle_event returning False otherwise
+- [x] Task 539: Cover consecutive clicks without drag
+- [x] Task 540: Cover consecutive drags on different sliders
+- [x] Task 541: Cover keyboard events ignored by slider
+- [x] Task 542: Cover mousewheel events ignored
+- [x] Task 543: Cover slider independence across drags
+- [x] Task 544: Cover slider callback invocation count
+- [x] Task 545: Cover slider callback argument correctness
+- [x] Task 546: Cover get() after drag returns updated value
+- [x] Task 547: Cover get() after click returns updated value
+- [x] Task 548: Cover get() unchanged after non-slider event
+- [x] Task 549: Cover panel draws updated values after drag
+- [x] Task 550: Cover panel draws labels with current values
+
+## Renderer PIT visual
+
+- [x] Task 551: Add _draw_pit method to Renderer
+- [x] Task 552: Load pit outer color from config colors.pit_outer
+- [x] Task 553: Load pit middle color from config colors.pit_middle
+- [x] Task 554: Load pit inner color from config colors.pit_inner
+- [x] Task 555: Draw outer concentric circle for PIT cell
+- [x] Task 556: Draw middle concentric circle for PIT cell
+- [x] Task 557: Draw inner concentric circle for PIT cell
+- [x] Task 558: Center circles within cell rectangle
+- [x] Task 559: Scale circle radii by cell size
+- [x] Task 560: Keep PIT visual distinct from TRAP
+- [x] Task 561: Keep PIT visual distinct from BUILDING
+- [x] Task 562: Dispatch to _draw_pit from main draw_grid loop
+- [x] Task 563: Avoid allocations per frame in _draw_pit
+- [x] Task 564: Use integer radius for pygame.draw.circle
+- [x] Task 565: Avoid overlap with gridline drawing
+- [x] Task 566: Keep _draw_pit under method size budget
+- [x] Task 567: Cover _draw_pit with renderer unit test
+- [x] Task 568: Cover renderer handles PIT in smoke test
+- [x] Task 569: Keep renderer module under 150 lines
+- [x] Task 570: Document _draw_pit in docstring
+- [x] Task 571: Accept cell rect as argument to _draw_pit
+- [x] Task 572: Accept target surface as argument
+- [x] Task 573: Keep _draw_pit private with underscore prefix
+- [x] Task 574: Reuse helper for concentric circle drawing
+- [x] Task 575: Avoid magic numbers by loading sizes from config
+- [x] Task 576: Ensure PIT cells respond to theme changes via config
+- [x] Task 577: Ensure PIT color scheme readable on light backgrounds
+- [x] Task 578: Ensure PIT color scheme readable on dark backgrounds
+- [x] Task 579: Confirm PIT visual aligned with design PRD
+- [x] Task 580: Confirm PIT visual documented in PLAN
+
+## Editor PIT editable type
+
+- [x] Task 581: Add CellType.PIT to EDITABLE_TYPES tuple in src/editor.py
+- [x] Task 582: Add "Pit" entry to TYPE_NAMES dict
+- [x] Task 583: Add pit color entry to editor type color map
+- [x] Task 584: Include PIT in editor cycle order
+- [x] Task 585: Handle PIT in keyboard shortcut mapping
+- [x] Task 586: Handle PIT in mouse click placement
+- [x] Task 587: Update editor status text when PIT selected
+- [x] Task 588: Update editor preview drawing for PIT
+- [x] Task 589: Keep editor module under 150 lines
+- [x] Task 590: Preserve editor undo behavior with PIT
+- [x] Task 591: Preserve editor redo behavior with PIT
+- [x] Task 592: Cover PIT placement via editor in tests
+- [x] Task 593: Cover PIT clearing via editor in tests
+- [x] Task 594: Cover PIT cycling via editor in tests
+- [x] Task 595: Cover PIT color rendering in editor
+- [x] Task 596: Cover editor respects _editor_cells for PIT
+- [x] Task 597: Cover editor rejects PIT on start cell
+- [x] Task 598: Cover editor rejects PIT on goal cell
+- [x] Task 599: Cover editor allows removing PIT from any cell
+- [x] Task 600: Document PIT availability in editor PRD
+- [x] Task 601: Document PIT color mapping in editor PRD
+- [x] Task 602: Document keyboard shortcut for PIT cycling
+- [x] Task 603: Keep editor consistent with dashboard legend
+- [x] Task 604: Keep editor consistent with overlays skip set
+- [x] Task 605: Keep editor consistent with renderer visual
+
+## Overlays skip PIT in heatmap and arrows
+
+- [x] Task 606: Include CellType.PIT in _SKIP_HEAT constant
+- [x] Task 607: Skip PIT cells in heatmap rendering loop
+- [x] Task 608: Skip PIT cells when drawing best-action arrows
+- [x] Task 609: Keep _SKIP_HEAT as frozenset for O(1) lookup
+- [x] Task 610: Include BUILDING, TRAP, PIT in skip logic
+- [x] Task 611: Avoid computing Q-value aggregates for PIT cells
+- [x] Task 612: Avoid computing arrow direction for PIT cells
+- [x] Task 613: Document _SKIP_HEAT rationale in docstring
+- [x] Task 614: Cover overlays skipping PIT in unit tests
+- [x] Task 615: Cover arrows skipping PIT in unit tests
+- [x] Task 616: Cover heatmap skipping PIT in unit tests
+- [x] Task 617: Ensure overlay draws empty cells normally
+- [x] Task 618: Ensure overlay draws goal cell normally
+- [x] Task 619: Ensure overlay draws wind cell normally
+- [x] Task 620: Keep overlay module under 150 lines
+- [x] Task 621: Avoid branching overhead on hot path
+- [x] Task 622: Use membership check instead of chained comparisons
+- [x] Task 623: Keep overlays independent of hazard_generator module
+- [x] Task 624: Keep overlays independent of sliders module
+- [x] Task 625: Document skip logic in overlays PRD reference
+
+## Dashboard PIT in legend
+
+- [x] Task 626: Add "Pit" entry to dashboard legend list
+- [x] Task 627: Load legend color from config colors.pit_middle
+- [x] Task 628: Position Pit entry after Trap entry in legend
+- [x] Task 629: Render legend square with pit color
+- [x] Task 630: Render legend text "Pit" next to square
+- [x] Task 631: Update legend layout metrics to include Pit
+- [x] Task 632: Cover dashboard rendering with PIT legend test
+- [x] Task 633: Cover dashboard layout not overflowing panel
+- [x] Task 634: Keep dashboard module under 150 lines
+- [x] Task 635: Document Pit legend placement in dashboard PRD
+- [x] Task 636: Ensure dashboard legend colors match renderer colors
+- [x] Task 637: Ensure dashboard legend ordering matches editor cycle
+- [x] Task 638: Ensure dashboard legend updates when theme changes
+- [x] Task 639: Ensure dashboard draws Pit even when none on board
+- [x] Task 640: Cover legend rendering on fresh dashboard init
+
+## Config dynamic_board section
+
+- [x] Task 641: Add dynamic_board root key in config/config.yaml
+- [x] Task 642: Add dynamic_board.enabled boolean flag
+- [x] Task 643: Add dynamic_board.noise_level default value
+- [x] Task 644: Add dynamic_board.hazard_density default value
+- [x] Task 645: Add dynamic_board.difficulty default value
+- [x] Task 646: Add dynamic_board.trap_ratio value
+- [x] Task 647: Add dynamic_board.pit_ratio value
+- [x] Task 648: Add dynamic_board.wind_ratio value
+- [x] Task 649: Add dynamic_board.building_ratio value
+- [x] Task 650: Add dynamic_board.seed value
+- [x] Task 651: Add dynamic_board.randomize_per_episode flag
+- [x] Task 652: Document dynamic_board keys in PRD
+- [x] Task 653: Document dynamic_board keys in PLAN
+- [x] Task 654: Load dynamic_board via config loader
+- [x] Task 655: Validate dynamic_board.enabled type
+- [x] Task 656: Validate dynamic_board.noise_level range
+- [x] Task 657: Validate dynamic_board.hazard_density range
+- [x] Task 658: Validate dynamic_board.difficulty range
+- [x] Task 659: Validate dynamic_board ratio sum reasonableness
+- [x] Task 660: Expose dynamic_board section through SDK
+- [x] Task 661: Cover config dynamic_board parsing in tests
+- [x] Task 662: Cover config fallbacks when keys missing
+- [x] Task 663: Cover config randomize_per_episode default
+- [x] Task 664: Cover config seed None vs integer cases
+- [x] Task 665: Ensure no hardcoded defaults mirror in code
+
+## Config pit colors and penalty
+
+- [x] Task 666: Add colors.pit_outer to config
+- [x] Task 667: Add colors.pit_middle to config
+- [x] Task 668: Add colors.pit_inner to config
+- [x] Task 669: Ensure pit colors accessible by renderer
+- [x] Task 670: Ensure pit colors accessible by dashboard
+- [x] Task 671: Ensure pit colors accessible by editor
+- [x] Task 672: Ensure pit colors stored as RGB tuples
+- [x] Task 673: Add rewards.pit_penalty entry
+- [x] Task 674: Set pit_penalty to a negative value
+- [x] Task 675: Load pit_penalty from config in environment
+- [x] Task 676: Apply pit_penalty in step() when entering PIT
+- [x] Task 677: Document pit_penalty in rewards section
+- [x] Task 678: Cover pit_penalty loading in tests
+- [x] Task 679: Cover pit_penalty applied in step tests
+- [x] Task 680: Ensure pit_penalty distinct from trap_penalty
+
+## Config cell_types pit:5
+
+- [x] Task 681: Add cell_types.pit: 5 mapping in config
+- [x] Task 682: Keep cell_types.empty: 0 intact
+- [x] Task 683: Keep cell_types.wall: 1 intact
+- [x] Task 684: Keep cell_types.start: 2 intact
+- [x] Task 685: Keep cell_types.goal: 3 intact
+- [x] Task 686: Keep cell_types.wind: 4 intact
+- [x] Task 687: Ensure CellType enum values mirror config
+- [x] Task 688: Cover cell_types.pit: 5 mapping in tests
+- [x] Task 689: Ensure config loader raises on mismatched values
+- [x] Task 690: Document cell_types mapping in PRD
+
+## GUI slider integration
+
+- [x] Task 691: Add SliderPanel instance to GUI class
+- [x] Task 692: Position SliderPanel in side bar region
+- [x] Task 693: Initialize SliderPanel with config defaults
+- [x] Task 694: Register SliderPanel callback to gui._on_slider_change
+- [x] Task 695: Draw SliderPanel each frame in render loop
+- [x] Task 696: Forward pygame events to SliderPanel.handle_event
+- [x] Task 697: Ensure SliderPanel does not overlap grid area
+- [x] Task 698: Ensure SliderPanel respects GUI theme colors
+- [x] Task 699: Ensure SliderPanel stays within screen bounds
+- [x] Task 700: Ensure SliderPanel responds to window resize
+- [x] Task 701: Reserve layout space for SliderPanel in dashboard math
+- [x] Task 702: Keep gui module under 150 lines
+- [x] Task 703: Cover GUI slider integration with unit test
+- [x] Task 704: Cover GUI forwarding events to SliderPanel
+- [x] Task 705: Cover GUI initializing SliderPanel with defaults
+- [x] Task 706: Cover GUI drawing SliderPanel without errors
+- [x] Task 707: Document GUI slider integration in PRD
+- [x] Task 708: Document GUI slider integration in PLAN
+- [x] Task 709: Ensure GUI slider callback only fires on change
+- [x] Task 710: Ensure GUI slider callback runs in main thread
+
+## GUI slider event handling
+
+- [x] Task 711: Implement gui._on_slider_change(name, value)
+- [x] Task 712: Dispatch noise changes to hazard_generator.set_noise
+- [x] Task 713: Dispatch density changes to hazard_generator.set_density
+- [x] Task 714: Dispatch difficulty changes to hazard_generator.set_difficulty
+- [x] Task 715: Optionally trigger hazard_generator.apply on change
+- [x] Task 716: Ensure dispatch respects editor cells
+- [x] Task 717: Ensure dispatch preserves agent position
+- [x] Task 718: Ensure dispatch updates env wind drift
+- [x] Task 719: Cover gui._on_slider_change noise path
+- [x] Task 720: Cover gui._on_slider_change density path
+- [x] Task 721: Cover gui._on_slider_change difficulty path
+- [x] Task 722: Cover gui._on_slider_change unknown name ignored
+- [x] Task 723: Cover gui._on_slider_change value clamped upstream
+- [x] Task 724: Cover gui._on_slider_change logging
+- [x] Task 725: Keep callback under 20 lines
+- [x] Task 726: Avoid allocations in callback hot path
+- [x] Task 727: Expose callback via sdk.set_dynamic_params
+- [x] Task 728: Document callback behavior in PRD
+- [x] Task 729: Document callback behavior in PLAN
+- [x] Task 730: Ensure callback idempotent for identical values
+
+## GUI per-episode randomization callback
+
+- [x] Task 731: Add logic.on_episode_end callback hook
+- [x] Task 732: Register callback in gui initialization
+- [x] Task 733: Call hazard_generator.apply inside callback
+- [x] Task 734: Respect config randomize_per_episode flag
+- [x] Task 735: Skip callback when randomize_per_episode is False
+- [x] Task 736: Preserve _editor_cells during per-episode randomization
+- [x] Task 737: Preserve agent reset behavior during randomization
+- [x] Task 738: Ensure callback runs before next episode reset
+- [x] Task 739: Ensure callback runs after terminal state recorded
+- [x] Task 740: Log per-episode randomization at debug level
+- [x] Task 741: Cover callback invocation order in tests
+- [x] Task 742: Cover callback respecting flag off in tests
+- [x] Task 743: Cover callback respecting flag on in tests
+- [x] Task 744: Cover callback preserving pins in tests
+- [x] Task 745: Cover callback triggering env.set_wind_drift
+- [x] Task 746: Cover callback interacting with SDK
+- [x] Task 747: Cover callback with BellmanAgent
+- [x] Task 748: Cover callback with QLearningAgent
+- [x] Task 749: Cover callback with DoubleQAgent
+- [x] Task 750: Document per-episode randomization in PLAN
+
+## Actions regenerate_hazards dispatch
+
+- [x] Task 751: Add regenerate_hazards action constant in src/actions.py
+- [x] Task 752: Wire action to hazard_generator.apply invocation
+- [x] Task 753: Trigger action via GUI button press
+- [x] Task 754: Trigger action via keyboard shortcut
+- [x] Task 755: Respect editor pins during action execution
+- [x] Task 756: Log action dispatch at info level
+- [x] Task 757: Cover action dispatch with unit test
+- [x] Task 758: Cover action respecting editor pins
+- [x] Task 759: Cover action updating grid content
+- [x] Task 760: Cover action updating wind drift
+- [x] Task 761: Cover action preserving agent state
+- [x] Task 762: Cover action preserving training stats
+- [x] Task 763: Cover action invoked via SDK.regenerate_hazards
+- [x] Task 764: Keep actions module under 150 lines
+- [x] Task 765: Keep action naming consistent with existing actions
+- [x] Task 766: Document regenerate_hazards action in PRD
+- [x] Task 767: Document regenerate_hazards action in PLAN
+- [x] Task 768: Ensure action ignored when hazard generator disabled
+- [x] Task 769: Ensure action safe during live training loop
+- [x] Task 770: Ensure action not dispatched during agent step
+
+## SDK hazard integration methods
+
+- [x] Task 771: Add SDK.regenerate_hazards method
+- [x] Task 772: Add SDK.randomize_board method
+- [x] Task 773: Add SDK.set_dynamic_params method
+- [x] Task 774: SDK.regenerate_hazards calls hazard_generator.apply
+- [x] Task 775: SDK.randomize_board re-seeds then applies hazards
+- [x] Task 776: SDK.set_dynamic_params updates noise, density, difficulty
+- [x] Task 777: SDK.set_dynamic_params optionally triggers apply
+- [x] Task 778: Expose SDK methods through public interface
+- [x] Task 779: Document SDK methods in PRD
+- [x] Task 780: Document SDK methods in PLAN
+- [x] Task 781: Cover SDK.regenerate_hazards with unit test
+- [x] Task 782: Cover SDK.randomize_board with unit test
+- [x] Task 783: Cover SDK.set_dynamic_params with unit test
+- [x] Task 784: Cover SDK respecting editor pins
+- [x] Task 785: Cover SDK preserving agent state
+- [x] Task 786: Cover SDK interacting with environment.set_wind_drift
+- [x] Task 787: Ensure SDK remains single entry point per CLAUDE.md
+- [x] Task 788: Keep SDK module under 150 lines
+- [x] Task 789: Ensure SDK methods return None or status
+- [x] Task 790: Cover SDK integration with main.py entry
+
+## Tests for HazardGenerator
+
+- [x] Task 791: Create tests/test_hazard_generator.py file
+- [x] Task 792: Test HazardGenerator constructor sets defaults
+- [x] Task 793: Test HazardGenerator reads config ratios
+- [x] Task 794: Test HazardGenerator seed reproducibility
+- [x] Task 795: Test apply() clears dynamic cells first
+- [x] Task 796: Test apply() skips editor pins
+- [x] Task 797: Test apply() respects density parameter
+- [x] Task 798: Test apply() respects noise parameter
+- [x] Task 799: Test apply() respects difficulty parameter
+- [x] Task 800: Test apply() updates env.wind drift
+- [x] Task 801: Test apply() places correct count of hazards
+- [x] Task 802: Test apply() distributes types by ratios
+- [x] Task 803: Test apply() skips start and goal
+- [x] Task 804: Test apply() does not alter agent position
+- [x] Task 805: Test set_noise clamps values
+- [x] Task 806: Test set_density clamps values
+- [x] Task 807: Test set_difficulty clamps values
+- [x] Task 808: Test effective_density formula boundaries
+- [x] Task 809: Test effective_drift formula boundaries
+- [x] Task 810: Test setters do not trigger apply automatically
+- [x] Task 811: Test apply without seed produces varied boards
+- [x] Task 812: Test apply with seed produces identical boards
+- [x] Task 813: Test apply on fully pinned grid is no-op
+- [x] Task 814: Test apply on empty config defaults reasonable
+- [x] Task 815: Test HazardGenerator coverage above 85 percent
+- [x] Task 816: Test apply handles zero density
+- [x] Task 817: Test apply handles one density
+- [x] Task 818: Test apply handles trap-only ratio
+- [x] Task 819: Test apply handles pit-only ratio
+- [x] Task 820: Test apply handles building-only ratio
+- [x] Task 821: Test apply handles wind-only ratio
+- [x] Task 822: Test apply handles mixed ratios
+- [x] Task 823: Test apply outputs valid grid content
+- [x] Task 824: Test apply never writes outside grid bounds
+- [x] Task 825: Test apply calls env.set_cell with editor=False
+- [x] Task 826: Test HazardGenerator module under 150 lines
+- [x] Task 827: Test HazardGenerator no hardcoded values
+- [x] Task 828: Test HazardGenerator passes ruff linting
+- [x] Task 829: Test HazardGenerator typing annotations present
+- [x] Task 830: Test HazardGenerator docstrings present
+
+## Tests for SliderPanel
+
+- [x] Task 831: Create tests/test_sliders.py file
+- [x] Task 832: Test Slider constructor stores label and bounds
+- [x] Task 833: Test Slider default value matches config
+- [x] Task 834: Test Slider handle_event starts drag on mousedown
+- [x] Task 835: Test Slider handle_event ends drag on mouseup
+- [x] Task 836: Test Slider handle_event updates value on motion
+- [x] Task 837: Test Slider clamps value at min
+- [x] Task 838: Test Slider clamps value at max
+- [x] Task 839: Test Slider click-on-track jumps knob
+- [x] Task 840: Test Slider callback fires on value change
+- [x] Task 841: Test Slider callback not firing on identical value
+- [x] Task 842: Test Slider get returns current value
+- [x] Task 843: Test Slider set updates knob and value
+- [x] Task 844: Test Slider draw does not raise
+- [x] Task 845: Test SliderPanel contains three sliders
+- [x] Task 846: Test SliderPanel noise slider labeled correctly
+- [x] Task 847: Test SliderPanel density slider labeled correctly
+- [x] Task 848: Test SliderPanel difficulty slider labeled correctly
+- [x] Task 849: Test SliderPanel get("noise") returns value
+- [x] Task 850: Test SliderPanel get("density") returns value
+- [x] Task 851: Test SliderPanel get("difficulty") returns value
+- [x] Task 852: Test SliderPanel handle_event dispatches to children
+- [x] Task 853: Test SliderPanel draw renders all sliders
+- [x] Task 854: Test SliderPanel callback aggregates child events
+- [x] Task 855: Test SliderPanel initial defaults from config
+- [x] Task 856: Test SliderPanel respects panel origin
+- [x] Task 857: Test SliderPanel ignores clicks outside region
+- [x] Task 858: Test SliderPanel set programmatic update
+- [x] Task 859: Test SliderPanel covers Slider private methods indirectly
+- [x] Task 860: Test sliders module under 150 lines
+
+## Tests for PIT in environment
+
+- [x] Task 861: Create PIT test block in tests/test_environment.py
+- [x] Task 862: Test CellType.PIT equals 5
+- [x] Task 863: Test stepping onto PIT triggers pit_penalty reward
+- [x] Task 864: Test stepping onto PIT sets done True
+- [x] Task 865: Test PIT info reason equals "pit"
+- [x] Task 866: Test PIT cell blocks further episode steps
+- [x] Task 867: Test PIT cell works with wind drift applied first
+- [x] Task 868: Test PIT cell handled at grid boundary
+- [x] Task 869: Test PIT cell handled adjacent to start
+- [x] Task 870: Test PIT cell handled adjacent to goal
+- [x] Task 871: Test PIT does not override trap reward when absent
+- [x] Task 872: Test PIT does not override goal reward when absent
+- [x] Task 873: Test PIT does not leak across resets
+- [x] Task 874: Test PIT coverage for environment module at 85 percent
+- [x] Task 875: Test PIT penalty loaded from config rewards.pit_penalty
+
+## Tests for editor_cells, set_wind_drift, clear_dynamic_cells
+
+- [x] Task 876: Test _editor_cells starts empty
+- [x] Task 877: Test set_cell editor=True adds to _editor_cells
+- [x] Task 878: Test set_cell editor=False leaves _editor_cells unchanged
+- [x] Task 879: Test set_cell editor=True to EMPTY removes from _editor_cells
+- [x] Task 880: Test _editor_cells survives step calls
+- [x] Task 881: Test _editor_cells survives reset calls
+- [x] Task 882: Test _editor_cells survives clear_dynamic_cells
+- [x] Task 883: Test _editor_cells survives set_wind_drift
+- [x] Task 884: Test _editor_cells survives HazardGenerator.apply
+- [x] Task 885: Test set_wind_drift stores value
+- [x] Task 886: Test set_wind_drift clamps negative to zero
+- [x] Task 887: Test set_wind_drift clamps above one to one
+- [x] Task 888: Test set_wind_drift accepts zero
+- [x] Task 889: Test set_wind_drift accepts one
+- [x] Task 890: Test set_wind_drift propagates to step drift probability
+- [x] Task 891: Test set_wind_drift idempotent on identical value
+- [x] Task 892: Test set_wind_drift does not alter grid
+- [x] Task 893: Test clear_dynamic_cells resets empty-safe cells
+- [x] Task 894: Test clear_dynamic_cells preserves start cell
+- [x] Task 895: Test clear_dynamic_cells preserves goal cell
+- [x] Task 896: Test clear_dynamic_cells preserves editor pins
+- [x] Task 897: Test clear_dynamic_cells removes TRAP non-pinned cells
+- [x] Task 898: Test clear_dynamic_cells removes PIT non-pinned cells
+- [x] Task 899: Test clear_dynamic_cells removes BUILDING non-pinned cells
+- [x] Task 900: Test clear_dynamic_cells removes WIND non-pinned cells
+- [x] Task 901: Test clear_dynamic_cells idempotent on empty grid
+- [x] Task 902: Test clear_dynamic_cells does not change agent position
+- [x] Task 903: Test clear_dynamic_cells does not change wind drift
+- [x] Task 904: Test clear_dynamic_cells does not alter config
+- [x] Task 905: Test integration of editor pin with set_wind_drift
+- [x] Task 906: Test integration of editor pin with clear_dynamic_cells
+- [x] Task 907: Test integration of editor pin with HazardGenerator.apply
+- [x] Task 908: Test integration of set_wind_drift with HazardGenerator.apply
+- [x] Task 909: Test integration of clear_dynamic_cells with HazardGenerator.apply
+- [x] Task 910: Test full dynamic board workflow end-to-end

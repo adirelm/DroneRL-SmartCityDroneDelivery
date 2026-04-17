@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from src.base_agent import BaseAgent
 from src.config_loader import Config, load_config
 from src.double_q_agent import DoubleQAgent
 
@@ -31,6 +32,9 @@ class TestInit:
 
     def test_alpha_loaded(self, agent, config):
         assert agent.alpha == config.double_q.alpha_start
+
+    def test_inherits_from_base_agent(self, agent):
+        assert isinstance(agent, BaseAgent)
 
 
 class TestCombinedQTable:
@@ -110,3 +114,30 @@ class TestBestAction:
         agent.q_table_b[0, 0] = [0, 5, 0, 0]
         # Combined: [1, 5, 0, 0] → action 1
         assert agent.get_best_action((0, 0)) == 1
+
+    def test_best_action_returns_python_int(self, agent):
+        agent.q_table_a[0, 0] = [1, 0, 0, 0]
+        action = agent.get_best_action((0, 0))
+        assert type(action) is int  # not np.int64
+
+    def test_choose_action_uses_combined_when_greedy(self, agent):
+        agent.epsilon = 0.0  # force greedy (no exploration)
+        agent.q_table_a[0, 0] = [0, 0, 3, 0]
+        agent.q_table_b[0, 0] = [0, 0, 4, 0]  # combined argmax => action 2
+        assert agent.choose_action((0, 0)) == 2
+
+
+class TestMaxQ:
+    def test_get_max_q_uses_combined(self, agent):
+        agent.q_table_a[2, 2] = [1, 2, 3, 0]
+        agent.q_table_b[2, 2] = [0, 0, 4, 1]
+        # Combined: [1, 2, 7, 1] → max 7
+        assert agent.get_max_q((2, 2)) == 7.0
+
+    def test_get_max_q_returns_python_float(self, agent):
+        agent.q_table_a[0, 0] = [0.5, 0, 0, 0]
+        value = agent.get_max_q((0, 0))
+        assert type(value) is float  # not np.float64
+
+    def test_get_max_q_zero_tables(self, agent):
+        assert agent.get_max_q((5, 5)) == 0.0

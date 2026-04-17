@@ -1,882 +1,739 @@
-# DroneRL — Double Q-Learning Agent Task Breakdown
-
-> All tasks marked as completed. Total: 585 granular tasks covering every aspect of the Double Q-Learning agent, comparison system, and GUI integration.
-
----
-
-## 1. DoubleQAgent Class — File Setup (~15 tasks)
-
-- [x] Task 1: Create new file `src/double_q_agent.py`
-- [x] Task 2: Add module docstring: "Double Q-Learning agent with dual Q-tables for bias-corrected learning"
-- [ ] Task 3: Add `from __future__ import annotations` import
-- [x] Task 4: Add `import random` import
-- [x] Task 5: Add `import numpy as np` import
-- [x] Task 6: Add `from src.base_agent import BaseAgent` import
-- [ ] Task 7: Add type hints import: `from typing import TYPE_CHECKING`
-- [ ] Task 8: Add conditional import: `if TYPE_CHECKING: from src.config_loader import Config`
-- [x] Task 9: Verify all imports are necessary and used
-- [x] Task 10: Verify no circular imports exist
-- [x] Task 11: Run ruff check on double_q_agent.py to verify clean state
-- [x] Task 12: Verify `from src.double_q_agent import DoubleQAgent` works
-- [x] Task 13: Add blank line after imports per PEP 8
-- [x] Task 14: Add blank line before class definition per PEP 8
-- [x] Task 15: Verify file encoding is UTF-8
-
----
-
-## 2. DoubleQAgent Class Definition (~20 tasks)
-
-- [x] Task 16: Define `class DoubleQAgent(BaseAgent):` inheriting from BaseAgent
-- [x] Task 17: Add class docstring: "Double Q-Learning with two Q-tables for bias-corrected evaluation"
-- [x] Task 18: Add class docstring detail: "Maintains QA and QB tables, decoupling action selection from evaluation"
-- [x] Task 19: Define `algorithm_name = "Double Q-Learning"` as class attribute
-- [x] Task 20: Verify algorithm_name is a string
-- [x] Task 21: Verify DoubleQAgent is a concrete class (not abstract)
-- [x] Task 22: Verify DoubleQAgent inherits from BaseAgent
-- [x] Task 23: Verify DoubleQAgent can be instantiated
-- [x] Task 24: Verify DoubleQAgent is not abstract (no unimplemented methods)
-- [x] Task 25: Verify class attribute algorithm_name = "Double Q-Learning"
-
----
-
-## 3. DoubleQAgent.__init__() — Two Tables (~35 tasks)
-
-### 3.1 Init Method Signature
-
-- [x] Task 26: Define `__init__(self, config: Config) -> None` method signature
-- [x] Task 27: Add __init__ docstring: "Initialize dual Q-tables and alpha decay parameters"
-- [x] Task 28: Call `super().__init__(config)` first for shared initialization
-- [x] Task 29: Verify super().__init__ initializes epsilon, gamma, rows, cols
-
-### 3.2 Q-Table A Initialization
-
-- [x] Task 30: Initialize `self.q_table_a = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))`
-- [x] Task 31: Verify q_table_a shape is (rows, cols, 4)
-- [x] Task 32: Verify q_table_a is initialized to all zeros
-- [x] Task 33: Verify q_table_a dtype is float64
-- [x] Task 34: Verify q_table_a is independent from parent _q_table
-
-### 3.3 Q-Table B Initialization
-
-- [x] Task 35: Initialize `self.q_table_b = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))`
-- [x] Task 36: Verify q_table_b shape is (rows, cols, 4)
-- [x] Task 37: Verify q_table_b is initialized to all zeros
-- [x] Task 38: Verify q_table_b dtype is float64
-- [x] Task 39: Verify q_table_b is a separate array from q_table_a (not aliased)
-
-### 3.4 Alpha Parameters
-
-- [x] Task 40: Extract Double Q config section: `dq_cfg = config.double_q`
-- [x] Task 41: Load alpha_start: `self.alpha = dq_cfg.alpha_start`
-- [x] Task 42: Load alpha_end: `self.alpha_end = dq_cfg.alpha_end`
-- [x] Task 43: Load alpha_decay: `self.alpha_decay = dq_cfg.alpha_decay`
-- [x] Task 44: Verify alpha is initialized to alpha_start value
-- [x] Task 45: Verify alpha_end is stored for floor clamping
-- [x] Task 46: Verify alpha_decay is stored for multiplicative decay
-- [x] Task 47: Verify alpha is a float
-- [x] Task 48: Verify alpha_end is a float
-- [x] Task 49: Verify alpha_decay is a float
-
-### 3.5 Init Verification
-
-- [x] Task 50: Verify __init__ does not hardcode any values
-- [x] Task 51: Verify all parameters come from config
-- [x] Task 52: Verify parent _q_table from BaseAgent is not used (overridden by property)
-- [x] Task 53: Verify both tables have identical shapes
-- [x] Task 54: Verify both tables are initialized independently to zeros
-- [x] Task 55: Verify no shared references between q_table_a and q_table_b
-
----
-
-## 4. DoubleQAgent.update() — Cross-Table Evaluation (~50 tasks)
-
-### 4.1 Method Signature
-
-- [x] Task 56: Define `update(self, state, action, reward, next_state, done) -> None`
-- [x] Task 57: Add update docstring: "Cross-table TD update — select action from one table, evaluate with the other"
-- [x] Task 58: Add type hints for all parameters
-- [x] Task 59: Extract state coordinates: `r, c = state`
-
-### 4.2 Random Table Selection
-
-- [x] Task 60: Generate random float: `random.random()`
-- [x] Task 61: Add condition: `if random.random() < 0.5` for 50/50 split
-- [x] Task 62: Verify 50/50 probability is used (not configurable)
-- [x] Task 63: Verify each path updates exactly one table
-
-### 4.3 Update QA Branch (random < 0.5)
-
-- [x] Task 64: Select best action from QA: `best_a = int(np.argmax(self.q_table_a[next_state[0], next_state[1]]))`
-- [x] Task 65: Evaluate using QB: `next_val = self.q_table_b[next_state[0], next_state[1], best_a]`
-- [x] Task 66: Handle terminal state: `next_val = 0.0 if done else ...`
-- [x] Task 67: Compute TD target: `target = reward + self.gamma * next_val`
-- [x] Task 68: Apply update to QA: `self.q_table_a[r, c, action] += self.alpha * (target - self.q_table_a[r, c, action])`
-- [x] Task 69: Verify QA is modified
-- [x] Task 70: Verify QB is NOT modified in this branch
-- [x] Task 71: Verify action selection comes from QA (argmax QA)
-- [x] Task 72: Verify evaluation comes from QB (value from QB)
-
-### 4.4 Update QB Branch (random >= 0.5)
-
-- [x] Task 73: Select best action from QB: `best_a = int(np.argmax(self.q_table_b[next_state[0], next_state[1]]))`
-- [x] Task 74: Evaluate using QA: `next_val = self.q_table_a[next_state[0], next_state[1], best_a]`
-- [x] Task 75: Handle terminal state: `next_val = 0.0 if done else ...`
-- [x] Task 76: Compute TD target: `target = reward + self.gamma * next_val`
-- [x] Task 77: Apply update to QB: `self.q_table_b[r, c, action] += self.alpha * (target - self.q_table_b[r, c, action])`
-- [x] Task 78: Verify QB is modified
-- [x] Task 79: Verify QA is NOT modified in this branch
-- [x] Task 80: Verify action selection comes from QB (argmax QB)
-- [x] Task 81: Verify evaluation comes from QA (value from QA)
-
-### 4.5 Update Verification
-
-- [x] Task 82: Verify each update call modifies exactly one table
-- [x] Task 83: Verify cross-table mechanism: argmax from updating table, value from other
-- [x] Task 84: Verify done=True sets next_val to 0.0 in both branches
-- [x] Task 85: Verify done=False uses the cross-table value
-- [x] Task 86: Verify alpha is used (not lr)
-- [x] Task 87: Verify gamma is used for discounting
-- [x] Task 88: Verify update formula: Q += alpha * (target - Q)
-- [x] Task 89: Verify over many updates, both tables accumulate values
-- [x] Task 90: Verify no hardcoded values in update method
-- [x] Task 91: Verify update handles edge case: next_state is start position
-- [x] Task 92: Verify update handles edge case: reward is zero
-- [x] Task 93: Verify update handles edge case: reward is very large positive
-- [x] Task 94: Verify update handles edge case: reward is very large negative
-- [x] Task 95: Verify update does not modify other Q-values in the table
-
----
-
-## 5. DoubleQAgent.q_table Property (~20 tasks)
-
-- [x] Task 96: Define `@property q_table(self) -> np.ndarray` getter
-- [x] Task 97: Add docstring: "Combined Q-table (QA + QB) for GUI overlay visualization"
-- [x] Task 98: Implement: `return self.q_table_a + self.q_table_b`
-- [x] Task 99: Verify return type is np.ndarray
-- [x] Task 100: Verify return shape is (rows, cols, 4)
-- [x] Task 101: Verify combined table is element-wise sum of QA and QB
-- [x] Task 102: Verify combined table values equal QA + QB for each cell
-- [x] Task 103: Verify combined table with all-zero tables returns all zeros
-- [x] Task 104: Verify combined table with non-zero QA returns QA values when QB is zero
-- [x] Task 105: Verify combined table with non-zero QB returns QB values when QA is zero
-- [x] Task 106: Verify combined table returns correct sum when both tables have values
-- [x] Task 107: Verify property returns new array each call (not cached stale value)
-- [x] Task 108: Verify GUI overlays can read q_table property
-- [x] Task 109: Verify heatmap overlay works with combined table
-- [x] Task 110: Verify arrow overlay works with combined table
-- [x] Task 111: Verify q_table is compatible with overlays.py expectations
-- [x] Task 112: Verify q_table dtype is float64
-- [x] Task 113: Verify combined table never has NaN values
-- [x] Task 114: Verify combined table never has Inf values
-- [x] Task 115: Verify property does not modify q_table_a or q_table_b
-
----
-
-## 6. DoubleQAgent.get_best_action() — Combined Table (~15 tasks)
-
-- [ ] Task 116: Define `get_best_action(self, state: tuple[int, int]) -> int` override
-- [ ] Task 117: Add docstring: "Return best action using combined QA + QB table"
-- [ ] Task 118: Extract row and col from state: `r, c = state`
-- [ ] Task 119: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
-- [ ] Task 120: Return argmax: `int(np.argmax(combined))`
-- [x] Task 121: Verify returns int, not np.int64
-- [x] Task 122: Verify uses combined table (not just QA or QB alone)
-- [x] Task 123: Verify handles all-zero tables (returns 0)
-- [x] Task 124: Verify handles ties (returns first max)
-- [x] Task 125: Verify action is in range [0, 3]
-- [x] Task 126: Verify combined action may differ from QA-only argmax
-- [x] Task 127: Verify combined action may differ from QB-only argmax
-- [x] Task 128: Verify get_best_action is used by choose_action (inherited)
-- [ ] Task 129: Verify get_best_action override is called polymorphically
-- [x] Task 130: Test get_best_action with various Q-value configurations
-
----
-
-## 7. DoubleQAgent.get_max_q() — Combined Table (~15 tasks)
-
-- [ ] Task 131: Define `get_max_q(self, state: tuple[int, int]) -> float` override
-- [ ] Task 132: Add docstring: "Return max Q-value using combined QA + QB table"
-- [ ] Task 133: Extract row and col from state: `r, c = state`
-- [ ] Task 134: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
-- [ ] Task 135: Return max: `float(np.max(combined))`
-- [x] Task 136: Verify returns float, not np.float64
-- [x] Task 137: Verify uses combined table
-- [x] Task 138: Verify handles all-zero tables (returns 0.0)
-- [x] Task 139: Verify handles negative values
-- [x] Task 140: Verify handles mixed positive/negative values
-- [x] Task 141: Verify max of combined is sum of individual maxes only if same action is max in both
-- [x] Task 142: Verify get_max_q is used by update for next_max calculation (in base class)
-- [ ] Task 143: Verify get_max_q override is called polymorphically
-- [x] Task 144: Test get_max_q with various Q-value configurations
-- [x] Task 145: Verify consistent behavior with get_best_action (same combined table)
-
----
-
-## 8. DoubleQAgent.save() — Two Files (~20 tasks)
-
-- [x] Task 146: Define `save(self, path: str) -> None` override
-- [x] Task 147: Add docstring: "Save both Q-tables to separate .npy files"
-- [x] Task 148: Save QA: `np.save(f"{path}_a.npy", self.q_table_a)`
-- [x] Task 149: Save QB: `np.save(f"{path}_b.npy", self.q_table_b)`
-- [x] Task 150: Verify save creates two files
-- [x] Task 151: Verify file naming convention: `{path}_a.npy` and `{path}_b.npy`
-- [x] Task 152: Verify QA file contains correct data
-- [x] Task 153: Verify QB file contains correct data
-- [x] Task 154: Verify files are valid .npy format
-- [x] Task 155: Verify save handles path with directory
-- [x] Task 156: Verify save overwrites existing files
-- [x] Task 157: Verify save does not modify in-memory tables
-- [x] Task 158: Verify save creates files with correct shapes
-- [x] Task 159: Verify save with non-zero tables preserves values
-- [x] Task 160: Verify both files are independent (not same data)
-- [x] Task 161: Test save with path containing spaces
-- [x] Task 162: Test save with path containing subdirectories
-- [x] Task 163: Test save creates parent directories if needed
-- [x] Task 164: Verify ruff check passes after save implementation
-- [x] Task 165: Verify save method signature matches BaseAgent.save
-
----
-
-## 9. DoubleQAgent.load() — Two Files (~20 tasks)
-
-- [x] Task 166: Define `load(self, path: str) -> None` override
-- [x] Task 167: Add docstring: "Load both Q-tables from separate .npy files"
-- [x] Task 168: Load QA: `self.q_table_a = np.load(f"{path}_a.npy")`
-- [x] Task 169: Load QB: `self.q_table_b = np.load(f"{path}_b.npy")`
-- [x] Task 170: Verify load restores both tables
-- [x] Task 171: Verify loaded QA has correct shape
-- [x] Task 172: Verify loaded QB has correct shape
-- [x] Task 173: Verify loaded values match saved values exactly
-- [x] Task 174: Verify load handles file not found gracefully
-- [x] Task 175: Verify load handles missing QA file
-- [x] Task 176: Verify load handles missing QB file
-- [x] Task 177: Test save/load round-trip preserves both tables exactly
-- [x] Task 178: Test load with modified QA preserves QB
-- [x] Task 179: Test load with modified QB preserves QA
-- [x] Task 180: Verify load does not affect alpha value
-- [x] Task 181: Verify load does not affect epsilon value
-- [x] Task 182: Verify load method signature matches BaseAgent.load
-- [x] Task 183: Test save then load produces identical combined q_table
-- [x] Task 184: Verify ruff check passes after load implementation
-- [x] Task 185: Verify both save and load work together end-to-end
-
----
-
-## 10. Alpha Decay in DoubleQAgent (~20 tasks)
-
-- [x] Task 186: Define `decay_epsilon(self) -> None` override
-- [x] Task 187: Add docstring: "Decay both epsilon and alpha per episode"
-- [x] Task 188: Call `super().decay_epsilon()` to decay epsilon
-- [x] Task 189: Decay alpha: `self.alpha = max(self.alpha_end, self.alpha * self.alpha_decay)`
-- [x] Task 190: Verify epsilon is decayed via parent method
-- [x] Task 191: Verify alpha is decayed after epsilon
-- [x] Task 192: Verify alpha never goes below alpha_end
-- [x] Task 193: Verify alpha decay is multiplicative
-- [x] Task 194: Verify alpha and epsilon decay independently
-- [x] Task 195: Verify alpha after 1 decay equals alpha * alpha_decay
-- [x] Task 196: Verify alpha after 100 decays approaches alpha_end
-- [x] Task 197: Verify alpha after 1000 decays equals alpha_end (clamped)
-- [x] Task 198: Verify alpha_end acts as absolute floor
-- [x] Task 199: Verify super().decay_epsilon() is called first
-- [x] Task 200: Verify decay logic is identical to QLearningAgent's alpha decay
-- [x] Task 201: Test epsilon and alpha states after calling decay_epsilon 500 times
-- [x] Task 202: Verify no hardcoded values in decay method
-- [x] Task 203: Verify decay_epsilon can be called safely on freshly created agent
-- [x] Task 204: Verify decay_epsilon does not affect Q-tables
-- [x] Task 205: Verify ruff check passes after decay implementation
-
----
-
-## 11. DoubleQAgent — Line Count and Quality (~10 tasks)
-
-- [x] Task 206: Count total lines in double_q_agent.py
-- [x] Task 207: Verify double_q_agent.py is approximately ~95 lines
-- [x] Task 208: Verify double_q_agent.py is at or under 150 lines
-- [x] Task 209: Verify ruff check passes on double_q_agent.py
-- [x] Task 210: Verify all methods have docstrings
-- [x] Task 211: Verify all methods have type hints
-- [x] Task 212: Verify no code duplication with other agents
-- [x] Task 213: Verify no hardcoded values in any method
-- [x] Task 214: Verify imports are clean and minimal
-- [x] Task 215: Verify module docstring is accurate
-
----
-
-## 12. Registration in Agent Factory (~15 tasks)
-
-- [x] Task 216: Open `src/agent_factory.py` for editing
-- [x] Task 217: Verify `"double_q"` branch already exists (forward-planned in PRD 2)
-- [x] Task 218: If not, add `elif name == "double_q":` branch
-- [x] Task 219: Add lazy import: `from src.double_q_agent import DoubleQAgent`
-- [x] Task 220: Add return: `return DoubleQAgent(config)`
-- [x] Task 221: Verify factory returns DoubleQAgent for "double_q"
-- [x] Task 222: Verify returned DoubleQAgent is instance of BaseAgent
-- [x] Task 223: Verify returned DoubleQAgent has algorithm_name "Double Q-Learning"
-- [x] Task 224: Verify returned DoubleQAgent has q_table property
-- [x] Task 225: Verify returned DoubleQAgent has update method
-- [x] Task 226: Verify factory dispatches correctly for all 3 algorithms
-- [x] Task 227: Run factory tests to verify double_q dispatch
-- [x] Task 228: Verify agent_factory.py stays at or under 150 lines
-- [x] Task 229: Verify ruff check passes on agent_factory.py
-- [x] Task 230: Add factory test: create_agent with "double_q" returns DoubleQAgent
-
----
-
-## 13. ComparisonStore Class Creation (~45 tasks)
-
-### 13.1 File Setup
-
-- [x] Task 231: Create new file `src/comparison.py`
-- [x] Task 232: Add module docstring: "Comparison system for storing and visualizing multi-algorithm training results"
-- [x] Task 233: Add `from __future__ import annotations` import
-- [x] Task 234: Add `import os` import
-- [x] Task 235: Add `import numpy as np` import
-- [x] Task 236: Add `import matplotlib` import
-- [x] Task 237: Add `matplotlib.use("Agg")` for non-interactive backend
-- [x] Task 238: Add `import matplotlib.pyplot as plt` import
-- [x] Task 239: Verify all imports are necessary
-
-### 13.2 ComparisonStore Class
-
-- [x] Task 240: Define `class ComparisonStore:` class
-- [x] Task 241: Add class docstring: "Store and retrieve training results for algorithm comparison"
-
-### 13.3 ComparisonStore.__init__()
-
-- [x] Task 242: Define `__init__(self) -> None` method
-- [x] Task 243: Add __init__ docstring
-- [x] Task 244: Initialize `self.results: dict = {}`
-- [x] Task 245: Verify results dict is empty on initialization
-
-### 13.4 ComparisonStore.store() Method
-
-- [x] Task 246: Define `store(self, name: str, reward_history: list[float], metrics: dict) -> None`
-- [x] Task 247: Add docstring: "Store training results for one algorithm"
-- [x] Task 248: Store results: `self.results[name] = {"reward_history": reward_history, "metrics": metrics}`
-- [x] Task 249: Verify store overwrites previous results for same name
-- [x] Task 250: Verify store preserves results for other algorithms
-- [x] Task 251: Verify name is used as dictionary key
-
-### 13.5 ComparisonStore.has_results() Method
-
-- [ ] Task 252: Define `has_results(self, name: str) -> bool` method
-- [ ] Task 253: Add docstring: "Check if results exist for a specific algorithm"
-- [ ] Task 254: Implement: `return name in self.results`
-- [ ] Task 255: Verify returns True after storing for name
-- [ ] Task 256: Verify returns False for unknown name
-
-### 13.6 ComparisonStore.has_all() Method
-
-- [ ] Task 257: Define `has_all(self) -> bool` method
-- [ ] Task 258: Add docstring: "Check if all 3 algorithms have results"
-- [ ] Task 259: Define expected algorithms: `["Bellman", "Q-Learning", "Double Q-Learning"]`
-- [ ] Task 260: Implement: `return all(name in self.results for name in expected)`
-- [ ] Task 261: Verify returns True only when all 3 are present
-- [ ] Task 262: Verify returns False when 0, 1, or 2 are present
-
-### 13.7 ComparisonStore.get_histories() Method
-
-- [ ] Task 263: Define `get_histories(self) -> dict[str, list[float]]` method
-- [ ] Task 264: Add docstring: "Return reward histories keyed by algorithm name"
-- [ ] Task 265: Implement: return dict mapping name to reward_history for each stored result
-- [ ] Task 266: Verify returns correct keys
-- [ ] Task 267: Verify returns correct reward lists
-- [ ] Task 268: Verify returns empty dict when no results stored
-
-### 13.8 ComparisonStore.clear() Method
-
-- [x] Task 269: Define `clear(self) -> None` method
-- [x] Task 270: Add docstring: "Clear all stored results"
-- [x] Task 271: Implement: `self.results.clear()`
-- [x] Task 272: Verify results is empty after clear
-- [ ] Task 273: Verify has_all returns False after clear
-- [ ] Task 274: Verify has_results returns False for any name after clear
-- [ ] Task 275: Verify get_histories returns empty dict after clear
-
----
-
-## 14. generate_comparison_chart() Function (~45 tasks)
-
-### 14.1 Function Definition
-
-- [x] Task 276: Define `def generate_comparison_chart(store, output_path, config) -> str:` function
-- [x] Task 277: Add function docstring: "Generate matplotlib chart comparing convergence curves of all algorithms"
-- [x] Task 278: Add type hints for parameters
-- [x] Task 279: Add return type hint as str (output file path)
-
-### 14.2 Matplotlib Figure Creation
-
-- [x] Task 280: Create figure: `fig, ax = plt.subplots(figsize=(10, 6))`
-- [ ] Task 281: Set figure DPI for high-quality output: `fig.set_dpi(100)`
-- [ ] Task 282: Set figure background color
-- [ ] Task 283: Set axes background color
-
-### 14.3 Three Convergence Curves
-
-- [x] Task 284: Get histories from store: `histories = store.get_histories()`
-- [ ] Task 285: Define color mapping for Bellman (orange): from config.colors.algo_bellman
-- [ ] Task 286: Define color mapping for Q-Learning (green): from config.colors.algo_q_learning
-- [ ] Task 287: Define color mapping for Double Q (blue): from config.colors.algo_double_q
-- [ ] Task 288: Convert RGB colors from config (0-255) to matplotlib format (0-1)
-- [x] Task 289: Iterate over histories dict items
-- [x] Task 290: For each algorithm, get reward history list
-- [x] Task 291: Plot raw data or smoothed data for each algorithm
-
-### 14.4 Moving Average Smoothing
-
-- [x] Task 292: Get smoothing window from config: `window = config.comparison.smoothing_window`
-- [x] Task 293: Implement moving average: `np.convolve(data, np.ones(window)/window, mode='valid')`
-- [x] Task 294: Apply smoothing to each algorithm's reward history
-- [x] Task 295: Handle case where history is shorter than window
-- [x] Task 296: Verify smoothed data has correct length
-- [x] Task 297: Verify smoothing reduces noise in the curves
-
-### 14.5 Legend, Labels, Title
-
-- [x] Task 298: Add x-axis label: `ax.set_xlabel("Episode")`
-- [x] Task 299: Add y-axis label: `ax.set_ylabel("Reward (smoothed)")`
-- [x] Task 300: Add title: `ax.set_title("Algorithm Comparison — Convergence Curves")`
-- [x] Task 301: Add legend: `ax.legend()`
-- [x] Task 302: Position legend in upper left or best location
-- [x] Task 303: Add grid lines: `ax.grid(True, alpha=0.3)`
-- [ ] Task 304: Set grid line style to dashed
-- [x] Task 305: Verify all 3 algorithms appear in legend with correct names
-- [x] Task 306: Verify colors match algorithm names in legend
-
-### 14.6 Save to PNG
-
-- [x] Task 307: Create output directory if needed: `os.makedirs(os.path.dirname(output_path), exist_ok=True)`
-- [x] Task 308: Save figure: `fig.savefig(output_path, bbox_inches='tight')`
-- [x] Task 309: Close figure to free memory: `plt.close(fig)`
-- [x] Task 310: Return output_path
-- [x] Task 311: Verify PNG file is created at output_path
-- [x] Task 312: Verify PNG file is not empty
-- [x] Task 313: Verify PNG file is valid image format
-- [x] Task 314: Verify figure is closed after saving (no memory leak)
-
-### 14.7 Edge Cases
-
-- [x] Task 315: Handle case where store has fewer than 3 algorithms
-- [x] Task 316: Handle case where one algorithm has empty reward history
-- [x] Task 317: Handle case where algorithms have different history lengths
-- [x] Task 318: Handle case where output directory does not exist
-- [x] Task 319: Verify chart generation does not crash with edge cases
-- [x] Task 320: Verify function returns the output path string
-
----
-
-## 15. draw_comparison_graph() for Pygame (~10 tasks)
-
-- [x] Task 321: Consider if a Pygame-native comparison display is needed
-- [x] Task 322: If needed, define `draw_comparison_graph(surface, store, config) -> None`
-- [x] Task 323: Load the saved PNG file from data/comparison/
-- [x] Task 324: Convert PNG to Pygame surface
-- [x] Task 325: Scale to fit display area
-- [x] Task 326: Blit onto the provided surface
-- [x] Task 327: Handle case where PNG does not exist yet
-- [x] Task 328: Verify draw does not crash when no comparison data exists
-- [x] Task 329: Verify Pygame display updates correctly
-- [x] Task 330: Verify ruff check passes on comparison.py
-
----
-
-## 16. Comparison.py — Line Count and Quality (~10 tasks)
-
-- [x] Task 331: Count total lines in comparison.py
-- [x] Task 332: Verify comparison.py is approximately ~120 lines
-- [x] Task 333: Verify comparison.py is at or under 150 lines
-- [x] Task 334: Verify ruff check passes on comparison.py
-- [x] Task 335: Verify all functions have docstrings
-- [x] Task 336: Verify all methods have docstrings
-- [x] Task 337: Verify no hardcoded values
-- [x] Task 338: Verify all colors come from config
-- [x] Task 339: Verify smoothing window comes from config
-- [x] Task 340: Verify output path comes from config
-
----
-
-## 17. SDK switch_algorithm() Method (~25 tasks)
-
-- [x] Task 341: Open `src/sdk.py` for editing
-- [x] Task 342: Import ComparisonStore from src.comparison
-- [x] Task 343: Import generate_comparison_chart from src.comparison
-- [x] Task 344: Initialize `self.comparison_store = ComparisonStore()` in SDK __init__
-- [x] Task 345: Define `switch_algorithm(self, name: str) -> None` method
-- [x] Task 346: Add docstring: "Switch to a different algorithm, creating new agent and resetting trainer"
-- [x] Task 347: Update config: `self.config.algorithm.name = name`
-- [x] Task 348: Create new agent via factory: `self.agent = create_agent(self.config)`
-- [x] Task 349: Reset trainer with new agent (preserve environment)
-- [x] Task 350: Log algorithm switch
-- [x] Task 351: Verify environment grid is preserved after switch
-- [x] Task 352: Verify trainer episode count resets
-- [x] Task 353: Verify new agent has correct algorithm_name
-- [x] Task 354: Verify switch to "bellman" creates BellmanAgent
-- [x] Task 355: Verify switch to "q_learning" creates QLearningAgent
-- [x] Task 356: Verify switch to "double_q" creates DoubleQAgent
-- [x] Task 357: Verify switch with invalid name raises ValueError
-- [x] Task 358: Verify switch does not corrupt environment state
-- [x] Task 359: Verify switch can be called multiple times
-- [x] Task 360: Verify switch resets reward history
-- [x] Task 361: Test switch from Bellman to Q-Learning
-- [x] Task 362: Test switch from Q-Learning to Double Q
-- [x] Task 363: Test switch from Double Q back to Bellman
-- [x] Task 364: Verify ruff check passes after switch_algorithm addition
-- [x] Task 365: Verify SDK stays at or under 150 lines
-
----
-
-## 18. SDK run_comparison() Method (~20 tasks)
-
-- [x] Task 366: Define `run_comparison(self, episodes: int = None) -> None` method
-- [x] Task 367: Add docstring: "Train all 3 algorithms sequentially and store results for comparison"
-- [x] Task 368: Default episodes to `self.config.comparison.max_episodes` if None
-- [x] Task 369: Define algorithm list: `["bellman", "q_learning", "double_q"]`
-- [x] Task 370: Iterate over algorithm list
-- [x] Task 371: For each algorithm: call `self.switch_algorithm(name)`
-- [x] Task 372: For each algorithm: train for specified number of episodes
-- [x] Task 373: For each algorithm: collect reward_history from trainer
-- [ ] Task 374: For each algorithm: collect metrics from trainer/game_logic
-- [x] Task 375: For each algorithm: call `self.comparison_store.store(algo_name, history, metrics)`
-- [ ] Task 376: After all algorithms trained: call `self.generate_comparison_chart()`
-- [x] Task 377: Verify all 3 algorithms are trained sequentially
-- [x] Task 378: Verify comparison_store has results for all 3 after completion
-- [x] Task 379: Verify chart is generated after training completes
-- [x] Task 380: Verify environment is preserved between algorithm runs
-- [x] Task 381: Verify run_comparison handles training interruption gracefully
-- [x] Task 382: Test run_comparison with default episodes
-- [x] Task 383: Test run_comparison with custom episodes count
-- [x] Task 384: Verify ruff check passes after run_comparison addition
-- [x] Task 385: Verify SDK stays at or under 150 lines
-
----
-
-## 19. SDK generate_comparison_chart() Method (~10 tasks)
-
-- [x] Task 386: Define `generate_comparison_chart(self) -> str` method
-- [x] Task 387: Add docstring: "Generate and save comparison chart, return file path"
-- [x] Task 388: Get output dir from config: `self.config.comparison.output_dir`
-- [x] Task 389: Construct output path: `os.path.join(output_dir, "comparison.png")`
-- [x] Task 390: Call `generate_comparison_chart(self.comparison_store, output_path, self.config)`
-- [x] Task 391: Return the output file path
-- [x] Task 392: Verify chart file is created
-- [x] Task 393: Verify return value is the file path string
-- [x] Task 394: Verify ruff check passes after addition
-- [x] Task 395: Verify SDK stays at or under 150 lines
-
----
-
-## 20. GUI Algorithm Selector Buttons (~30 tasks)
-
-### 20.1 Buttons — Algorithm Selection
-
-- [x] Task 396: Open `src/buttons.py` for editing
-- [x] Task 397: Locate the `_get_buttons()` function or button definition area
-- [ ] Task 398: Add "Bellman" algorithm selector button
-- [ ] Task 399: Set Bellman button action to `"algo_bellman"`
-- [ ] Task 400: Add "Q-Learning" algorithm selector button
-- [ ] Task 401: Set Q-Learning button action to `"algo_q_learning"`
-- [ ] Task 402: Add "Double Q" algorithm selector button
-- [ ] Task 403: Set Double Q button action to `"algo_double_q"`
-- [ ] Task 404: Add active state highlighting for current algorithm button
-- [ ] Task 405: Use `state_dict["algorithm"]` to determine active button
-- [ ] Task 406: Verify active button uses highlighted color
-- [ ] Task 407: Verify inactive buttons use default color
-- [ ] Task 408: Verify all 3 buttons are visible in the dashboard
-
-### 20.2 Buttons — Compare All
-
-- [ ] Task 409: Add "Compare All" button
-- [ ] Task 410: Set Compare All button action to `"compare"`
-- [ ] Task 411: Verify Compare All button is visible
-- [ ] Task 412: Verify Compare All button triggers comparison
-
-### 20.3 Buttons — Line Count
-
-- [x] Task 413: Count total lines in buttons.py after additions
-- [x] Task 414: Verify buttons.py is at or under 150 lines
-- [x] Task 415: If over 150, extract button config to `src/button_config.py`
-- [x] Task 416: Verify ruff check passes on buttons.py
-- [ ] Task 417: Verify all new buttons have correct labels
-- [ ] Task 418: Verify all new buttons have correct action strings
-- [ ] Task 419: Verify button layout does not overlap existing buttons
-- [ ] Task 420: Verify buttons render correctly at window size
-
----
-
-## 21. GUI Keyboard Shortcuts (1/2/3/C) (~25 tasks)
-
-### 21.1 Key Mappings
-
-- [x] Task 421: Open `src/gui.py` for editing
-- [x] Task 422: Locate the `_on_key()` method or key event handling
-- [x] Task 423: Add key mapping: `pygame.K_1` -> `"algo_bellman"`
-- [x] Task 424: Add key mapping: `pygame.K_2` -> `"algo_q_learning"`
-- [x] Task 425: Add key mapping: `pygame.K_3` -> `"algo_double_q"`
-- [ ] Task 426: Add key mapping: `pygame.K_c` -> `"compare"`
-- [x] Task 427: Verify key 1 switches to Bellman algorithm
-- [x] Task 428: Verify key 2 switches to Q-Learning algorithm
-- [x] Task 429: Verify key 3 switches to Double Q-Learning algorithm
-- [ ] Task 430: Verify key C triggers comparison
-
-### 21.2 Status Bar Updates
-
-- [x] Task 431: Locate _status_bar() method in gui.py
-- [x] Task 432: Add algorithm name to mode display string
-- [x] Task 433: Format: `"Mode: TRAINING [Double Q-Learning]"`
-- [x] Task 434: Read algorithm name from `self.agent.algorithm_name`
-- [ ] Task 435: Update shortcuts string to include: `"1/2/3 Algorithm  C Compare"`
-- [x] Task 436: Verify status bar updates when algorithm changes
-- [x] Task 437: Verify shortcuts text is visible in status bar
-
-### 21.3 GUI — Line Count
-
-- [x] Task 438: Count total lines in gui.py after additions
-- [x] Task 439: Verify gui.py is at or under 150 lines
-- [x] Task 440: Verify ruff check passes on gui.py
-- [x] Task 441: Verify key shortcuts do not conflict with existing shortcuts
-- [x] Task 442: Verify key shortcuts work in both training and editor modes
-- [x] Task 443: Test pressing 1, 2, 3 in sequence switches algorithms correctly
-- [ ] Task 444: Test pressing C triggers comparison flow
-- [x] Task 445: Verify GUI does not crash on rapid key presses
-
----
-
-## 22. Dashboard Alpha Display (~15 tasks)
-
-- [x] Task 446: Open `src/dashboard.py` for editing
-- [x] Task 447: Locate _draw_metrics() method
-- [ ] Task 448: Add algorithm name display: `f"Algorithm: {algorithm_name}"`
-- [ ] Task 449: Position algorithm name in metrics panel
-- [ ] Task 450: Add conditional alpha display: check if `"alpha"` key in metrics
-- [ ] Task 451: If alpha present: render `f"Alpha: {alpha:.4f}"`
-- [ ] Task 452: Position alpha display below epsilon
-- [ ] Task 453: Verify alpha shows for Q-Learning agent
-- [ ] Task 454: Verify alpha shows for Double Q-Learning agent
-- [ ] Task 455: Verify alpha does NOT show for Bellman agent
-- [ ] Task 456: Verify algorithm name shows for all agent types
-- [x] Task 457: Verify dashboard.py stays at or under 150 lines
-- [x] Task 458: If over 150, extract legend to `src/legend.py`
-- [x] Task 459: Verify ruff check passes on dashboard.py
-- [x] Task 460: Verify metrics panel layout is not crowded
-
----
-
-## 23. Actions Dispatch for New Actions (~25 tasks)
-
-- [x] Task 461: Open `src/actions.py` for editing
-- [x] Task 462: Locate the action dispatch dictionary or function
-- [x] Task 463: Add `"algo_bellman"` action handler
-- [x] Task 464: Implement algo_bellman: call `gui.sdk.switch_algorithm("bellman")` or create agent via factory
-- [x] Task 465: Reset gui.agent and gui.logic with new agent
-- [x] Task 466: Set gui.paused = True after algorithm switch
-- [x] Task 467: Add `"algo_q_learning"` action handler
-- [x] Task 468: Implement algo_q_learning: call `gui.sdk.switch_algorithm("q_learning")`
-- [x] Task 469: Reset gui.agent and gui.logic with new agent
-- [x] Task 470: Add `"algo_double_q"` action handler
-- [x] Task 471: Implement algo_double_q: call `gui.sdk.switch_algorithm("double_q")`
-- [x] Task 472: Reset gui.agent and gui.logic with new agent
-- [ ] Task 473: Add `"compare"` action handler
-- [ ] Task 474: Implement compare: if comparison store has results, show chart
-- [ ] Task 475: Implement compare: if no results, trigger `sdk.run_comparison()`
-- [x] Task 476: Verify all new actions are dispatched correctly
-- [x] Task 477: Verify actions handle missing SDK gracefully
-- [x] Task 478: Verify actions handle GUI state correctly
-- [x] Task 479: Verify actions.py stays at or under 150 lines
-- [x] Task 480: If over 150, split into `src/algo_actions.py`
-- [x] Task 481: Verify ruff check passes on actions.py
-- [x] Task 482: Test each new action dispatches correctly
-- [x] Task 483: Test algorithm switch updates agent reference
-- [ ] Task 484: Test compare action triggers training or chart display
-- [x] Task 485: Verify no existing actions are broken
-
----
-
-## 24. Config.yaml — Double Q and Comparison Sections (~20 tasks)
-
-### 24.1 Double Q Section
-
-- [x] Task 486: Open `config/config.yaml` for editing
-- [x] Task 487: Add section comment: `# Double Q-Learning specific hyperparameters`
-- [x] Task 488: Add `double_q:` top-level key
-- [x] Task 489: Add `alpha_start: 0.5` under double_q
-- [ ] Task 490: Add `alpha_end: 0.01` under double_q
-- [ ] Task 491: Add `alpha_decay: 0.999` under double_q
-
-### 24.2 Comparison Section
-
-- [x] Task 492: Add section comment: `# Comparison settings`
-- [x] Task 493: Add `comparison:` top-level key
-- [x] Task 494: Add `max_episodes: 5000` under comparison
-- [x] Task 495: Add `output_dir: data/comparison` under comparison
-- [x] Task 496: Add `smoothing_window: 50` under comparison
-
-### 24.3 Algorithm Curve Colors
-
-- [ ] Task 497: Add `algo_bellman: [255, 160, 40]` to colors section
-- [ ] Task 498: Add `algo_q_learning: [80, 200, 120]` to colors section
-- [ ] Task 499: Add `algo_double_q: [100, 140, 255]` to colors section
-
-### 24.4 Config Verification
-
-- [x] Task 500: Load config and verify double_q.alpha_start is 0.5
-- [ ] Task 501: Load config and verify double_q.alpha_end is 0.01
-- [ ] Task 502: Load config and verify double_q.alpha_decay is 0.999
-- [x] Task 503: Load config and verify comparison.max_episodes is 5000
-- [x] Task 504: Load config and verify comparison.output_dir is "data/comparison"
-- [x] Task 505: Load config and verify comparison.smoothing_window is 50
-
----
-
-## 25. Tests for DoubleQAgent (~55 tasks)
-
-### 25.1 Test File Setup
-
-- [x] Task 506: Create new file `tests/test_double_q_agent.py`
-- [x] Task 507: Add module docstring to test file
-- [x] Task 508: Import pytest
-- [x] Task 509: Import DoubleQAgent from src.double_q_agent
-- [ ] Task 510: Import BaseAgent from src.base_agent
-- [x] Task 511: Import numpy as np
-- [x] Task 512: Create pytest fixture for test config with double_q section
-- [x] Task 513: Create pytest fixture for DoubleQAgent instance
-
-### 25.2 Tests — Initialization
-
-- [x] Task 514: Test QA initialized to zeros with shape (rows, cols, 4)
-- [x] Task 515: Test QB initialized to zeros with shape (rows, cols, 4)
-- [x] Task 516: Test QA and QB are separate arrays (not aliased)
-- [x] Task 517: Test q_table property returns QA + QB
-- [x] Task 518: Test q_table shape is (rows, cols, 4)
-- [x] Task 519: Test alpha initializes to alpha_start
-- [x] Task 520: Test algorithm_name returns "Double Q-Learning"
-- [ ] Task 521: Test DoubleQAgent inherits from BaseAgent
-
-### 25.3 Tests — Update Cross-Table
-
-- [x] Task 522: Test single update modifies exactly one table (not both)
-- [x] Task 523: Test cross-table evaluation: argmax from updating table, value from other
-- [x] Task 524: Test over many updates, both tables accumulate values
-- [x] Task 525: Test update with done=True uses next_val = 0.0
-- [x] Task 526: Test update with done=False uses cross-table value
-- [x] Task 527: Test update uses alpha (not lr)
-- [x] Task 528: Test update formula: Q += alpha * (target - Q)
-- [x] Task 529: Test update does not modify other Q-values
-- [x] Task 530: Test QA update uses QB for evaluation
-- [x] Task 531: Test QB update uses QA for evaluation
-
-### 25.4 Tests — Combined Table Actions
-
-- [x] Task 532: Test get_best_action uses combined QA + QB
-- [ ] Task 533: Test get_max_q uses combined QA + QB
-- [ ] Task 534: Test choose_action works with combined table
-- [x] Task 535: Test get_best_action returns int
-- [ ] Task 536: Test get_max_q returns float
-
-### 25.5 Tests — Alpha Decay
-
-- [x] Task 537: Test alpha decays after decay_epsilon()
-- [x] Task 538: Test alpha never goes below alpha_end
-- [x] Task 539: Test alpha decay is multiplicative
-- [x] Task 540: Test epsilon also decays (inherited)
-
-### 25.6 Tests — Save/Load
-
-- [x] Task 541: Test save creates two .npy files (_a.npy and _b.npy)
-- [x] Task 542: Test load restores both tables correctly
-- [x] Task 543: Test save/load round-trip preserves both tables
-- [x] Task 544: Test saved QA matches in-memory QA
-- [x] Task 545: Test saved QB matches in-memory QB
-
-### 25.7 Tests — Edge Cases
-
-- [x] Task 546: Test with all-zero tables
-- [x] Task 547: Test with one table modified, other zero
-- [x] Task 548: Test with negative Q-values
-- [x] Task 549: Test with very large Q-values
-- [x] Task 550: Test multiple sequential updates
-- [x] Task 551: Test update followed by get_best_action
-- [x] Task 552: Run all DoubleQAgent tests
-- [x] Task 553: Run ruff check on test file
-- [x] Task 554: Verify coverage for double_q_agent.py is 85%+
-
----
-
-## 26. Tests for ComparisonStore (~25 tasks)
-
-- [x] Task 555: Create or extend `tests/test_comparison.py`
-- [x] Task 556: Import ComparisonStore from src.comparison
-- [x] Task 557: Test store() saves results under algorithm name
-- [ ] Task 558: Test has_results() returns True after storing
-- [ ] Task 559: Test has_results() returns False before storing
-- [ ] Task 560: Test has_all() returns True when all 3 algorithms present
-- [ ] Task 561: Test has_all() returns False when only 1 algorithm present
-- [ ] Task 562: Test has_all() returns False when only 2 algorithms present
-- [ ] Task 563: Test get_histories() returns dict with correct keys
-- [ ] Task 564: Test get_histories() returns correct reward lists
-- [ ] Task 565: Test get_histories() returns empty dict when no results
-- [x] Task 566: Test clear() removes all stored results
-- [ ] Task 567: Test clear() makes has_all return False
-- [ ] Task 568: Test store overwrites previous results for same name
-- [ ] Task 569: Test store preserves other algorithm results
-- [x] Task 570: Run all ComparisonStore tests
-- [x] Task 571: Verify ruff check passes on test file
-
----
-
-## 27. Tests for Chart Generation (~10 tasks)
-
-- [x] Task 572: Test generate_comparison_chart creates PNG file
-- [x] Task 573: Test chart file is not empty
-- [x] Task 574: Test chart generation creates output directory
-- [x] Task 575: Test chart with 3 algorithm histories
-- [x] Task 576: Test chart with 1 algorithm history (partial)
-- [x] Task 577: Test chart handles empty history gracefully
-- [x] Task 578: Test smoothing window applies correctly
-- [x] Task 579: Test chart function returns output path
-- [x] Task 580: Run all chart generation tests
-- [x] Task 581: Verify ruff check passes
-
----
-
-## 28. Final Verification (~4 tasks)
-
-- [x] Task 582: Run full test suite: `uv run pytest` — all tests pass
-- [x] Task 583: Run coverage check: 85%+ on all new files
-- [x] Task 584: Run lint check: `uv run ruff check src/ tests/` — zero violations
-- [x] Task 585: Verify all new files are at or under 150 lines
-
----
-
-## Summary
-
-| Section | Tasks |
-|---------|-------|
-| 1. DoubleQAgent File Setup | 15 |
-| 2. DoubleQAgent Class Definition | 10 |
-| 3. DoubleQAgent.__init__() | 30 |
-| 4. DoubleQAgent.update() | 40 |
-| 5. DoubleQAgent.q_table Property | 20 |
-| 6. get_best_action() Combined | 15 |
-| 7. get_max_q() Combined | 15 |
-| 8. save() Two Files | 20 |
-| 9. load() Two Files | 20 |
-| 10. Alpha Decay | 20 |
-| 11. Line Count & Quality | 10 |
-| 12. Agent Factory Registration | 15 |
-| 13. ComparisonStore Class | 45 |
-| 14. generate_comparison_chart() | 45 |
-| 15. draw_comparison_graph() Pygame | 10 |
-| 16. comparison.py Quality | 10 |
-| 17. SDK switch_algorithm() | 25 |
-| 18. SDK run_comparison() | 20 |
-| 19. SDK generate_comparison_chart() | 10 |
-| 20. GUI Algorithm Buttons | 25 |
-| 21. GUI Keyboard Shortcuts | 25 |
-| 22. Dashboard Alpha Display | 15 |
-| 23. Actions Dispatch | 25 |
-| 24. Config.yaml Additions | 20 |
-| 25. Tests for DoubleQAgent | 49 |
-| 26. Tests for ComparisonStore | 17 |
-| 27. Tests for Chart Generation | 10 |
-| 28. Final Verification | 4 |
-| **Total** | **585** |
+# TODO — Double Q-Learning (Assignment 2)
+
+## DoubleQAgent file setup
+- [x] Task 1: Create src/double_q_agent.py file
+- [x] Task 2: Add module-level docstring describing DoubleQAgent
+- [x] Task 3: Import numpy as np
+- [x] Task 4: Import random module for 50/50 selection
+- [x] Task 5: Import BaseAgent from src.base_agent
+- [x] Task 6: Import load_config helper from src.config
+- [x] Task 7: Add type hints import from typing
+- [x] Task 8: Add Tuple and Optional type imports
+- [x] Task 9: Keep file under 150 line limit
+- [x] Task 10: Add module-level constants placeholder
+- [x] Task 11: Ensure no hardcoded values in file
+- [x] Task 12: Place file next to base_agent.py in src
+- [x] Task 13: Confirm file is discoverable by factory
+- [x] Task 14: Run ruff on empty file
+- [x] Task 15: Commit initial empty file skeleton
+
+## DoubleQAgent class definition
+- [x] Task 16: Declare class DoubleQAgent(BaseAgent)
+- [x] Task 17: Add class docstring describing dual Q-tables
+- [x] Task 18: Set algorithm_name = "Double Q-Learning"
+- [x] Task 19: Document cross-table evaluation strategy
+- [x] Task 20: Document decaying alpha requirement
+- [x] Task 21: Document 50/50 table selection
+- [x] Task 22: Add class attribute for algorithm key
+- [x] Task 23: Confirm inheritance chain is valid
+- [x] Task 24: Ensure class compiles without errors
+- [x] Task 25: Ensure ruff passes on class skeleton
+- [x] Task 26: Add class to module __all__ list
+- [x] Task 27: Verify class name matches factory registration
+- [x] Task 28: Confirm class exposes algorithm_name publicly
+- [x] Task 29: Add reference to PRD_double_q_learning.md
+- [x] Task 30: Add reference to PLAN_double_q_learning.md
+
+## DoubleQAgent __init__ with two tables
+- [x] Task 31: Define __init__ accepting state_size and action_size
+- [x] Task 32: Accept optional config argument
+- [x] Task 33: Call super().__init__() first
+- [x] Task 34: Load double_q section from config
+- [x] Task 35: Read alpha_start from config.double_q
+- [x] Task 36: Read alpha_end from config.double_q
+- [x] Task 37: Read alpha_decay from config.double_q
+- [x] Task 38: Initialize self.alpha from alpha_start
+- [x] Task 39: Store self.alpha_end
+- [x] Task 40: Store self.alpha_decay
+- [x] Task 41: Allocate q_table_a as NumPy zeros array
+- [x] Task 42: Allocate q_table_b as NumPy zeros array
+- [x] Task 43: Use same shape for QA and QB
+- [x] Task 44: Shape must be (rows, cols, num_actions)
+- [x] Task 45: Use float64 dtype for QA and QB
+- [x] Task 46: Record state_size as instance attribute
+- [x] Task 47: Record action_size as instance attribute
+- [x] Task 48: Seed random module if config seed provided
+- [x] Task 49: Store original alpha_start for resets
+- [x] Task 50: Ensure no base class init overwrites QA/QB
+- [x] Task 51: Raise ValueError for negative alpha values
+- [x] Task 52: Raise ValueError for alpha_decay > 1
+- [x] Task 53: Raise ValueError for alpha_end > alpha_start
+- [x] Task 54: Log initialization parameters at debug level
+- [x] Task 55: Confirm __init__ completes under 30 lines
+- [x] Task 56: Confirm no hardcoded shapes
+- [x] Task 57: Confirm q_table_a distinct from q_table_b
+- [x] Task 58: Assert tables have identical shape post-init
+- [x] Task 59: Expose shape via helper method
+- [x] Task 60: Ensure __init__ is idempotent for reset
+
+## Combined q_table property (QA+QB)
+- [x] Task 61: Define q_table as a @property
+- [x] Task 62: Return q_table_a + q_table_b
+- [x] Task 63: Document sum semantics in docstring
+- [x] Task 64: Ensure property returns new array not view
+- [x] Task 65: Confirm dtype matches underlying tables
+- [x] Task 66: Confirm shape matches underlying tables
+- [x] Task 67: Benchmark property access time
+- [x] Task 68: Confirm GUI uses combined table
+- [x] Task 69: Confirm heatmap uses combined table
+- [x] Task 70: Add test for combined sum correctness
+- [x] Task 71: Add test for property immutability
+- [x] Task 72: Verify property handles zero tables
+- [x] Task 73: Verify property handles negative values
+- [x] Task 74: Verify property after many updates
+- [x] Task 75: Use property in get_best_action inheritance
+- [x] Task 76: Use property in get_max_q inheritance
+- [x] Task 77: Confirm no recursion via setter
+- [x] Task 78: Document why sum rather than mean
+- [x] Task 79: Reference original Hasselt paper in docstring
+- [x] Task 80: Ensure property works during save/load
+
+## q_table setter no-op
+- [x] Task 81: Define q_table.setter as no-op
+- [x] Task 82: Document reason for no-op override
+- [x] Task 83: Ensure BaseAgent init does not crash
+- [x] Task 84: Prevent accidental overwrite of QA/QB
+- [x] Task 85: Add pass statement in setter body
+- [x] Task 86: Add test that setter does not modify tables
+- [x] Task 87: Add test that setter accepts any input
+- [x] Task 88: Confirm setter returns None
+- [x] Task 89: Confirm setter preserves QA integrity
+- [x] Task 90: Confirm setter preserves QB integrity
+- [x] Task 91: Add ruff noqa if needed for unused arg
+- [x] Task 92: Log warning if setter called externally
+- [x] Task 93: Document hack in code comments
+- [x] Task 94: Ensure setter signature accepts value
+- [x] Task 95: Ensure setter cannot be removed without breaking init
+
+## update() 50/50 table selection
+- [x] Task 96: Override update(state, action, reward, next_state, done)
+- [x] Task 97: Call random.random() to pick table
+- [x] Task 98: Branch on value < 0.5 for QA update
+- [x] Task 99: Branch on value >= 0.5 for QB update
+- [x] Task 100: Ensure branches are mutually exclusive
+- [x] Task 101: Ensure probability is exactly 50/50
+- [x] Task 102: Support reproducible RNG via config seed
+- [x] Task 103: Verify selection distribution via test
+- [x] Task 104: Confirm update does not shuffle tables
+- [x] Task 105: Confirm update picks only one table per call
+- [x] Task 106: Log selected table at debug level
+- [x] Task 107: Track selection counts for diagnostics
+- [x] Task 108: Ensure no table bias over long runs
+- [x] Task 109: Confirm update returns None
+- [x] Task 110: Keep update body under 30 lines
+
+## Cross-table evaluation (argmax one, value other)
+- [x] Task 111: For QA update compute argmax over QA[next_state]
+- [x] Task 112: Use QB[next_state, best_a] as bootstrap value
+- [x] Task 113: For QB update compute argmax over QB[next_state]
+- [x] Task 114: Use QA[next_state, best_a] as bootstrap value
+- [x] Task 115: Compute TD target = reward + gamma * bootstrap
+- [x] Task 116: Zero bootstrap if done flag is True
+- [x] Task 117: Compute TD error = target - current_q
+- [x] Task 118: Apply alpha * td_error to selected table
+- [x] Task 119: Update only the selected table cell
+- [x] Task 120: Leave the other table unchanged in this step
+- [x] Task 121: Confirm argmax ties broken deterministically
+- [x] Task 122: Confirm cross-table reduces overestimation
+- [x] Task 123: Write test for argmax-from-QA bootstrap-from-QB
+- [x] Task 124: Write test for argmax-from-QB bootstrap-from-QA
+- [x] Task 125: Write test for symmetric learning over N steps
+- [x] Task 126: Write test showing QA != QB after updates
+- [x] Task 127: Validate against hand-computed example
+- [x] Task 128: Document formula in docstring
+- [x] Task 129: Reference Double Q-Learning paper equation
+- [x] Task 130: Verify gamma read from config.agent
+
+## Terminal state handling
+- [x] Task 131: Detect done flag in update signature
+- [x] Task 132: Skip bootstrap when done is True
+- [x] Task 133: Set target = reward on terminal transition
+- [x] Task 134: Write test for terminal QA update
+- [x] Task 135: Write test for terminal QB update
+- [x] Task 136: Confirm no out-of-bounds on terminal next_state
+- [x] Task 137: Allow next_state=None on terminal
+- [x] Task 138: Document terminal semantics in docstring
+- [x] Task 139: Ensure reward-only update does not use bootstrap
+- [x] Task 140: Ensure both tables can still learn terminal values
+- [x] Task 141: Add regression test for delivery-cell update
+- [x] Task 142: Add regression test for crash-cell update
+- [x] Task 143: Confirm alpha still applied on terminal
+- [x] Task 144: Confirm td_error sign correct on terminal
+- [x] Task 145: Document edge case in code comments
+
+## DoubleQAgent decay_alpha
+- [x] Task 146: Override decay_alpha method
+- [x] Task 147: Compute new_alpha = alpha * alpha_decay
+- [x] Task 148: Clip to alpha_end floor
+- [x] Task 149: Assign self.alpha to new value
+- [x] Task 150: Return new alpha value
+- [x] Task 151: Call decay_alpha at end of each episode
+- [x] Task 152: Write test for single decay step
+- [x] Task 153: Write test for decay floor enforcement
+- [x] Task 154: Write test that decay never produces negative alpha
+- [x] Task 155: Write test that decay is monotonic non-increasing
+- [x] Task 156: Log alpha value every N episodes
+- [x] Task 157: Confirm no hardcoded constants in decay_alpha
+- [x] Task 158: Document decay formula in method docstring
+- [x] Task 159: Confirm decay_alpha is called by SDK train loop
+- [x] Task 160: Confirm decay_alpha is called by CLI run loop
+
+## DoubleQAgent override decay_epsilon
+- [x] Task 161: Override decay_epsilon method
+- [x] Task 162: Compute new_eps = epsilon * epsilon_decay
+- [x] Task 163: Clip to epsilon_end floor
+- [x] Task 164: Assign self.epsilon to new value
+- [x] Task 165: Return new epsilon value
+- [x] Task 166: Reuse base formula but allow override
+- [x] Task 167: Write test for epsilon decay step
+- [x] Task 168: Write test for epsilon floor
+- [x] Task 169: Confirm epsilon decays each episode
+- [x] Task 170: Confirm epsilon used in choose_action
+- [x] Task 171: Log epsilon value at debug
+- [x] Task 172: Ensure epsilon_start from config.agent
+- [x] Task 173: Ensure epsilon_end from config.agent
+- [x] Task 174: Ensure epsilon_decay from config.agent
+- [x] Task 175: Confirm no hardcoded epsilon values
+
+## DoubleQAgent save (dual files)
+- [x] Task 176: Override save(path) method
+- [x] Task 177: Derive path_a by inserting _a before .npy
+- [x] Task 178: Derive path_b by inserting _b before .npy
+- [x] Task 179: Call np.save(path_a, q_table_a)
+- [x] Task 180: Call np.save(path_b, q_table_b)
+- [x] Task 181: Create parent directory if missing
+- [x] Task 182: Log save paths at info level
+- [x] Task 183: Write test that save creates both files
+- [x] Task 184: Write test that file shapes match QA/QB
+- [x] Task 185: Write test using tmp_path fixture
+- [x] Task 186: Handle write errors with clear exception
+- [x] Task 187: Return list of written paths
+- [x] Task 188: Document dual-file format in docstring
+- [x] Task 189: Ensure save works with custom extension
+- [x] Task 190: Ensure save preserves dtype
+
+## DoubleQAgent load (dual files)
+- [x] Task 191: Override load(path) method
+- [x] Task 192: Derive path_a and path_b from base path
+- [x] Task 193: Call np.load(path_a) into q_table_a
+- [x] Task 194: Call np.load(path_b) into q_table_b
+- [x] Task 195: Validate loaded shapes match expected
+- [x] Task 196: Raise FileNotFoundError if either file missing
+- [x] Task 197: Log load paths at info level
+- [x] Task 198: Write test round-trip save then load
+- [x] Task 199: Write test for missing file error
+- [x] Task 200: Write test for shape mismatch error
+- [x] Task 201: Ensure dtype preserved on load
+- [x] Task 202: Ensure combined q_table still valid after load
+- [x] Task 203: Document dual-file load semantics
+- [x] Task 204: Preserve alpha/epsilon on load
+- [x] Task 205: Confirm load does not reset decay state
+
+## Factory registration of double_q
+- [x] Task 206: Open src/agent_factory.py
+- [x] Task 207: Import DoubleQAgent
+- [x] Task 208: Add "double_q" key to AGENT_REGISTRY
+- [x] Task 209: Map key to DoubleQAgent class
+- [x] Task 210: Ensure build_agent dispatches double_q
+- [x] Task 211: Raise KeyError with clear message on unknown algo
+- [x] Task 212: Write test that factory returns DoubleQAgent
+- [x] Task 213: Write test that double_q key is case-sensitive
+- [x] Task 214: Confirm factory supports bellman, q_learning, double_q
+- [x] Task 215: Document factory extension pattern
+- [x] Task 216: Confirm factory used by SDK
+- [x] Task 217: Confirm factory used by CLI
+- [x] Task 218: Confirm factory used by tests
+- [x] Task 219: Expose registry keys via helper function
+- [x] Task 220: Ensure ruff passes on factory module
+
+## Config double_q section
+- [x] Task 221: Open config/config.yaml
+- [x] Task 222: Add double_q top-level section
+- [x] Task 223: Add alpha_start: 0.5 under double_q
+- [x] Task 224: Add alpha_end: 0.05 under double_q
+- [x] Task 225: Add alpha_decay: 0.9995 under double_q
+- [x] Task 226: Document each key with a YAML comment
+- [x] Task 227: Add algorithm key at top level accepting double_q
+- [x] Task 228: Ensure config loader reads double_q section
+- [x] Task 229: Ensure config schema validates double_q types
+- [x] Task 230: Add default fallback if section missing
+- [x] Task 231: Write test for loading double_q values
+- [x] Task 232: Write test for algorithm key selection
+- [x] Task 233: Confirm values appear in BaseAgent init
+- [x] Task 234: Confirm values appear in comparison runs
+- [x] Task 235: Document tuning guidance in PRD
+
+## ComparisonStore class
+- [x] Task 236: Create or open src/comparison.py
+- [x] Task 237: Define class ComparisonStore
+- [x] Task 238: Add docstring describing role
+- [x] Task 239: Define __init__ storing runs dict
+- [x] Task 240: Ensure runs keys are algorithm names
+- [x] Task 241: Ensure runs values are reward histories
+- [x] Task 242: Add type hints on all attributes
+- [x] Task 243: Add type hints on all methods
+- [x] Task 244: Ensure class fits within 150-line file limit
+- [x] Task 245: Ensure single responsibility for storage
+- [x] Task 246: Add __repr__ for debugging
+- [x] Task 247: Add __len__ returning number of runs
+- [x] Task 248: Keep class attribute-free where possible
+- [x] Task 249: Ensure ruff passes
+- [x] Task 250: Register class in module __all__
+
+## ComparisonStore add_run / clear / algorithms
+- [x] Task 251: Implement add_run(name, history)
+- [x] Task 252: Validate name is a string
+- [x] Task 253: Validate history is a sequence of numbers
+- [x] Task 254: Store history under runs[name]
+- [x] Task 255: Overwrite existing entry if same name
+- [x] Task 256: Implement clear() method
+- [x] Task 257: clear() resets runs dict to empty
+- [x] Task 258: Implement algorithms() method
+- [x] Task 259: algorithms() returns sorted key list
+- [x] Task 260: Write test for add_run single entry
+- [x] Task 261: Write test for add_run overwrite
+- [x] Task 262: Write test for clear empties runs
+- [x] Task 263: Write test for algorithms() ordering
+- [x] Task 264: Write test for algorithms() empty state
+- [x] Task 265: Document methods in docstrings
+
+## ComparisonStore has_results / has_all / get_histories
+- [x] Task 266: Implement has_results(name) returning bool
+- [x] Task 267: Implement has_all(names) returning bool
+- [x] Task 268: has_all accepts iterable of names
+- [x] Task 269: has_all returns True only if every name present
+- [x] Task 270: Implement get_histories(names) returning dict
+- [x] Task 271: get_histories returns shallow copy
+- [x] Task 272: Raise KeyError for missing names in get_histories
+- [x] Task 273: Write test for has_results true path
+- [x] Task 274: Write test for has_results false path
+- [x] Task 275: Write test for has_all partial match
+- [x] Task 276: Write test for has_all full match
+- [x] Task 277: Write test for get_histories returns copy
+- [x] Task 278: Write test for get_histories key ordering
+- [x] Task 279: Ensure methods do not mutate state
+- [x] Task 280: Document query API in docstrings
+
+## smooth() moving average
+- [x] Task 281: Define smooth(values, window) function
+- [x] Task 282: Accept list or np.ndarray as values
+- [x] Task 283: Validate window is positive integer
+- [x] Task 284: Clamp window to len(values) if larger
+- [x] Task 285: Use np.convolve with ones/window kernel
+- [x] Task 286: Pass mode="same" to np.convolve
+- [x] Task 287: Return np.ndarray of same length as input
+- [x] Task 288: Handle empty input gracefully
+- [x] Task 289: Handle window=1 as identity
+- [x] Task 290: Write test for simple constant sequence
+- [x] Task 291: Write test for linear sequence smoothing
+- [x] Task 292: Write test for edge window larger than data
+- [x] Task 293: Write test for output length equality
+- [x] Task 294: Document function behavior in docstring
+- [x] Task 295: Ensure no hardcoded window default
+
+## generate_comparison_chart (matplotlib)
+- [x] Task 296: Import matplotlib and set Agg backend before pyplot
+- [x] Task 297: Define generate_comparison_chart function
+- [x] Task 298: Accept store, output_path, smoothing_window args
+- [x] Task 299: Accept title and ylabel arguments
+- [x] Task 300: Create figure with configured size
+- [x] Task 301: Create axes via subplots
+- [x] Task 302: Iterate over store.algorithms()
+- [x] Task 303: Apply smooth() to each history
+- [x] Task 304: Plot each smoothed history as a line
+- [x] Task 305: Use ALGORITHM_LABELS for line labels
+- [x] Task 306: Use ALGORITHM_COLORS for line colors
+- [x] Task 307: Add legend at best location
+- [x] Task 308: Add x-axis label Episode
+- [x] Task 309: Add y-axis label Reward
+- [x] Task 310: Add chart title from argument
+- [x] Task 311: Enable grid with subtle alpha
+- [x] Task 312: Tight layout before save
+- [x] Task 313: Save PNG to output_path
+- [x] Task 314: Close figure after save to free memory
+- [x] Task 315: Return output_path from function
+- [x] Task 316: Create parent directory if missing
+- [x] Task 317: Write test that PNG file is created
+- [x] Task 318: Write test with mocked plt.savefig
+- [x] Task 319: Write test for missing algorithms raises
+- [x] Task 320: Ensure Agg backend chosen before pyplot import
+
+## ALGORITHM_LABELS and COLORS constants
+- [x] Task 321: Define ALGORITHM_LABELS at module top
+- [x] Task 322: Map bellman to human-readable label
+- [x] Task 323: Map q_learning to human-readable label
+- [x] Task 324: Map double_q to human-readable label
+- [x] Task 325: Define ALGORITHM_COLORS at module top
+- [x] Task 326: Pick distinct color for bellman
+- [x] Task 327: Pick distinct color for q_learning
+- [x] Task 328: Pick distinct color for double_q
+- [x] Task 329: Source colors from config.colors where possible
+- [x] Task 330: Fallback to sensible defaults
+- [x] Task 331: Add test that keys align across maps
+- [x] Task 332: Add test that labels are non-empty strings
+- [x] Task 333: Add test that colors are valid hex or names
+- [x] Task 334: Document constants in module docstring
+- [x] Task 335: Ensure constants are immutable by convention
+
+## SDK switch_algorithm
+- [x] Task 336: Open src/sdk.py
+- [x] Task 337: Add switch_algorithm(name) method to SDK class
+- [x] Task 338: Validate name is a known algorithm key
+- [x] Task 339: Update config.algorithm to name
+- [x] Task 340: Reset agent using factory with new name
+- [x] Task 341: Reset reward history tracker
+- [x] Task 342: Reset episode counter
+- [x] Task 343: Keep environment and grid intact
+- [x] Task 344: Emit change event to GUI observer
+- [x] Task 345: Log algorithm switch at info level
+- [x] Task 346: Return new agent reference
+- [x] Task 347: Write test switching bellman to q_learning
+- [x] Task 348: Write test switching q_learning to double_q
+- [x] Task 349: Write test switching to invalid name raises
+- [x] Task 350: Document method in SDK docstring
+
+## SDK run_comparison (same board)
+- [x] Task 351: Add run_comparison(episodes) method to SDK
+- [x] Task 352: Snapshot current grid layout
+- [x] Task 353: Snapshot goal and start positions
+- [x] Task 354: Snapshot wind and dynamic_board state
+- [x] Task 355: Save original algorithm name
+- [x] Task 356: Loop over ["bellman", "q_learning", "double_q"]
+- [x] Task 357: Switch algorithm via switch_algorithm
+- [x] Task 358: Restore grid snapshot before each run
+- [x] Task 359: Train agent for given episode count
+- [x] Task 360: Capture reward history per algorithm
+- [x] Task 361: Add history to ComparisonStore
+- [x] Task 362: Restore original algorithm after loop
+- [x] Task 363: Restore original grid state after loop
+- [x] Task 364: Return ComparisonStore instance
+- [x] Task 365: Log per-algorithm runtime
+- [x] Task 366: Write test that all three algos run
+- [x] Task 367: Write test that grid is restored after
+- [x] Task 368: Write test that histories length equals episodes
+- [x] Task 369: Ensure deterministic seed propagation
+- [x] Task 370: Document method in SDK docstring
+
+## SDK generate_chart
+- [x] Task 371: Add generate_chart(store, path) method to SDK
+- [x] Task 372: Delegate to comparison.generate_comparison_chart
+- [x] Task 373: Use config.comparison.smoothing_window
+- [x] Task 374: Use config.comparison.output_dir as default
+- [x] Task 375: Resolve absolute output path
+- [x] Task 376: Create output directory if missing
+- [x] Task 377: Log generated chart path at info
+- [x] Task 378: Return path from method
+- [x] Task 379: Write test that chart file exists
+- [x] Task 380: Write test that method uses configured window
+- [x] Task 381: Handle empty store with clear error
+- [x] Task 382: Handle missing algorithm with clear error
+- [x] Task 383: Document method in SDK docstring
+- [x] Task 384: Ensure no hardcoded paths
+- [x] Task 385: Ensure no hardcoded window size
+
+## Config comparison section
+- [x] Task 386: Add comparison section to config.yaml
+- [x] Task 387: Add max_episodes: 5000
+- [x] Task 388: Add smoothing_window: 50
+- [x] Task 389: Add output_dir: data/comparison
+- [x] Task 390: Document each key with comment
+- [x] Task 391: Ensure config loader exposes section
+- [x] Task 392: Add default fallback if section missing
+- [x] Task 393: Write test for loading comparison keys
+- [x] Task 394: Confirm values consumed by SDK
+- [x] Task 395: Confirm values consumed by script
+- [x] Task 396: Validate max_episodes is positive int
+- [x] Task 397: Validate smoothing_window is positive int
+- [x] Task 398: Validate output_dir is string path
+- [x] Task 399: Ensure path works cross-platform
+- [x] Task 400: Document tuning guidance for smoothing_window
+
+## GUI keyboard 1/2/3 algorithm switching
+- [x] Task 401: Open src/gui.py
+- [x] Task 402: Handle pygame KEYDOWN event
+- [x] Task 403: Map key 1 to switch_algorithm bellman
+- [x] Task 404: Map key 2 to switch_algorithm q_learning
+- [x] Task 405: Map key 3 to switch_algorithm double_q
+- [x] Task 406: Use action dispatcher not direct SDK calls
+- [x] Task 407: Ignore keys when input focused elsewhere
+- [x] Task 408: Debounce rapid key presses
+- [x] Task 409: Log chosen algorithm to console
+- [x] Task 410: Update status bar on switch
+- [x] Task 411: Redraw heatmap using combined q_table
+- [x] Task 412: Redraw agent state on switch
+- [x] Task 413: Write test for key 1 dispatch
+- [x] Task 414: Write test for key 2 dispatch
+- [x] Task 415: Write test for key 3 dispatch
+
+## GUI keyboard C run comparison
+- [x] Task 416: Map key C to run_comparison action
+- [x] Task 417: Show busy indicator during run
+- [x] Task 418: Disable inputs while running
+- [x] Task 419: Spawn comparison in background thread
+- [x] Task 420: Poll completion from main loop
+- [x] Task 421: Hide busy indicator on completion
+- [x] Task 422: Open generated chart via OS default viewer
+- [x] Task 423: Log run duration to console
+- [x] Task 424: Show toast on success
+- [x] Task 425: Show toast on failure
+- [x] Task 426: Write test for key C dispatch
+- [x] Task 427: Write test for busy indicator toggle
+- [x] Task 428: Write test that run uses configured episodes
+- [x] Task 429: Ensure key C not triggered during input focus
+- [x] Task 430: Document keyboard shortcuts in README
+
+## Actions use_bellman/q_learning/double_q
+- [x] Task 431: Open src/actions.py
+- [x] Task 432: Define use_bellman action function
+- [x] Task 433: Define use_q_learning action function
+- [x] Task 434: Define use_double_q action function
+- [x] Task 435: Each action calls sdk.switch_algorithm
+- [x] Task 436: Each action updates status bar
+- [x] Task 437: Each action logs selection
+- [x] Task 438: Register actions in dispatcher map
+- [x] Task 439: Write test for use_bellman
+- [x] Task 440: Write test for use_q_learning
+- [x] Task 441: Write test for use_double_q
+- [x] Task 442: Ensure actions are idempotent
+- [x] Task 443: Ensure actions handle missing SDK gracefully
+- [x] Task 444: Document action contracts in module docstring
+- [x] Task 445: Confirm ruff passes on actions module
+
+## Actions run_comparison subprocess
+- [x] Task 446: Define run_comparison action
+- [x] Task 447: Build subprocess command for comparison script
+- [x] Task 448: Pass episodes argument from config
+- [x] Task 449: Pass output_dir argument from config
+- [x] Task 450: Launch via subprocess.Popen
+- [x] Task 451: Capture stdout and stderr streams
+- [x] Task 452: Stream child logs to main logger
+- [x] Task 453: Return process handle to caller
+- [x] Task 454: Handle non-zero exit codes
+- [x] Task 455: Kill process on GUI close
+- [x] Task 456: Write test with mocked subprocess
+- [x] Task 457: Write test for exit code propagation
+- [x] Task 458: Write test for argument construction
+- [x] Task 459: Ensure subprocess uses uv run
+- [x] Task 460: Document subprocess lifecycle
+
+## Status bar algorithm display
+- [x] Task 461: Identify status bar component in GUI
+- [x] Task 462: Add Algorithm: <name> segment
+- [x] Task 463: Read name from sdk.agent.algorithm_name
+- [x] Task 464: Use ALGORITHM_LABELS for display text
+- [x] Task 465: Update segment on algorithm switch
+- [x] Task 466: Use configured color for segment text
+- [x] Task 467: Use configured font from config.gui
+- [x] Task 468: Handle long names with ellipsis
+- [x] Task 469: Write test for initial algorithm display
+- [x] Task 470: Write test for update on switch
+- [x] Task 471: Ensure status bar within 150-line file limit
+- [x] Task 472: Ensure no hardcoded labels
+- [x] Task 473: Ensure no hardcoded fonts
+- [x] Task 474: Document status bar segments in code
+- [x] Task 475: Render segment each frame
+
+## Dashboard alpha display
+- [x] Task 476: Open src/dashboard.py
+- [x] Task 477: Detect if agent has alpha attribute
+- [x] Task 478: Add Alpha: value line to dashboard
+- [x] Task 479: Format alpha with configured decimals
+- [x] Task 480: Hide Alpha line when attribute missing
+- [x] Task 481: Update Alpha value each frame
+- [x] Task 482: Use configured font for dashboard
+- [x] Task 483: Use configured color for dashboard text
+- [x] Task 484: Write test that bellman hides alpha
+- [x] Task 485: Write test that q_learning shows alpha
+- [x] Task 486: Write test that double_q shows alpha
+- [x] Task 487: Write test for alpha format precision
+- [x] Task 488: Ensure dashboard file under 150 lines
+- [x] Task 489: Document alpha semantics in module
+- [x] Task 490: Ensure no hardcoded decimal count
+
+## scripts/generate_comparison_charts.py
+- [x] Task 491: Create scripts/generate_comparison_charts.py
+- [x] Task 492: Add shebang and uv-compatible header
+- [x] Task 493: Import SDK and comparison module
+- [x] Task 494: Import config loader
+- [x] Task 495: Parse CLI args for scenario name
+- [x] Task 496: Parse CLI args for output_dir override
+- [x] Task 497: Load config via loader
+- [x] Task 498: Instantiate SDK with config
+- [x] Task 499: Run scenario 1 medium noise
+- [x] Task 500: Run scenario 2 hard noise
+- [x] Task 501: Save scenario1_medium.png
+- [x] Task 502: Save scenario2_hard.png
+- [x] Task 503: Print generated paths to stdout
+- [x] Task 504: Exit with 0 on success
+- [x] Task 505: Exit with 1 on failure
+- [x] Task 506: Handle Ctrl+C cleanly
+- [x] Task 507: Ensure script under 150 lines
+- [x] Task 508: Ensure no hardcoded paths
+- [x] Task 509: Document script usage in module docstring
+- [x] Task 510: Add smoke test for script via subprocess
+
+## Two scenarios (medium, hard)
+- [x] Task 511: Define scenario1 medium config profile
+- [x] Task 512: Set medium noise level from config
+- [x] Task 513: Set medium obstacle density from config
+- [x] Task 514: Use configured max_episodes for scenario1
+- [x] Task 515: Define scenario2 hard config profile
+- [x] Task 516: Set high noise level from config
+- [x] Task 517: Set high obstacle density from config
+- [x] Task 518: Use configured max_episodes for scenario2
+- [x] Task 519: Run all three algorithms per scenario
+- [x] Task 520: Store histories in ComparisonStore per scenario
+- [x] Task 521: Generate chart per scenario
+- [x] Task 522: Write chart under data/comparison
+- [x] Task 523: Commit generated PNGs to repo
+- [x] Task 524: Verify medium shows Bellman converging slower
+- [x] Task 525: Verify hard shows Bellman failing
+- [x] Task 526: Verify hard shows Q-Learning failing
+- [x] Task 527: Verify hard shows Double Q converging
+- [x] Task 528: Document scenarios in README
+- [x] Task 529: Document scenarios in PRD
+- [x] Task 530: Document scenarios in PLAN
+
+## README comparison section
+- [x] Task 531: Open README.md
+- [x] Task 532: Add Algorithm Comparison section
+- [x] Task 533: Embed scenario1_medium.png image
+- [x] Task 534: Embed scenario2_hard.png image
+- [x] Task 535: Add caption under each image
+- [x] Task 536: Describe methodology briefly
+- [x] Task 537: Describe hyperparameters used
+- [x] Task 538: Describe seed handling
+- [x] Task 539: Describe smoothing window
+- [x] Task 540: Link to comparison script
+- [x] Task 541: Link to PRD and PLAN docs
+- [x] Task 542: Link to config section
+- [x] Task 543: Verify images render on GitHub
+- [x] Task 544: Verify relative paths correct
+- [x] Task 545: Keep section concise and scannable
+
+## README conclusions
+- [x] Task 546: Add Conclusions subsection
+- [x] Task 547: State Bellman fails under high noise
+- [x] Task 548: State Q-Learning converges with alpha decay
+- [x] Task 549: State Double Q-Learning fastest and most stable
+- [x] Task 550: Reference cross-table reduction of overestimation
+- [x] Task 551: Add Parameter Analysis subsection
+- [x] Task 552: Discuss alpha_start effects
+- [x] Task 553: Discuss alpha_end effects
+- [x] Task 554: Discuss alpha_decay effects
+- [x] Task 555: Discuss epsilon decay effects
+- [x] Task 556: Discuss gamma effects
+- [x] Task 557: Discuss noise level effects
+- [x] Task 558: Discuss density effects
+- [x] Task 559: Discuss smoothing_window effects
+- [x] Task 560: Discuss max_episodes effects
+- [x] Task 561: Reference charts to support claims
+- [x] Task 562: Keep conclusions within one screen
+- [x] Task 563: Verify conclusions match chart trends
+- [x] Task 564: Proofread grammar and clarity
+- [x] Task 565: Commit README updates
+
+## Tests for DoubleQAgent
+- [x] Task 566: Create tests/test_double_q_agent.py
+- [x] Task 567: Add test for class instantiation
+- [x] Task 568: Add test for q_table_a shape
+- [x] Task 569: Add test for q_table_b shape
+- [x] Task 570: Add test that QA != QB after updates
+- [x] Task 571: Add test for combined q_table property
+- [x] Task 572: Add test for q_table setter no-op
+- [x] Task 573: Add test for update 50/50 distribution
+- [x] Task 574: Add test for cross-table QA update
+- [x] Task 575: Add test for cross-table QB update
+- [x] Task 576: Add test for terminal update QA
+- [x] Task 577: Add test for terminal update QB
+- [x] Task 578: Add test for decay_alpha
+- [x] Task 579: Add test for alpha floor
+- [x] Task 580: Add test for decay_epsilon override
+- [x] Task 581: Add test for save creates two files
+- [x] Task 582: Add test for load reads two files
+- [x] Task 583: Add test for save/load round-trip
+- [x] Task 584: Add test for factory returns DoubleQAgent
+- [x] Task 585: Add test for algorithm_name string
+- [x] Task 586: Add test for get_best_action using combined
+- [x] Task 587: Add test for get_max_q using combined
+- [x] Task 588: Add test for ValueError on bad config
+- [x] Task 589: Ensure coverage for decay_alpha branches
+- [x] Task 590: Ensure coverage for update branches
+- [x] Task 591: Ensure 85%+ coverage in module
+- [x] Task 592: Run ruff on test file
+- [x] Task 593: Run pytest on test file
+- [x] Task 594: Commit test file
+
+## Tests for ComparisonStore
+- [x] Task 595: Create tests/test_comparison.py
+- [x] Task 596: Add test for empty store algorithms()
+- [x] Task 597: Add test for add_run single
+- [x] Task 598: Add test for add_run overwrite
+- [x] Task 599: Add test for clear
+- [x] Task 600: Add test for has_results true
+- [x] Task 601: Add test for has_results false
+- [x] Task 602: Add test for has_all partial
+- [x] Task 603: Add test for has_all full
+- [x] Task 604: Add test for get_histories returns copy
+- [x] Task 605: Add test for get_histories missing name
+- [x] Task 606: Add test for __len__
+- [x] Task 607: Add test for __repr__
+- [x] Task 608: Add test for smooth constant
+- [x] Task 609: Add test for smooth linear
+- [x] Task 610: Add test for smooth window clamp
+- [x] Task 611: Add test for smooth empty input
+- [x] Task 612: Add test for smooth window=1 identity
+- [x] Task 613: Add test for ALGORITHM_LABELS keys
+- [x] Task 614: Add test for ALGORITHM_COLORS keys
+- [x] Task 615: Ensure 85%+ coverage in comparison.py
+- [x] Task 616: Run ruff on test file
+- [x] Task 617: Run pytest on test file
+- [x] Task 618: Commit test file
+
+## Tests for chart generation
+- [x] Task 619: Add test generate_comparison_chart writes PNG
+- [x] Task 620: Add test chart uses smoothing_window from config
+- [x] Task 621: Add test chart uses ALGORITHM_LABELS
+- [x] Task 622: Add test chart uses ALGORITHM_COLORS
+- [x] Task 623: Add test chart has legend entry per algorithm
+- [x] Task 624: Add test chart axes labeled Episode and Reward
+- [x] Task 625: Add test chart title matches argument
+- [x] Task 626: Add test empty store raises clear error
+- [x] Task 627: Add test chart directory auto-created
+- [x] Task 628: Add test Agg backend is set
+- [x] Task 629: Use tmp_path fixture for outputs
+- [x] Task 630: Mock plt.savefig in fast tests
+- [x] Task 631: Add snapshot check for file size > 0
+- [x] Task 632: Ensure tests run on headless CI
+- [x] Task 633: Run ruff on chart tests
+- [x] Task 634: Run pytest on chart tests
+- [x] Task 635: Commit chart tests
+
+## Tests for SDK comparison
+- [x] Task 636: Create tests/test_sdk_comparison.py
+- [x] Task 637: Add test switch_algorithm to bellman
+- [x] Task 638: Add test switch_algorithm to q_learning
+- [x] Task 639: Add test switch_algorithm to double_q
+- [x] Task 640: Add test switch_algorithm unknown name raises
+- [x] Task 641: Add test run_comparison returns store
+- [x] Task 642: Add test run_comparison has 3 algorithms
+- [x] Task 643: Add test run_comparison histories have length episodes
+- [x] Task 644: Add test run_comparison restores algorithm
+- [x] Task 645: Add test run_comparison restores grid snapshot
+- [x] Task 646: Add test run_comparison deterministic with seed
+- [x] Task 647: Add test generate_chart writes PNG
+- [x] Task 648: Add test generate_chart uses configured dir
+- [x] Task 649: Add test generate_chart uses configured window
+- [x] Task 650: Add test generate_chart returns path
+- [x] Task 651: Add test empty store raises in generate_chart
+- [x] Task 652: Use tmp_path for file outputs
+- [x] Task 653: Mock training loop for speed
+- [x] Task 654: Ensure coverage for switch_algorithm branches
+- [x] Task 655: Ensure coverage for run_comparison branches
+- [x] Task 656: Ensure coverage for generate_chart branches
+- [x] Task 657: Ensure 85%+ coverage in sdk.py comparison code
+- [x] Task 658: Run ruff on SDK tests
+- [x] Task 659: Run pytest on SDK tests
+- [x] Task 660: Run full pytest suite with coverage
+- [x] Task 661: Confirm zero ruff violations across project
+- [x] Task 662: Commit SDK tests

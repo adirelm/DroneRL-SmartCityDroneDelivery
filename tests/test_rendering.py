@@ -3,7 +3,7 @@
 import numpy as np
 
 from src.environment import CellType
-from src.overlays import Overlays
+from src.overlays import _SKIP_HEAT, Overlays
 from src.renderer import Renderer
 
 
@@ -50,3 +50,67 @@ def test_overlays_handle_empty_trail_and_all_skipped_heatmap(ui_config, ui_surfa
 
     overlays.draw_heatmap(ui_surface, q_table, grid)
     overlays.draw_trail(ui_surface, [(0, 0)])
+
+
+def test_renderer_draws_pit_cells_with_config_colors(ui_config, ui_surface):
+    """Cover _draw_pit directly and via draw_grid for the PIT cell type."""
+    renderer = Renderer(ui_config)
+    expected_pit = tuple(ui_config.colors.pit)
+    expected_accent = tuple(ui_config.colors.pit_accent)
+    # Colors on renderer come from config (no hardcoded RGB in _draw_pit).
+    assert renderer.c_pit == expected_pit
+    assert renderer.c_pit_acc == expected_accent
+
+    # Direct _draw_pit call at explicit (x, y) paints the pit color on surface.
+    renderer._draw_pit(ui_surface, 0, 0)
+    assert tuple(ui_surface.get_at((2, 2)))[:3] == expected_pit
+
+    # draw_grid dispatches PIT to _draw_pit without raising.
+    grid = np.zeros((ui_config.environment.grid_rows, ui_config.environment.grid_cols), dtype=int)
+    grid[0, 0] = CellType.PIT
+    grid[1, 1] = CellType.BUILDING
+    grid[2, 2] = CellType.TRAP
+    renderer.draw_grid(ui_surface, grid)
+
+
+def test_renderer_pit_visually_distinct_from_trap_and_building(ui_config, ui_surface):
+    """PIT uses different base color than TRAP and BUILDING so it's distinguishable."""
+    renderer = Renderer(ui_config)
+    assert renderer.c_pit != renderer.c_trap
+    assert renderer.c_pit != renderer.c_building
+
+
+def test_renderer_draws_all_six_cell_types_including_pit(ui_config, ui_surface):
+    """draw_grid handles grids that include every CellType (EMPTY..PIT)."""
+    renderer = Renderer(ui_config)
+    grid = np.zeros((ui_config.environment.grid_rows, ui_config.environment.grid_cols), dtype=int)
+    grid[0, 0] = CellType.EMPTY
+    grid[0, 1] = CellType.BUILDING
+    grid[0, 2] = CellType.TRAP
+    grid[0, 3] = CellType.GOAL
+    grid[0, 4] = CellType.WIND
+    grid[0, 5] = CellType.PIT
+    renderer.draw_grid(ui_surface, grid)
+    assert renderer.frame >= 1
+
+
+def test_overlays_skip_pit_in_heatmap_and_arrows(ui_config, ui_surface):
+    """PIT cells are skipped by both heatmap and arrow overlays; PIT is in _SKIP_HEAT."""
+    assert CellType.PIT in _SKIP_HEAT
+
+    overlays = Overlays(ui_config)
+    rows = ui_config.environment.grid_rows
+    cols = ui_config.environment.grid_cols
+    q_table = np.ones((rows, cols, 4))
+    # PIT everywhere - heatmap should early-return without error.
+    pit_grid = np.full((rows, cols), CellType.PIT)
+    overlays.draw_heatmap(ui_surface, q_table, pit_grid)
+    overlays.draw_arrows(ui_surface, q_table, pit_grid)
+
+    # Mixed grid with some PIT cells should also render without crashing.
+    mixed_grid = np.zeros((rows, cols), dtype=int)
+    mixed_grid[0, 0] = CellType.PIT
+    mixed_grid[1, 1] = CellType.PIT
+    mixed_grid[2, 2] = CellType.TRAP
+    overlays.draw_heatmap(ui_surface, q_table, mixed_grid)
+    overlays.draw_arrows(ui_surface, q_table, mixed_grid)
