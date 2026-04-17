@@ -1,6 +1,6 @@
 """Training, convergence detection, and demo logic for DroneRL."""
 
-from src.agent import Agent
+from src.base_agent import BaseAgent
 from src.config_loader import Config
 from src.environment import Environment
 
@@ -8,7 +8,7 @@ from src.environment import Environment
 class GameLogic:
     """Manages training steps, convergence, and demo playback."""
 
-    def __init__(self, agent: Agent, env: Environment, config: Config):
+    def __init__(self, agent: BaseAgent, env: Environment, config: Config):
         self.agent = agent
         self.env = env
         t = config.training
@@ -110,7 +110,7 @@ class GameLogic:
             self.demo_last_reward = self.total_reward
             self.demo_pause = fps * 3  # stay on goal 3 seconds
 
-    def reset(self, agent: Agent, env: Environment) -> None:
+    def reset(self, agent: BaseAgent, env: Environment) -> None:
         """Hard reset all state."""
         self.agent = agent
         self.env = env

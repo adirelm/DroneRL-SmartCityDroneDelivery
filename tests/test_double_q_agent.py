@@ -45,10 +45,11 @@ class TestUpdate:
         # Force QA update (random.random < 0.5)
         monkeypatch.setattr("src.double_q_agent.random.random", lambda: 0.1)
         agent.q_table_b[1, 0, 3] = 5.0
+        before_b = agent.q_table_b.copy()
         agent.update((0, 0), 1, -1.0, (1, 0), done=False)
-        # QA should be modified, QB only where it was preset
+        # QA should be modified, QB must be untouched
         assert agent.q_table_a[0, 0, 1] != 0.0
-        assert np.all(agent.q_table_b == 0.0) or agent.q_table_b[1, 0, 3] == 5.0
+        assert np.array_equal(agent.q_table_b, before_b)
 
     def test_cross_table_evaluation(self, agent, monkeypatch):
         """When updating QA, value should come from QB."""

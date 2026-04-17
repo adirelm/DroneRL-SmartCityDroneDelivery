@@ -1,7 +1,7 @@
 """Training orchestration for DroneRL."""
 
 
-from src.agent import Agent
+from src.base_agent import BaseAgent
 from src.config_loader import Config
 from src.environment import Environment
 
@@ -9,7 +9,7 @@ from src.environment import Environment
 class Trainer:
     """Manages training loop and tracks metrics."""
 
-    def __init__(self, agent: Agent, environment: Environment, config: Config):
+    def __init__(self, agent: BaseAgent, environment: Environment, config: Config):
         self.agent = agent
         self.env = environment
         self.max_steps = config.training.max_steps_per_episode

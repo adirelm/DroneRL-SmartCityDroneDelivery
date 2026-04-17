@@ -46,6 +46,13 @@ class TestAlphaDecay:
         agent.decay_alpha()
         assert agent.alpha == agent.alpha_end
 
+    def test_alpha_decay_uses_multiplicative_formula(self, agent):
+        agent.alpha = 0.5
+        agent.alpha_decay = 0.9
+        agent.alpha_end = 0.01
+        agent.decay_alpha()
+        assert agent.alpha == pytest.approx(0.45)
+
     def test_decay_epsilon_also_decays_alpha(self, agent):
         alpha_before = agent.alpha
         epsilon_before = agent.epsilon

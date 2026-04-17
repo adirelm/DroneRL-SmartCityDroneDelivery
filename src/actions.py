@@ -54,6 +54,7 @@ def dispatch(gui, a):
         gui.agent.load(gui.brain_path)
     elif a == "reset":
         gui.env, gui.agent = Environment(gui.cfg), create_agent(gui.cfg)
+        gui.env.drift_probability = gui.hazards.effective_drift()
         gui.logic.reset(gui.agent, gui.env)
         gui.paused = gui.editor.active = True
         gui.fast_mode = gui.show_heatmap = gui.show_arrows = False

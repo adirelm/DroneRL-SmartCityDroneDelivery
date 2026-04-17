@@ -141,8 +141,10 @@ class TestComparison:
 
     def test_run_comparison_restores_original_algorithm(self, sdk):
         original = sdk.config.algorithm.name
+        original_agent_class = type(sdk.agent)
         sdk.run_comparison(episodes=2)
         assert sdk.config.algorithm.name == original
+        assert isinstance(sdk.agent, original_agent_class)
 
     def test_generate_chart_produces_file(self, sdk, tmp_path):
         sdk.run_comparison(episodes=2)
