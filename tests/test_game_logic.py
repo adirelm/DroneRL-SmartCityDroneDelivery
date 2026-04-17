@@ -38,7 +38,7 @@ def test_check_convergence_covers_guard_clauses_and_success(ui_logic):
     assert ui_logic.check_convergence() is False
 
     ui_logic.agent.epsilon = ui_logic.max_eps_converge
-    ui_logic.reward_history = [100.0] * ui_logic.converge_window
+    ui_logic.goal_history = [True] * ui_logic.converge_window
     assert ui_logic.check_convergence() is True
     assert ui_logic.converged is True
     assert ui_logic.check_convergence() is False
