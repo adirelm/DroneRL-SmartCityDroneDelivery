@@ -51,7 +51,9 @@ class HazardGenerator:
         self._clear_hazards(env)
         eligible = [
             (r, c) for r in range(env.rows) for c in range(env.cols)
-            if env.grid[r, c] == CellType.EMPTY and not env._is_protected_cell(r, c)
+            if env.grid[r, c] == CellType.EMPTY
+            and not env._is_protected_cell(r, c)
+            and (r, c) not in env._editor_cells
         ]
         target = int(len(eligible) * self.effective_density())
         target = min(target, len(eligible))
@@ -65,10 +67,10 @@ class HazardGenerator:
         return placed
 
     def _clear_hazards(self, env: Environment) -> None:
-        """Reset all non-empty, non-goal cells (but keep user-placed when editor)."""
+        """Reset auto-placed hazards but preserve protected and editor cells."""
         for r in range(env.rows):
             for c in range(env.cols):
-                if env._is_protected_cell(r, c):
+                if env._is_protected_cell(r, c) or (r, c) in env._editor_cells:
                     continue
                 if env.grid[r, c] in [int(t) for t in HAZARD_TYPES]:
                     env.grid[r, c] = int(CellType.EMPTY)

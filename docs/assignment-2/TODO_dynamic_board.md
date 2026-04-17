@@ -197,15 +197,15 @@
 
 ### 3.5 Tests — PIT Rendering
 
-- [x] Task 131: Add test: PIT cell type triggers _draw_pit method
-- [x] Task 132: Add test: _draw_pit draws at correct x, y coordinates
-- [x] Task 133: Add test: _draw_pit uses c_pit color from config
-- [x] Task 134: Add test: _draw_pit uses c_pit_acc color from config
-- [x] Task 135: Add test: PIT cell is visually distinct from TRAP cell
-- [x] Task 136: Add test: PIT cell is visually distinct from BUILDING cell
-- [x] Task 137: Add test: PIT rendering does not crash with valid inputs
-- [x] Task 138: Add test: draw_grid handles grid with PIT cells without error
-- [x] Task 139: Add test: draw_grid renders all 6 cell types correctly
+- [ ] Task 131: Add test: PIT cell type triggers _draw_pit method
+- [ ] Task 132: Add test: _draw_pit draws at correct x, y coordinates
+- [ ] Task 133: Add test: _draw_pit uses c_pit color from config
+- [ ] Task 134: Add test: _draw_pit uses c_pit_acc color from config
+- [ ] Task 135: Add test: PIT cell is visually distinct from TRAP cell
+- [ ] Task 136: Add test: PIT cell is visually distinct from BUILDING cell
+- [ ] Task 137: Add test: PIT rendering does not crash with valid inputs
+- [ ] Task 138: Add test: draw_grid handles grid with PIT cells without error
+- [ ] Task 139: Add test: draw_grid renders all 6 cell types correctly
 - [x] Task 140: Run renderer tests and verify all pass
 - [x] Task 141: Verify no existing renderer tests are broken
 - [x] Task 142: Verify ruff check passes on test file
@@ -271,13 +271,13 @@
 
 ### 4.7 Tests — PIT in Editor
 
-- [x] Task 177: Add test: CellType.PIT is in EDITABLE_TYPES
-- [x] Task 178: Add test: TYPE_NAMES contains "Pit" for CellType.PIT
-- [x] Task 179: Add test: type_colors has entry for CellType.PIT
-- [x] Task 180: Add test: cycling through types includes PIT
-- [x] Task 181: Add test: placing PIT via editor tracks in _editor_cells
-- [x] Task 182: Add test: editor displays PIT type button
-- [x] Task 183: Add test: PIT button uses correct color
+- [ ] Task 177: Add test: CellType.PIT is in EDITABLE_TYPES
+- [ ] Task 178: Add test: TYPE_NAMES contains "Pit" for CellType.PIT
+- [ ] Task 179: Add test: type_colors has entry for CellType.PIT
+- [ ] Task 180: Add test: cycling through types includes PIT
+- [ ] Task 181: Add test: placing PIT via editor tracks in _editor_cells
+- [ ] Task 182: Add test: editor displays PIT type button
+- [ ] Task 183: Add test: PIT button uses correct color
 - [x] Task 184: Run editor tests and verify all pass
 - [x] Task 185: Verify no existing editor tests are broken
 - [x] Task 186: Verify ruff check passes on test file
@@ -318,12 +318,12 @@
 
 ### 5.4 Tests — PIT in Overlays
 
-- [x] Task 205: Add test: PIT is in _SKIP_HEAT set
-- [x] Task 206: Add test: heatmap skips PIT cells
-- [x] Task 207: Add test: heatmap value is not computed for PIT cells
-- [x] Task 208: Add test: overlay rendering handles grid with PIT cells
-- [x] Task 209: Add test: arrow overlay skips PIT cells
-- [x] Task 210: Add test: overlay does not crash on grid full of PIT cells
+- [ ] Task 205: Add test: PIT is in _SKIP_HEAT set
+- [ ] Task 206: Add test: heatmap skips PIT cells
+- [ ] Task 207: Add test: heatmap value is not computed for PIT cells
+- [ ] Task 208: Add test: overlay rendering handles grid with PIT cells
+- [ ] Task 209: Add test: arrow overlay skips PIT cells
+- [ ] Task 210: Add test: overlay does not crash on grid full of PIT cells
 - [x] Task 211: Run overlay tests and verify all pass
 - [x] Task 212: Verify no existing overlay tests are broken
 
@@ -336,8 +336,8 @@
 - [x] Task 217: Verify PIT legend color matches renderer color
 - [x] Task 218: Verify dashboard.py stays at or under 150 lines
 - [x] Task 219: Save dashboard.py after legend update
-- [x] Task 220: Add test: PIT appears in dashboard legend
-- [x] Task 221: Add test: PIT legend color is correct
+- [ ] Task 220: Add test: PIT appears in dashboard legend
+- [ ] Task 221: Add test: PIT legend color is correct
 - [x] Task 222: Run dashboard tests and verify all pass
 - [x] Task 223: Verify ruff check passes on dashboard.py
 - [x] Task 224: Verify ruff check passes on dashboard test file
@@ -814,10 +814,10 @@
 ### 11.3 Editor — Randomize Button
 
 - [x] Task 562: Open `src/editor.py` for editing
-- [x] Task 563: Add "Randomize" button to editor type button bar
-- [x] Task 564: Wire Randomize button to dispatch "randomize" action
-- [x] Task 565: Verify Randomize button appears in editor panel
-- [x] Task 566: Verify clicking Randomize places hazards on grid
+- [ ] Task 563: Add "Randomize" button to editor type button bar
+- [ ] Task 564: Wire Randomize button to dispatch "randomize" action
+- [ ] Task 565: Verify Randomize button appears in editor panel
+- [ ] Task 566: Verify clicking Randomize places hazards on grid
 - [x] Task 567: Verify editor.py stays at or under 150 lines
 
 ### 11.4 Actions — Randomize Dispatch
@@ -832,10 +832,10 @@
 ### 11.5 Trainer — Per-Episode Randomization
 
 - [x] Task 574: Open `src/trainer.py` for editing
-- [x] Task 575: Add optional `hazard_generator` parameter to Trainer __init__
-- [x] Task 576: Store hazard_generator reference in trainer
-- [x] Task 577: In run_episode(), check if generator exists and randomize_per_episode is True
-- [x] Task 578: If so, call `generator.apply(env)` before episode reset
+- [ ] Task 575: Add optional `hazard_generator` parameter to Trainer __init__
+- [ ] Task 576: Store hazard_generator reference in trainer
+- [ ] Task 577: In run_episode(), check if generator exists and randomize_per_episode is True
+- [ ] Task 578: If so, call `generator.apply(env)` before episode reset
 - [x] Task 579: Verify per-episode randomization changes grid between episodes
 - [x] Task 580: Verify trainer.py stays at or under 150 lines
 - [x] Task 581: Verify ruff check passes on trainer.py

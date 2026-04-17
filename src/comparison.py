@@ -38,6 +38,18 @@ class ComparisonStore:
         """Return list of algorithms with stored runs."""
         return list(self.runs)
 
+    def has_results(self, algorithm: str) -> bool:
+        """Return True if a run is stored for the given algorithm."""
+        return algorithm in self.runs and bool(self.runs[algorithm])
+
+    def has_all(self) -> bool:
+        """Return True if bellman, q_learning, and double_q are all stored."""
+        return all(self.has_results(a) for a in ("bellman", "q_learning", "double_q"))
+
+    def get_histories(self) -> dict[str, list[float]]:
+        """Return a shallow copy of the stored run histories."""
+        return dict(self.runs)
+
 
 def smooth(values: list[float], window: int) -> list[float]:
     """Moving-average smoothing; output length == input length so x starts at 0."""

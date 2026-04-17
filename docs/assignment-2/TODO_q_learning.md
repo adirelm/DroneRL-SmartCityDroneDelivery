@@ -8,13 +8,13 @@
 
 - [x] Task 1: Create new file `src/base_agent.py`
 - [x] Task 2: Add module docstring: "Abstract base class for all RL agents in DroneRL"
-- [x] Task 3: Add `from __future__ import annotations` import
-- [x] Task 4: Add `from abc import ABC, abstractmethod` import
+- [ ] Task 3: Add `from __future__ import annotations` import
+- [ ] Task 4: Add `from abc import ABC, abstractmethod` import
 - [x] Task 5: Add `import numpy as np` import
 - [x] Task 6: Add `import random` import
 - [x] Task 7: Add `from pathlib import Path` import
-- [x] Task 8: Add type hints import: `from typing import TYPE_CHECKING`
-- [x] Task 9: Add conditional import: `if TYPE_CHECKING: from src.config_loader import Config`
+- [ ] Task 8: Add type hints import: `from typing import TYPE_CHECKING`
+- [ ] Task 9: Add conditional import: `if TYPE_CHECKING: from src.config_loader import Config`
 - [x] Task 10: Verify all imports are necessary and used
 - [x] Task 11: Verify file encoding is UTF-8
 - [x] Task 12: Verify no circular imports exist
@@ -31,7 +31,7 @@
 
 ### 2.1 Class Shell
 
-- [x] Task 19: Define `class BaseAgent(ABC):` inheriting from ABC
+- [ ] Task 19: Define `class BaseAgent(ABC):` inheriting from ABC
 - [x] Task 20: Add class docstring: "Abstract base agent providing shared RL infrastructure"
 - [x] Task 21: Define class constant `NUM_ACTIONS = 4`
 - [x] Task 22: Add comment explaining NUM_ACTIONS: UP, DOWN, LEFT, RIGHT
@@ -56,11 +56,11 @@
 
 ### 2.3 q_table Property
 
-- [x] Task 38: Define `@property q_table(self) -> np.ndarray` getter
-- [x] Task 39: Add docstring: "The Q-table used by GUI overlays for visualization"
-- [x] Task 40: Return `self._q_table` from getter
+- [ ] Task 38: Define `@property q_table(self) -> np.ndarray` getter
+- [ ] Task 39: Add docstring: "The Q-table used by GUI overlays for visualization"
+- [ ] Task 40: Return `self._q_table` from getter
 - [x] Task 41: Verify q_table returns a reference (not copy) for performance
-- [x] Task 42: Verify q_table type hint is np.ndarray
+- [ ] Task 42: Verify q_table type hint is np.ndarray
 
 ### 2.4 algorithm_name Property
 
@@ -126,11 +126,11 @@
 
 ### 3.5 update() Abstract Method
 
-- [x] Task 86: Define `@abstractmethod update(self, state, action, reward, next_state, done) -> None`
+- [ ] Task 86: Define `@abstractmethod update(self, state, action, reward, next_state, done) -> None`
 - [x] Task 87: Add docstring: "Update Q-value(s) — must be implemented by subclasses"
 - [x] Task 88: Add type hints for all parameters
-- [x] Task 89: Verify update is decorated with @abstractmethod
-- [x] Task 90: Verify BaseAgent cannot be instantiated directly (abstract)
+- [ ] Task 89: Verify update is decorated with @abstractmethod
+- [ ] Task 90: Verify BaseAgent cannot be instantiated directly (abstract)
 - [x] Task 91: Verify subclasses must implement update
 
 ### 3.6 save() Method
@@ -336,7 +336,7 @@
 
 - [x] Task 222: Create new file `src/q_agent.py`
 - [x] Task 223: Add module docstring: "Q-Learning agent with decaying learning rate (alpha)"
-- [x] Task 224: Add `from __future__ import annotations` import
+- [ ] Task 224: Add `from __future__ import annotations` import
 - [x] Task 225: Add `from src.base_agent import BaseAgent` import
 - [x] Task 226: Add type hints import if needed
 - [x] Task 227: Verify imports are minimal and necessary
@@ -413,8 +413,8 @@
 
 - [x] Task 277: Verify alpha starts at alpha_start value from config
 - [x] Task 278: Verify alpha_start default is 0.5
-- [x] Task 279: Verify alpha_end default is 0.01
-- [x] Task 280: Verify alpha_decay default is 0.999
+- [ ] Task 279: Verify alpha_end default is 0.01
+- [ ] Task 280: Verify alpha_decay default is 0.999
 - [x] Task 281: Verify alpha is a float attribute
 - [x] Task 282: Verify alpha_end is a float attribute
 - [x] Task 283: Verify alpha_decay is a float attribute
@@ -459,7 +459,7 @@
 
 - [x] Task 307: Create new file `src/agent_factory.py`
 - [x] Task 308: Add module docstring: "Factory function for creating RL agents based on config"
-- [x] Task 309: Add `from __future__ import annotations` import
+- [ ] Task 309: Add `from __future__ import annotations` import
 - [x] Task 310: Add `from src.base_agent import BaseAgent` import
 - [x] Task 311: Add type hints import if needed
 - [x] Task 312: Verify imports are minimal
@@ -482,8 +482,8 @@
 - [x] Task 326: In double_q branch: `from src.double_q_agent import DoubleQAgent`
 - [x] Task 327: In double_q branch: `return DoubleQAgent(config)`
 - [x] Task 328: Add `raise ValueError(f"Unknown algorithm: {name}")` for invalid names
-- [x] Task 329: Verify lazy imports inside function (not at module level)
-- [x] Task 330: Verify lazy imports avoid circular dependencies
+- [ ] Task 329: Verify lazy imports inside function (not at module level)
+- [ ] Task 330: Verify lazy imports avoid circular dependencies
 - [x] Task 331: Verify ValueError message includes the invalid algorithm name
 
 ### 8.3 Factory Dispatch Logic
@@ -533,8 +533,8 @@
 - [x] Task 358: Add section comment: `# Q-Learning specific hyperparameters`
 - [x] Task 359: Add `q_learning:` top-level key
 - [x] Task 360: Add `alpha_start: 0.5` under q_learning
-- [x] Task 361: Add `alpha_end: 0.01` under q_learning
-- [x] Task 362: Add `alpha_decay: 0.999` under q_learning
+- [ ] Task 361: Add `alpha_end: 0.01` under q_learning
+- [ ] Task 362: Add `alpha_decay: 0.999` under q_learning
 - [x] Task 363: Add comment explaining alpha_start is the initial learning rate
 - [x] Task 364: Add comment explaining alpha_end is the minimum learning rate floor
 - [x] Task 365: Add comment explaining alpha_decay is multiplicative decay per episode
@@ -543,8 +543,8 @@
 
 - [x] Task 366: Load config and verify algorithm.name is "bellman"
 - [x] Task 367: Load config and verify q_learning.alpha_start is 0.5
-- [x] Task 368: Load config and verify q_learning.alpha_end is 0.01
-- [x] Task 369: Load config and verify q_learning.alpha_decay is 0.999
+- [ ] Task 368: Load config and verify q_learning.alpha_end is 0.01
+- [ ] Task 369: Load config and verify q_learning.alpha_decay is 0.999
 - [x] Task 370: Verify config.yaml parses without errors
 - [x] Task 371: Verify all new config keys are accessible via dot notation
 - [x] Task 372: Verify config round-trip works (load -> to_dict -> load)
@@ -570,17 +570,17 @@
 
 ### 10.2 SDK — Algorithm Name Property
 
-- [x] Task 385: Add `@property algorithm_name(self) -> str` to SDK
-- [x] Task 386: Implement: `return self.agent.algorithm_name`
-- [x] Task 387: Verify SDK exposes algorithm name to GUI
+- [ ] Task 385: Add `@property algorithm_name(self) -> str` to SDK
+- [ ] Task 386: Implement: `return self.agent.algorithm_name`
+- [ ] Task 387: Verify SDK exposes algorithm name to GUI
 
 ### 10.3 SDK — Alpha Property
 
-- [x] Task 388: Add `@property alpha(self) -> float | None` to SDK
-- [x] Task 389: Implement: `return getattr(self.agent, 'alpha', None)`
-- [x] Task 390: Verify alpha returns float for QLearningAgent
-- [x] Task 391: Verify alpha returns None for BellmanAgent
-- [x] Task 392: Verify alpha is available for dashboard display
+- [ ] Task 388: Add `@property alpha(self) -> float | None` to SDK
+- [ ] Task 389: Implement: `return getattr(self.agent, 'alpha', None)`
+- [ ] Task 390: Verify alpha returns float for QLearningAgent
+- [ ] Task 391: Verify alpha returns None for BellmanAgent
+- [ ] Task 392: Verify alpha is available for dashboard display
 
 ### 10.4 SDK — Line Count and Quality
 
@@ -605,9 +605,9 @@
 
 - [x] Task 406: Open `src/dashboard.py` for editing
 - [x] Task 407: Locate _draw_metrics() method
-- [x] Task 408: Add conditional alpha display: if "alpha" key in metrics dict
-- [x] Task 409: Render alpha value: `f"Alpha: {alpha:.4f}"`
-- [x] Task 410: Position alpha display below epsilon in metrics panel
+- [ ] Task 408: Add conditional alpha display: if "alpha" key in metrics dict
+- [ ] Task 409: Render alpha value: `f"Alpha: {alpha:.4f}"`
+- [ ] Task 410: Position alpha display below epsilon in metrics panel
 - [x] Task 411: Verify dashboard.py stays at or under 150 lines
 
 ---
@@ -620,75 +620,75 @@
 - [x] Task 413: Add module docstring to test file
 - [x] Task 414: Import pytest
 - [x] Task 415: Import BaseAgent from src.base_agent
-- [x] Task 416: Import BellmanAgent from src.agent (concrete class for testing)
-- [x] Task 417: Import numpy as np
+- [ ] Task 416: Import BellmanAgent from src.agent (concrete class for testing)
+- [ ] Task 417: Import numpy as np
 - [x] Task 418: Create pytest fixture for test config
-- [x] Task 419: Create pytest fixture for test agent (BellmanAgent instance)
+- [ ] Task 419: Create pytest fixture for test agent (BellmanAgent instance)
 
 ### 11.2 Tests — Q-Table Initialization
 
 - [x] Task 420: Test Q-table shape is (rows, cols, 4)
-- [x] Task 421: Test Q-table is initialized to all zeros
-- [x] Task 422: Test Q-table dtype is float64
-- [x] Task 423: Test Q-table property returns ndarray
-- [x] Task 424: Test Q-table has correct number of elements
+- [ ] Task 421: Test Q-table is initialized to all zeros
+- [ ] Task 422: Test Q-table dtype is float64
+- [ ] Task 423: Test Q-table property returns ndarray
+- [ ] Task 424: Test Q-table has correct number of elements
 
 ### 11.3 Tests — choose_action()
 
-- [x] Task 425: Test choose_action returns int
-- [x] Task 426: Test choose_action returns value in [0, 3]
-- [x] Task 427: Test choose_action explores when epsilon=1.0
+- [ ] Task 425: Test choose_action returns int
+- [ ] Task 426: Test choose_action returns value in [0, 3]
+- [ ] Task 427: Test choose_action explores when epsilon=1.0
 - [x] Task 428: Test choose_action exploits when epsilon=0.0
 - [x] Task 429: Test choose_action returns best action when epsilon=0.0
-- [x] Task 430: Test choose_action randomness when epsilon=1.0 (statistical test)
-- [x] Task 431: Test choose_action with partially trained Q-table
+- [ ] Task 430: Test choose_action randomness when epsilon=1.0 (statistical test)
+- [ ] Task 431: Test choose_action with partially trained Q-table
 
 ### 11.4 Tests — get_best_action()
 
-- [x] Task 432: Test get_best_action returns int
-- [x] Task 433: Test get_best_action returns argmax of Q-values
-- [x] Task 434: Test get_best_action with all-zero Q-values returns 0
-- [x] Task 435: Test get_best_action with one non-zero Q-value
-- [x] Task 436: Test get_best_action with multiple non-zero Q-values
-- [x] Task 437: Test get_best_action returns first max on ties
+- [ ] Task 432: Test get_best_action returns int
+- [ ] Task 433: Test get_best_action returns argmax of Q-values
+- [ ] Task 434: Test get_best_action with all-zero Q-values returns 0
+- [ ] Task 435: Test get_best_action with one non-zero Q-value
+- [ ] Task 436: Test get_best_action with multiple non-zero Q-values
+- [ ] Task 437: Test get_best_action returns first max on ties
 
 ### 11.5 Tests — get_max_q()
 
-- [x] Task 438: Test get_max_q returns float
-- [x] Task 439: Test get_max_q returns max Q-value for state
-- [x] Task 440: Test get_max_q with all-zero Q-values returns 0.0
-- [x] Task 441: Test get_max_q with positive Q-values
-- [x] Task 442: Test get_max_q with negative Q-values
-- [x] Task 443: Test get_max_q with mixed positive/negative Q-values
+- [ ] Task 438: Test get_max_q returns float
+- [ ] Task 439: Test get_max_q returns max Q-value for state
+- [ ] Task 440: Test get_max_q with all-zero Q-values returns 0.0
+- [ ] Task 441: Test get_max_q with positive Q-values
+- [ ] Task 442: Test get_max_q with negative Q-values
+- [ ] Task 443: Test get_max_q with mixed positive/negative Q-values
 
 ### 11.6 Tests — decay_epsilon()
 
 - [x] Task 444: Test epsilon decreases after decay_epsilon()
-- [x] Task 445: Test epsilon never goes below epsilon_end
-- [x] Task 446: Test epsilon decay is multiplicative
-- [x] Task 447: Test epsilon reaches epsilon_end after many decays
-- [x] Task 448: Test epsilon_end is a floor (epsilon stays at epsilon_end after reaching it)
+- [ ] Task 445: Test epsilon never goes below epsilon_end
+- [ ] Task 446: Test epsilon decay is multiplicative
+- [ ] Task 447: Test epsilon reaches epsilon_end after many decays
+- [ ] Task 448: Test epsilon_end is a floor (epsilon stays at epsilon_end after reaching it)
 
 ### 11.7 Tests — save() and load()
 
-- [x] Task 449: Test save creates a file
-- [x] Task 450: Test save writes correct Q-table data
-- [x] Task 451: Test load restores Q-table data
-- [x] Task 452: Test save/load round-trip preserves data exactly
-- [x] Task 453: Test load with modified Q-table restores original
-- [x] Task 454: Test save/load with non-zero Q-values
+- [ ] Task 449: Test save creates a file
+- [ ] Task 450: Test save writes correct Q-table data
+- [ ] Task 451: Test load restores Q-table data
+- [ ] Task 452: Test save/load round-trip preserves data exactly
+- [ ] Task 453: Test load with modified Q-table restores original
+- [ ] Task 454: Test save/load with non-zero Q-values
 
 ### 11.8 Tests — algorithm_name Property
 
 - [x] Task 455: Test algorithm_name returns a string
-- [x] Task 456: Test algorithm_name is not empty
-- [x] Task 457: Test BellmanAgent.algorithm_name returns "Bellman"
+- [ ] Task 456: Test algorithm_name is not empty
+- [ ] Task 457: Test BellmanAgent.algorithm_name returns "Bellman"
 
 ### 11.9 Tests — Abstract Methods
 
-- [x] Task 458: Test BaseAgent cannot be instantiated directly
-- [x] Task 459: Test BaseAgent subclass without update() cannot be instantiated
-- [x] Task 460: Test concrete subclass can be instantiated
+- [ ] Task 458: Test BaseAgent cannot be instantiated directly
+- [ ] Task 459: Test BaseAgent subclass without update() cannot be instantiated
+- [ ] Task 460: Test concrete subclass can be instantiated
 - [x] Task 461: Run all base_agent tests and verify they pass
 
 ---
@@ -704,7 +704,7 @@
 
 ### 12.2 Tests — BellmanAgent Specific
 
-- [x] Task 466: Test BellmanAgent inherits from BaseAgent
+- [ ] Task 466: Test BellmanAgent inherits from BaseAgent
 - [x] Task 467: Test BellmanAgent has lr attribute
 - [x] Task 468: Test BellmanAgent lr matches config.agent.learning_rate
 - [x] Task 469: Test BellmanAgent.update uses constant lr
@@ -712,8 +712,8 @@
 - [x] Task 471: Test BellmanAgent Q-value update formula
 - [x] Task 472: Test BellmanAgent update with done=True
 - [x] Task 473: Test BellmanAgent update with done=False
-- [x] Task 474: Test BellmanAgent lr does NOT decay after decay_epsilon()
-- [x] Task 475: Test BellmanAgent update produces identical results to pre-refactor Agent
+- [ ] Task 474: Test BellmanAgent lr does NOT decay after decay_epsilon()
+- [ ] Task 475: Test BellmanAgent update produces identical results to pre-refactor Agent
 - [x] Task 476: Test BellmanAgent inherits choose_action from BaseAgent
 - [x] Task 477: Test BellmanAgent inherits get_best_action from BaseAgent
 - [x] Task 478: Test BellmanAgent inherits get_max_q from BaseAgent
@@ -743,21 +743,21 @@
 - [x] Task 492: Test alpha_end is stored from config
 - [x] Task 493: Test alpha_decay is stored from config
 - [x] Task 494: Test alpha is a float
-- [x] Task 495: Test alpha_start default is 0.5
-- [x] Task 496: Test alpha_end default is 0.01
-- [x] Task 497: Test alpha_decay default is 0.999
+- [ ] Task 495: Test alpha_start default is 0.5
+- [ ] Task 496: Test alpha_end default is 0.01
+- [ ] Task 497: Test alpha_decay default is 0.999
 
 ### 13.3 Tests — Alpha Decay
 
 - [x] Task 498: Test alpha decays after decay_epsilon() call
 - [x] Task 499: Test alpha after 1 decay: alpha * alpha_decay
-- [x] Task 500: Test alpha after 10 decays: alpha * alpha_decay^10
+- [ ] Task 500: Test alpha after 10 decays: alpha * alpha_decay^10
 - [x] Task 501: Test alpha never goes below alpha_end
-- [x] Task 502: Test alpha reaches alpha_end after many decays
+- [ ] Task 502: Test alpha reaches alpha_end after many decays
 - [x] Task 503: Test alpha_end acts as floor
 - [x] Task 504: Test alpha decay formula: `max(alpha_end, alpha * alpha_decay)`
-- [x] Task 505: Test alpha after 1000 decay steps approaches alpha_end
-- [x] Task 506: Test alpha and epsilon decay independently
+- [ ] Task 505: Test alpha after 1000 decay steps approaches alpha_end
+- [ ] Task 506: Test alpha and epsilon decay independently
 
 ### 13.4 Tests — Update Method
 
@@ -766,10 +766,10 @@
 - [x] Task 509: Test update with done=True uses next_max_q = 0.0
 - [x] Task 510: Test update with done=False uses next_max_q from Q-table
 - [x] Task 511: Test update modifies Q-table in-place
-- [x] Task 512: Test update with alpha=0.5 produces correct change
-- [x] Task 513: Test update with alpha near alpha_end produces small change
+- [ ] Task 512: Test update with alpha=0.5 produces correct change
+- [ ] Task 513: Test update with alpha near alpha_end produces small change
 - [x] Task 514: Test update formula: Q += alpha * (target - Q)
-- [x] Task 515: Test update does not modify other Q-values
+- [ ] Task 515: Test update does not modify other Q-values
 - [x] Task 516: Test update with positive reward
 - [x] Task 517: Test update with negative reward
 
@@ -778,23 +778,23 @@
 - [x] Task 518: Test algorithm_name returns "Q-Learning"
 - [x] Task 519: Test q_table property returns valid ndarray
 - [x] Task 520: Test q_table shape is (rows, cols, 4)
-- [x] Task 521: Test QLearningAgent inherits from BaseAgent
+- [ ] Task 521: Test QLearningAgent inherits from BaseAgent
 
 ### 13.6 Tests — Save and Load
 
 - [x] Task 522: Test save creates file
 - [x] Task 523: Test load restores Q-table
 - [x] Task 524: Test save/load round-trip preserves data
-- [x] Task 525: Test save/load does not affect alpha value
+- [ ] Task 525: Test save/load does not affect alpha value
 
 ### 13.7 Tests — Edge Cases
 
-- [x] Task 526: Test QLearningAgent with alpha_start=1.0
-- [x] Task 527: Test QLearningAgent with alpha_start=0.0 (should use alpha_end)
-- [x] Task 528: Test QLearningAgent with alpha_decay=1.0 (no decay)
-- [x] Task 529: Test QLearningAgent with alpha_decay=0.0 (instant decay to floor)
-- [x] Task 530: Test multiple updates in sequence
-- [x] Task 531: Test convergence: Q-values approach optimal after many updates
+- [ ] Task 526: Test QLearningAgent with alpha_start=1.0
+- [ ] Task 527: Test QLearningAgent with alpha_start=0.0 (should use alpha_end)
+- [ ] Task 528: Test QLearningAgent with alpha_decay=1.0 (no decay)
+- [ ] Task 529: Test QLearningAgent with alpha_decay=0.0 (instant decay to floor)
+- [ ] Task 530: Test multiple updates in sequence
+- [ ] Task 531: Test convergence: Q-values approach optimal after many updates
 - [x] Task 532: Run all QLearningAgent tests and verify they pass
 - [x] Task 533: Run ruff check on test_q_agent.py
 - [x] Task 534: Verify test coverage for q_agent.py is 85%+
@@ -821,25 +821,25 @@
 - [x] Task 545: Test returned agent is instance of BaseAgent
 - [x] Task 546: Test returned BellmanAgent has algorithm_name "Bellman"
 - [x] Task 547: Test returned QLearningAgent has algorithm_name "Q-Learning"
-- [x] Task 548: Test returned agent has q_table property
-- [x] Task 549: Test returned agent has update method
-- [x] Task 550: Test returned agent has choose_action method
-- [x] Task 551: Test returned agent has decay_epsilon method
+- [ ] Task 548: Test returned agent has q_table property
+- [ ] Task 549: Test returned agent has update method
+- [ ] Task 550: Test returned agent has choose_action method
+- [ ] Task 551: Test returned agent has decay_epsilon method
 
 ### 14.3 Tests — Factory Error Handling
 
 - [x] Task 552: Test create_agent with unknown name raises ValueError
-- [x] Task 553: Test ValueError message contains the unknown name
-- [x] Task 554: Test create_agent with empty string raises ValueError
-- [x] Task 555: Test create_agent with "BELLMAN" (wrong case) raises ValueError
-- [x] Task 556: Test create_agent with None raises appropriate error
+- [ ] Task 553: Test ValueError message contains the unknown name
+- [ ] Task 554: Test create_agent with empty string raises ValueError
+- [ ] Task 555: Test create_agent with "BELLMAN" (wrong case) raises ValueError
+- [ ] Task 556: Test create_agent with None raises appropriate error
 
 ### 14.4 Tests — Factory Results
 
-- [x] Task 557: Test factory-created agent can call update()
-- [x] Task 558: Test factory-created agent can call choose_action()
-- [x] Task 559: Test factory-created agent can call decay_epsilon()
-- [x] Task 560: Test factory-created agent can save/load
+- [ ] Task 557: Test factory-created agent can call update()
+- [ ] Task 558: Test factory-created agent can call choose_action()
+- [ ] Task 559: Test factory-created agent can call decay_epsilon()
+- [ ] Task 560: Test factory-created agent can save/load
 - [x] Task 561: Run all factory tests and verify they pass
 - [x] Task 562: Run ruff check on test_agent_factory.py
 - [x] Task 563: Verify test coverage for agent_factory.py is 85%+

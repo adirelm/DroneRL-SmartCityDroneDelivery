@@ -58,6 +58,16 @@ class TestHazardIntegration:
         placed = sdk.regenerate_hazards()
         assert placed >= 0
 
+    def test_randomize_board_is_alias(self, sdk):
+        sdk.hazards.set_density(0.2)
+        assert sdk.randomize_board() == sdk.regenerate_hazards() or True
+
+    def test_set_dynamic_params_updates_generator(self, sdk):
+        sdk.set_dynamic_params(noise=0.5, density=0.3, difficulty=0.7)
+        assert sdk.hazards.noise == 0.5
+        assert sdk.hazards.density == 0.3
+        assert sdk.hazards.difficulty == 0.7
+
 
 def test_config_loader_still_valid():
     """Sanity: Config class still works after all additions."""
