@@ -49,13 +49,42 @@ class TestComparisonStore:
             store.add_run(algo, [1.0])
         assert store.has_all() is True
 
+    def test_has_all_false_with_two(self):
+        store = ComparisonStore()
+        store.add_run("bellman", [1.0])
+        store.add_run("q_learning", [1.0])
+        assert store.has_all() is False
+
     def test_get_histories(self):
         store = ComparisonStore()
         store.add_run("bellman", [1.0, 2.0])
         h = store.get_histories()
         assert h == {"bellman": [1.0, 2.0]}
-        h["bellman"].append(999.0)
-        assert store.runs["bellman"] == [1.0, 2.0, 999.0] or True
+
+    def test_get_histories_empty_when_no_results(self):
+        assert ComparisonStore().get_histories() == {}
+
+    def test_clear_resets_has_all_and_has_results(self):
+        store = ComparisonStore()
+        for algo in ("bellman", "q_learning", "double_q"):
+            store.add_run(algo, [1.0])
+        store.clear()
+        assert store.has_all() is False
+        assert store.has_results("bellman") is False
+        assert store.get_histories() == {}
+
+    def test_add_run_overwrites_same_algo(self):
+        store = ComparisonStore()
+        store.add_run("bellman", [1.0, 2.0])
+        store.add_run("bellman", [9.0])
+        assert store.runs["bellman"] == [9.0]
+
+    def test_add_run_preserves_other_algos(self):
+        store = ComparisonStore()
+        store.add_run("bellman", [1.0])
+        store.add_run("q_learning", [2.0])
+        store.add_run("bellman", [3.0])
+        assert store.runs["q_learning"] == [2.0]
 
 
 class TestSmooth:
