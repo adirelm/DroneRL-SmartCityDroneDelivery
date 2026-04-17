@@ -29,24 +29,26 @@ class GUI:
         self.status_font_size = gui.status_bar_font_size
         self.font_name = gui.font_name
         c = config.colors
-        self.c_status_bg = tuple(c.dashboard_bg)
-        self.c_status_text = tuple(c.status_text)
+        self.c_status_bg, self.c_status_text = tuple(c.dashboard_bg), tuple(c.status_text)
         self.c_status_dim = tuple(c.status_dim)
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("DroneRL \u2014 Smart City Drone Delivery")
         self.clock, self.fps = pygame.time.Clock(), gui.fps
-        self.env = Environment(config)
-        self.agent = create_agent(config)
+        self.env, self.agent = Environment(config), create_agent(config)
         self.logic = GameLogic(self.agent, self.env, config)
         self.renderer, self.overlays = Renderer(config), Overlays(config)
         self.dashboard, self.editor = Dashboard(config), Editor(config)
         self.hazards = HazardGenerator(config)
-        self.sliders = SliderPanel(config, gui.grid_area_width + 16,
-                                   self.height - self.status_bar_height - 130,
-                                   gui.dashboard_width - 32)
+        sx, sy = gui.grid_area_width + 16, self.height - self.status_bar_height - 130
+        self.sliders = SliderPanel(config, sx, sy, gui.dashboard_width - 32)
         self.paused, self.editor.active = True, True
         self.fast_mode = self.show_heatmap = self.show_arrows = False
         self.status_font = None
+        if getattr(config.dynamic_board, "randomize_per_episode", False):
+            self.logic.on_episode_end = lambda: (
+                self.hazards.apply(self.env),
+                self.env.set_wind_drift(self.hazards.effective_drift()),
+            )
 
     def _state(self):
         return {"paused": self.paused, "fast_mode": self.fast_mode,
@@ -89,7 +91,8 @@ class GUI:
             r = self.editor.handle_click(pos)
             if r:
                 cur = self.env.get_cell(r[0], r[1])
-                self.env.set_cell(r[0], r[1], CellType.EMPTY if cur == r[2] else r[2])
+                new = CellType.EMPTY if cur == r[2] else r[2]
+                self.env.set_cell(r[0], r[1], new, editor=True)
 
     def _on_key(self, key):
         km = {pygame.K_SPACE: "primary", pygame.K_f: "toggle_fast",
@@ -98,15 +101,17 @@ class GUI:
               pygame.K_s: "save", pygame.K_l: "load",
               pygame.K_r: "reset", pygame.K_t: "cycle_type",
               pygame.K_1: "use_bellman", pygame.K_2: "use_q_learning",
-              pygame.K_3: "use_double_q", pygame.K_g: "regenerate_hazards"}
+              pygame.K_3: "use_double_q", pygame.K_g: "regenerate_hazards",
+              pygame.K_c: "run_comparison"}
         if key in km:
             dispatch(self, km[key])
 
     def _on_slider_change(self):
-        self.hazards.set_noise(self.sliders.get("noise"))
-        self.hazards.set_density(self.sliders.get("density"))
-        self.hazards.set_difficulty(self.sliders.get("difficulty"))
-        self.env.drift_probability = self.hazards.effective_drift()
+        s = self.sliders
+        self.hazards.set_noise(s.get("noise"))
+        self.hazards.set_density(s.get("density"))
+        self.hazards.set_difficulty(s.get("difficulty"))
+        self.env.set_wind_drift(self.hazards.effective_drift())
 
     def _draw(self):
         self.screen.fill(tuple(self.cfg.colors.background))
@@ -133,16 +138,12 @@ class GUI:
         if not self.status_font:
             self.status_font = pygame.font.SysFont(self.font_name, self.status_font_size)
         mode = "EDIT" if self.editor.active else "DEMO" if self.logic.demo_mode else "TRAINING"
-        flags = ["PAUSED"] if self.paused else []
-        if self.fast_mode:
-            flags.append("FAST")
-        algo = self.agent.algorithm_name
-        state = f"Mode: {mode}  Algo: {algo}" + (f" [{' | '.join(flags)}]" if flags else "")
-        shortcuts = (
-            "SPACE Play/Pause  F Fast  H Heatmap  A Arrows  E Editor  "
-            "T Tool  D Demo  S Save  L Load  R Reset  "
-            "1 Bellman  2 Q-Learn  3 DoubleQ  G Hazards"
-        )
+        flags = (["PAUSED"] if self.paused else []) + (["FAST"] if self.fast_mode else [])
+        state = f"Mode: {mode}  Algo: {self.agent.algorithm_name}"
+        state += f" [{' | '.join(flags)}]" if flags else ""
+        shortcuts = ("SPACE Play/Pause  F Fast  H Heatmap  A Arrows  E Editor  "
+                     "T Tool  D Demo  S Save  L Load  R Reset  "
+                     "1 Bellman  2 Q-Learn  3 DoubleQ  G Hazards  C Compare")
         y = self.height - self.status_bar_height
         pygame.draw.rect(self.screen, self.c_status_bg, (0, y, self.width, self.status_bar_height))
         self.screen.blit(self.status_font.render(state, True, self.c_status_text), (10, y + 6))

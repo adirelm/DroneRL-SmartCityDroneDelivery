@@ -34,8 +34,7 @@ class Dashboard:
         self.cell_colors = {
             "Empty": tuple(c.empty), "Building": tuple(c.building),
             "Trap": tuple(c.trap), "Goal": tuple(c.goal),
-            "Wind": tuple(c.wind), "Pit": tuple(c.pit),
-            "Drone": tuple(c.drone),
+            "Wind": tuple(c.wind), "Pit": tuple(c.pit), "Drone": tuple(c.drone),
         }
         self.buttons = ButtonPanel(config)
         self.font = self.title_font = self.small_font = None
@@ -76,6 +75,9 @@ class Dashboard:
             ("Steps", str(m.get("steps", 0))),
             ("Goal Rate", f"{m.get('goal_rate', 0):.1f}%"),
         ]
+        alpha = m.get("alpha")
+        if alpha is not None:
+            labels.insert(3, ("Alpha", f"{alpha:.4f}"))
         rx = self.x + self.width - 20
         for lbl, val in labels:
             lt = self.font.render(lbl, True, self.dim)

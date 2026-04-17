@@ -65,4 +65,17 @@ def dispatch(gui, a):
         dispatch(gui, "reset")
     elif a == "regenerate_hazards":
         gui.hazards.apply(gui.env)
-        gui.env.drift_probability = gui.hazards.effective_drift()
+        gui.env.set_wind_drift(gui.hazards.effective_drift())
+    elif a == "run_comparison":
+        _run_comparison_scripts(gui)
+
+
+def _run_comparison_scripts(gui) -> None:
+    """Launch the comparison chart generation in a subprocess (non-blocking)."""
+    import subprocess
+    import sys
+    subprocess.Popen(
+        [sys.executable, "scripts/generate_comparison_charts.py"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    gui.paused = True

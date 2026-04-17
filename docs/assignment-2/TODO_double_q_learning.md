@@ -8,12 +8,12 @@
 
 - [x] Task 1: Create new file `src/double_q_agent.py`
 - [x] Task 2: Add module docstring: "Double Q-Learning agent with dual Q-tables for bias-corrected learning"
-- [x] Task 3: Add `from __future__ import annotations` import
+- [ ] Task 3: Add `from __future__ import annotations` import
 - [x] Task 4: Add `import random` import
 - [x] Task 5: Add `import numpy as np` import
 - [x] Task 6: Add `from src.base_agent import BaseAgent` import
-- [x] Task 7: Add type hints import: `from typing import TYPE_CHECKING`
-- [x] Task 8: Add conditional import: `if TYPE_CHECKING: from src.config_loader import Config`
+- [ ] Task 7: Add type hints import: `from typing import TYPE_CHECKING`
+- [ ] Task 8: Add conditional import: `if TYPE_CHECKING: from src.config_loader import Config`
 - [x] Task 9: Verify all imports are necessary and used
 - [x] Task 10: Verify no circular imports exist
 - [x] Task 11: Run ruff check on double_q_agent.py to verify clean state
@@ -174,11 +174,11 @@
 
 ## 6. DoubleQAgent.get_best_action() — Combined Table (~15 tasks)
 
-- [x] Task 116: Define `get_best_action(self, state: tuple[int, int]) -> int` override
-- [x] Task 117: Add docstring: "Return best action using combined QA + QB table"
-- [x] Task 118: Extract row and col from state: `r, c = state`
-- [x] Task 119: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
-- [x] Task 120: Return argmax: `int(np.argmax(combined))`
+- [ ] Task 116: Define `get_best_action(self, state: tuple[int, int]) -> int` override
+- [ ] Task 117: Add docstring: "Return best action using combined QA + QB table"
+- [ ] Task 118: Extract row and col from state: `r, c = state`
+- [ ] Task 119: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
+- [ ] Task 120: Return argmax: `int(np.argmax(combined))`
 - [x] Task 121: Verify returns int, not np.int64
 - [x] Task 122: Verify uses combined table (not just QA or QB alone)
 - [x] Task 123: Verify handles all-zero tables (returns 0)
@@ -187,18 +187,18 @@
 - [x] Task 126: Verify combined action may differ from QA-only argmax
 - [x] Task 127: Verify combined action may differ from QB-only argmax
 - [x] Task 128: Verify get_best_action is used by choose_action (inherited)
-- [x] Task 129: Verify get_best_action override is called polymorphically
+- [ ] Task 129: Verify get_best_action override is called polymorphically
 - [x] Task 130: Test get_best_action with various Q-value configurations
 
 ---
 
 ## 7. DoubleQAgent.get_max_q() — Combined Table (~15 tasks)
 
-- [x] Task 131: Define `get_max_q(self, state: tuple[int, int]) -> float` override
-- [x] Task 132: Add docstring: "Return max Q-value using combined QA + QB table"
-- [x] Task 133: Extract row and col from state: `r, c = state`
-- [x] Task 134: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
-- [x] Task 135: Return max: `float(np.max(combined))`
+- [ ] Task 131: Define `get_max_q(self, state: tuple[int, int]) -> float` override
+- [ ] Task 132: Add docstring: "Return max Q-value using combined QA + QB table"
+- [ ] Task 133: Extract row and col from state: `r, c = state`
+- [ ] Task 134: Compute combined values: `combined = self.q_table_a[r, c] + self.q_table_b[r, c]`
+- [ ] Task 135: Return max: `float(np.max(combined))`
 - [x] Task 136: Verify returns float, not np.float64
 - [x] Task 137: Verify uses combined table
 - [x] Task 138: Verify handles all-zero tables (returns 0.0)
@@ -206,7 +206,7 @@
 - [x] Task 140: Verify handles mixed positive/negative values
 - [x] Task 141: Verify max of combined is sum of individual maxes only if same action is max in both
 - [x] Task 142: Verify get_max_q is used by update for next_max calculation (in base class)
-- [x] Task 143: Verify get_max_q override is called polymorphically
+- [ ] Task 143: Verify get_max_q override is called polymorphically
 - [x] Task 144: Test get_max_q with various Q-value configurations
 - [x] Task 145: Verify consistent behavior with get_best_action (same combined table)
 
@@ -359,29 +359,29 @@
 
 ### 13.5 ComparisonStore.has_results() Method
 
-- [x] Task 252: Define `has_results(self, name: str) -> bool` method
-- [x] Task 253: Add docstring: "Check if results exist for a specific algorithm"
-- [x] Task 254: Implement: `return name in self.results`
-- [x] Task 255: Verify returns True after storing for name
-- [x] Task 256: Verify returns False for unknown name
+- [ ] Task 252: Define `has_results(self, name: str) -> bool` method
+- [ ] Task 253: Add docstring: "Check if results exist for a specific algorithm"
+- [ ] Task 254: Implement: `return name in self.results`
+- [ ] Task 255: Verify returns True after storing for name
+- [ ] Task 256: Verify returns False for unknown name
 
 ### 13.6 ComparisonStore.has_all() Method
 
-- [x] Task 257: Define `has_all(self) -> bool` method
-- [x] Task 258: Add docstring: "Check if all 3 algorithms have results"
-- [x] Task 259: Define expected algorithms: `["Bellman", "Q-Learning", "Double Q-Learning"]`
-- [x] Task 260: Implement: `return all(name in self.results for name in expected)`
-- [x] Task 261: Verify returns True only when all 3 are present
-- [x] Task 262: Verify returns False when 0, 1, or 2 are present
+- [ ] Task 257: Define `has_all(self) -> bool` method
+- [ ] Task 258: Add docstring: "Check if all 3 algorithms have results"
+- [ ] Task 259: Define expected algorithms: `["Bellman", "Q-Learning", "Double Q-Learning"]`
+- [ ] Task 260: Implement: `return all(name in self.results for name in expected)`
+- [ ] Task 261: Verify returns True only when all 3 are present
+- [ ] Task 262: Verify returns False when 0, 1, or 2 are present
 
 ### 13.7 ComparisonStore.get_histories() Method
 
-- [x] Task 263: Define `get_histories(self) -> dict[str, list[float]]` method
-- [x] Task 264: Add docstring: "Return reward histories keyed by algorithm name"
-- [x] Task 265: Implement: return dict mapping name to reward_history for each stored result
-- [x] Task 266: Verify returns correct keys
-- [x] Task 267: Verify returns correct reward lists
-- [x] Task 268: Verify returns empty dict when no results stored
+- [ ] Task 263: Define `get_histories(self) -> dict[str, list[float]]` method
+- [ ] Task 264: Add docstring: "Return reward histories keyed by algorithm name"
+- [ ] Task 265: Implement: return dict mapping name to reward_history for each stored result
+- [ ] Task 266: Verify returns correct keys
+- [ ] Task 267: Verify returns correct reward lists
+- [ ] Task 268: Verify returns empty dict when no results stored
 
 ### 13.8 ComparisonStore.clear() Method
 
@@ -389,9 +389,9 @@
 - [x] Task 270: Add docstring: "Clear all stored results"
 - [x] Task 271: Implement: `self.results.clear()`
 - [x] Task 272: Verify results is empty after clear
-- [x] Task 273: Verify has_all returns False after clear
-- [x] Task 274: Verify has_results returns False for any name after clear
-- [x] Task 275: Verify get_histories returns empty dict after clear
+- [ ] Task 273: Verify has_all returns False after clear
+- [ ] Task 274: Verify has_results returns False for any name after clear
+- [ ] Task 275: Verify get_histories returns empty dict after clear
 
 ---
 
@@ -407,17 +407,17 @@
 ### 14.2 Matplotlib Figure Creation
 
 - [x] Task 280: Create figure: `fig, ax = plt.subplots(figsize=(10, 6))`
-- [x] Task 281: Set figure DPI for high-quality output: `fig.set_dpi(100)`
-- [x] Task 282: Set figure background color
-- [x] Task 283: Set axes background color
+- [ ] Task 281: Set figure DPI for high-quality output: `fig.set_dpi(100)`
+- [ ] Task 282: Set figure background color
+- [ ] Task 283: Set axes background color
 
 ### 14.3 Three Convergence Curves
 
 - [x] Task 284: Get histories from store: `histories = store.get_histories()`
-- [x] Task 285: Define color mapping for Bellman (orange): from config.colors.algo_bellman
-- [x] Task 286: Define color mapping for Q-Learning (green): from config.colors.algo_q_learning
-- [x] Task 287: Define color mapping for Double Q (blue): from config.colors.algo_double_q
-- [x] Task 288: Convert RGB colors from config (0-255) to matplotlib format (0-1)
+- [ ] Task 285: Define color mapping for Bellman (orange): from config.colors.algo_bellman
+- [ ] Task 286: Define color mapping for Q-Learning (green): from config.colors.algo_q_learning
+- [ ] Task 287: Define color mapping for Double Q (blue): from config.colors.algo_double_q
+- [ ] Task 288: Convert RGB colors from config (0-255) to matplotlib format (0-1)
 - [x] Task 289: Iterate over histories dict items
 - [x] Task 290: For each algorithm, get reward history list
 - [x] Task 291: Plot raw data or smoothed data for each algorithm
@@ -439,7 +439,7 @@
 - [x] Task 301: Add legend: `ax.legend()`
 - [x] Task 302: Position legend in upper left or best location
 - [x] Task 303: Add grid lines: `ax.grid(True, alpha=0.3)`
-- [x] Task 304: Set grid line style to dashed
+- [ ] Task 304: Set grid line style to dashed
 - [x] Task 305: Verify all 3 algorithms appear in legend with correct names
 - [x] Task 306: Verify colors match algorithm names in legend
 
@@ -535,9 +535,9 @@
 - [x] Task 371: For each algorithm: call `self.switch_algorithm(name)`
 - [x] Task 372: For each algorithm: train for specified number of episodes
 - [x] Task 373: For each algorithm: collect reward_history from trainer
-- [x] Task 374: For each algorithm: collect metrics from trainer/game_logic
+- [ ] Task 374: For each algorithm: collect metrics from trainer/game_logic
 - [x] Task 375: For each algorithm: call `self.comparison_store.store(algo_name, history, metrics)`
-- [x] Task 376: After all algorithms trained: call `self.generate_comparison_chart()`
+- [ ] Task 376: After all algorithms trained: call `self.generate_comparison_chart()`
 - [x] Task 377: Verify all 3 algorithms are trained sequentially
 - [x] Task 378: Verify comparison_store has results for all 3 after completion
 - [x] Task 379: Verify chart is generated after training completes
@@ -571,24 +571,24 @@
 
 - [x] Task 396: Open `src/buttons.py` for editing
 - [x] Task 397: Locate the `_get_buttons()` function or button definition area
-- [x] Task 398: Add "Bellman" algorithm selector button
-- [x] Task 399: Set Bellman button action to `"algo_bellman"`
-- [x] Task 400: Add "Q-Learning" algorithm selector button
-- [x] Task 401: Set Q-Learning button action to `"algo_q_learning"`
-- [x] Task 402: Add "Double Q" algorithm selector button
-- [x] Task 403: Set Double Q button action to `"algo_double_q"`
-- [x] Task 404: Add active state highlighting for current algorithm button
-- [x] Task 405: Use `state_dict["algorithm"]` to determine active button
-- [x] Task 406: Verify active button uses highlighted color
-- [x] Task 407: Verify inactive buttons use default color
-- [x] Task 408: Verify all 3 buttons are visible in the dashboard
+- [ ] Task 398: Add "Bellman" algorithm selector button
+- [ ] Task 399: Set Bellman button action to `"algo_bellman"`
+- [ ] Task 400: Add "Q-Learning" algorithm selector button
+- [ ] Task 401: Set Q-Learning button action to `"algo_q_learning"`
+- [ ] Task 402: Add "Double Q" algorithm selector button
+- [ ] Task 403: Set Double Q button action to `"algo_double_q"`
+- [ ] Task 404: Add active state highlighting for current algorithm button
+- [ ] Task 405: Use `state_dict["algorithm"]` to determine active button
+- [ ] Task 406: Verify active button uses highlighted color
+- [ ] Task 407: Verify inactive buttons use default color
+- [ ] Task 408: Verify all 3 buttons are visible in the dashboard
 
 ### 20.2 Buttons — Compare All
 
-- [x] Task 409: Add "Compare All" button
-- [x] Task 410: Set Compare All button action to `"compare"`
-- [x] Task 411: Verify Compare All button is visible
-- [x] Task 412: Verify Compare All button triggers comparison
+- [ ] Task 409: Add "Compare All" button
+- [ ] Task 410: Set Compare All button action to `"compare"`
+- [ ] Task 411: Verify Compare All button is visible
+- [ ] Task 412: Verify Compare All button triggers comparison
 
 ### 20.3 Buttons — Line Count
 
@@ -596,10 +596,10 @@
 - [x] Task 414: Verify buttons.py is at or under 150 lines
 - [x] Task 415: If over 150, extract button config to `src/button_config.py`
 - [x] Task 416: Verify ruff check passes on buttons.py
-- [x] Task 417: Verify all new buttons have correct labels
-- [x] Task 418: Verify all new buttons have correct action strings
-- [x] Task 419: Verify button layout does not overlap existing buttons
-- [x] Task 420: Verify buttons render correctly at window size
+- [ ] Task 417: Verify all new buttons have correct labels
+- [ ] Task 418: Verify all new buttons have correct action strings
+- [ ] Task 419: Verify button layout does not overlap existing buttons
+- [ ] Task 420: Verify buttons render correctly at window size
 
 ---
 
@@ -612,11 +612,11 @@
 - [x] Task 423: Add key mapping: `pygame.K_1` -> `"algo_bellman"`
 - [x] Task 424: Add key mapping: `pygame.K_2` -> `"algo_q_learning"`
 - [x] Task 425: Add key mapping: `pygame.K_3` -> `"algo_double_q"`
-- [x] Task 426: Add key mapping: `pygame.K_c` -> `"compare"`
+- [ ] Task 426: Add key mapping: `pygame.K_c` -> `"compare"`
 - [x] Task 427: Verify key 1 switches to Bellman algorithm
 - [x] Task 428: Verify key 2 switches to Q-Learning algorithm
 - [x] Task 429: Verify key 3 switches to Double Q-Learning algorithm
-- [x] Task 430: Verify key C triggers comparison
+- [ ] Task 430: Verify key C triggers comparison
 
 ### 21.2 Status Bar Updates
 
@@ -624,7 +624,7 @@
 - [x] Task 432: Add algorithm name to mode display string
 - [x] Task 433: Format: `"Mode: TRAINING [Double Q-Learning]"`
 - [x] Task 434: Read algorithm name from `self.agent.algorithm_name`
-- [x] Task 435: Update shortcuts string to include: `"1/2/3 Algorithm  C Compare"`
+- [ ] Task 435: Update shortcuts string to include: `"1/2/3 Algorithm  C Compare"`
 - [x] Task 436: Verify status bar updates when algorithm changes
 - [x] Task 437: Verify shortcuts text is visible in status bar
 
@@ -636,7 +636,7 @@
 - [x] Task 441: Verify key shortcuts do not conflict with existing shortcuts
 - [x] Task 442: Verify key shortcuts work in both training and editor modes
 - [x] Task 443: Test pressing 1, 2, 3 in sequence switches algorithms correctly
-- [x] Task 444: Test pressing C triggers comparison flow
+- [ ] Task 444: Test pressing C triggers comparison flow
 - [x] Task 445: Verify GUI does not crash on rapid key presses
 
 ---
@@ -645,15 +645,15 @@
 
 - [x] Task 446: Open `src/dashboard.py` for editing
 - [x] Task 447: Locate _draw_metrics() method
-- [x] Task 448: Add algorithm name display: `f"Algorithm: {algorithm_name}"`
-- [x] Task 449: Position algorithm name in metrics panel
-- [x] Task 450: Add conditional alpha display: check if `"alpha"` key in metrics
-- [x] Task 451: If alpha present: render `f"Alpha: {alpha:.4f}"`
-- [x] Task 452: Position alpha display below epsilon
-- [x] Task 453: Verify alpha shows for Q-Learning agent
-- [x] Task 454: Verify alpha shows for Double Q-Learning agent
-- [x] Task 455: Verify alpha does NOT show for Bellman agent
-- [x] Task 456: Verify algorithm name shows for all agent types
+- [ ] Task 448: Add algorithm name display: `f"Algorithm: {algorithm_name}"`
+- [ ] Task 449: Position algorithm name in metrics panel
+- [ ] Task 450: Add conditional alpha display: check if `"alpha"` key in metrics
+- [ ] Task 451: If alpha present: render `f"Alpha: {alpha:.4f}"`
+- [ ] Task 452: Position alpha display below epsilon
+- [ ] Task 453: Verify alpha shows for Q-Learning agent
+- [ ] Task 454: Verify alpha shows for Double Q-Learning agent
+- [ ] Task 455: Verify alpha does NOT show for Bellman agent
+- [ ] Task 456: Verify algorithm name shows for all agent types
 - [x] Task 457: Verify dashboard.py stays at or under 150 lines
 - [x] Task 458: If over 150, extract legend to `src/legend.py`
 - [x] Task 459: Verify ruff check passes on dashboard.py
@@ -675,9 +675,9 @@
 - [x] Task 470: Add `"algo_double_q"` action handler
 - [x] Task 471: Implement algo_double_q: call `gui.sdk.switch_algorithm("double_q")`
 - [x] Task 472: Reset gui.agent and gui.logic with new agent
-- [x] Task 473: Add `"compare"` action handler
-- [x] Task 474: Implement compare: if comparison store has results, show chart
-- [x] Task 475: Implement compare: if no results, trigger `sdk.run_comparison()`
+- [ ] Task 473: Add `"compare"` action handler
+- [ ] Task 474: Implement compare: if comparison store has results, show chart
+- [ ] Task 475: Implement compare: if no results, trigger `sdk.run_comparison()`
 - [x] Task 476: Verify all new actions are dispatched correctly
 - [x] Task 477: Verify actions handle missing SDK gracefully
 - [x] Task 478: Verify actions handle GUI state correctly
@@ -686,7 +686,7 @@
 - [x] Task 481: Verify ruff check passes on actions.py
 - [x] Task 482: Test each new action dispatches correctly
 - [x] Task 483: Test algorithm switch updates agent reference
-- [x] Task 484: Test compare action triggers training or chart display
+- [ ] Task 484: Test compare action triggers training or chart display
 - [x] Task 485: Verify no existing actions are broken
 
 ---
@@ -699,8 +699,8 @@
 - [x] Task 487: Add section comment: `# Double Q-Learning specific hyperparameters`
 - [x] Task 488: Add `double_q:` top-level key
 - [x] Task 489: Add `alpha_start: 0.5` under double_q
-- [x] Task 490: Add `alpha_end: 0.01` under double_q
-- [x] Task 491: Add `alpha_decay: 0.999` under double_q
+- [ ] Task 490: Add `alpha_end: 0.01` under double_q
+- [ ] Task 491: Add `alpha_decay: 0.999` under double_q
 
 ### 24.2 Comparison Section
 
@@ -712,15 +712,15 @@
 
 ### 24.3 Algorithm Curve Colors
 
-- [x] Task 497: Add `algo_bellman: [255, 160, 40]` to colors section
-- [x] Task 498: Add `algo_q_learning: [80, 200, 120]` to colors section
-- [x] Task 499: Add `algo_double_q: [100, 140, 255]` to colors section
+- [ ] Task 497: Add `algo_bellman: [255, 160, 40]` to colors section
+- [ ] Task 498: Add `algo_q_learning: [80, 200, 120]` to colors section
+- [ ] Task 499: Add `algo_double_q: [100, 140, 255]` to colors section
 
 ### 24.4 Config Verification
 
 - [x] Task 500: Load config and verify double_q.alpha_start is 0.5
-- [x] Task 501: Load config and verify double_q.alpha_end is 0.01
-- [x] Task 502: Load config and verify double_q.alpha_decay is 0.999
+- [ ] Task 501: Load config and verify double_q.alpha_end is 0.01
+- [ ] Task 502: Load config and verify double_q.alpha_decay is 0.999
 - [x] Task 503: Load config and verify comparison.max_episodes is 5000
 - [x] Task 504: Load config and verify comparison.output_dir is "data/comparison"
 - [x] Task 505: Load config and verify comparison.smoothing_window is 50
@@ -735,7 +735,7 @@
 - [x] Task 507: Add module docstring to test file
 - [x] Task 508: Import pytest
 - [x] Task 509: Import DoubleQAgent from src.double_q_agent
-- [x] Task 510: Import BaseAgent from src.base_agent
+- [ ] Task 510: Import BaseAgent from src.base_agent
 - [x] Task 511: Import numpy as np
 - [x] Task 512: Create pytest fixture for test config with double_q section
 - [x] Task 513: Create pytest fixture for DoubleQAgent instance
@@ -749,7 +749,7 @@
 - [x] Task 518: Test q_table shape is (rows, cols, 4)
 - [x] Task 519: Test alpha initializes to alpha_start
 - [x] Task 520: Test algorithm_name returns "Double Q-Learning"
-- [x] Task 521: Test DoubleQAgent inherits from BaseAgent
+- [ ] Task 521: Test DoubleQAgent inherits from BaseAgent
 
 ### 25.3 Tests — Update Cross-Table
 
@@ -767,10 +767,10 @@
 ### 25.4 Tests — Combined Table Actions
 
 - [x] Task 532: Test get_best_action uses combined QA + QB
-- [x] Task 533: Test get_max_q uses combined QA + QB
-- [x] Task 534: Test choose_action works with combined table
+- [ ] Task 533: Test get_max_q uses combined QA + QB
+- [ ] Task 534: Test choose_action works with combined table
 - [x] Task 535: Test get_best_action returns int
-- [x] Task 536: Test get_max_q returns float
+- [ ] Task 536: Test get_max_q returns float
 
 ### 25.5 Tests — Alpha Decay
 
@@ -806,18 +806,18 @@
 - [x] Task 555: Create or extend `tests/test_comparison.py`
 - [x] Task 556: Import ComparisonStore from src.comparison
 - [x] Task 557: Test store() saves results under algorithm name
-- [x] Task 558: Test has_results() returns True after storing
-- [x] Task 559: Test has_results() returns False before storing
-- [x] Task 560: Test has_all() returns True when all 3 algorithms present
-- [x] Task 561: Test has_all() returns False when only 1 algorithm present
-- [x] Task 562: Test has_all() returns False when only 2 algorithms present
-- [x] Task 563: Test get_histories() returns dict with correct keys
-- [x] Task 564: Test get_histories() returns correct reward lists
-- [x] Task 565: Test get_histories() returns empty dict when no results
+- [ ] Task 558: Test has_results() returns True after storing
+- [ ] Task 559: Test has_results() returns False before storing
+- [ ] Task 560: Test has_all() returns True when all 3 algorithms present
+- [ ] Task 561: Test has_all() returns False when only 1 algorithm present
+- [ ] Task 562: Test has_all() returns False when only 2 algorithms present
+- [ ] Task 563: Test get_histories() returns dict with correct keys
+- [ ] Task 564: Test get_histories() returns correct reward lists
+- [ ] Task 565: Test get_histories() returns empty dict when no results
 - [x] Task 566: Test clear() removes all stored results
-- [x] Task 567: Test clear() makes has_all return False
-- [x] Task 568: Test store overwrites previous results for same name
-- [x] Task 569: Test store preserves other algorithm results
+- [ ] Task 567: Test clear() makes has_all return False
+- [ ] Task 568: Test store overwrites previous results for same name
+- [ ] Task 569: Test store preserves other algorithm results
 - [x] Task 570: Run all ComparisonStore tests
 - [x] Task 571: Verify ruff check passes on test file
 

@@ -79,7 +79,20 @@ class DroneRLSDK:
 
     def regenerate_hazards(self) -> int:
         """Re-run the hazard generator on the current environment."""
-        return self.hazards.apply(self.environment)
+        placed = self.hazards.apply(self.environment)
+        self.environment.set_wind_drift(self.hazards.effective_drift())
+        return placed
+
+    def randomize_board(self) -> int:
+        """Alias for regenerate_hazards — re-randomises the dynamic board."""
+        return self.regenerate_hazards()
+
+    def set_dynamic_params(self, noise: float, density: float, difficulty: float) -> None:
+        """Update the hazard generator sliders in one call."""
+        self.hazards.set_noise(noise)
+        self.hazards.set_density(density)
+        self.hazards.set_difficulty(difficulty)
+        self.environment.set_wind_drift(self.hazards.effective_drift())
 
     def get_q_table(self) -> np.ndarray:
         return self.agent.q_table

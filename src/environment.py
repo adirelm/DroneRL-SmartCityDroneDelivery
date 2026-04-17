@@ -48,6 +48,7 @@ class Environment:
                     self.grid[r, c] = t
 
         self.drone_pos = self.start
+        self._editor_cells: set[tuple[int, int]] = set()
 
     def reset(self) -> tuple[int, int]:
         """Reset drone to start position and return initial state."""
@@ -104,11 +105,31 @@ class Environment:
 
         return self.drone_pos, self.rewards.step_penalty, False, info
 
-    def set_cell(self, row: int, col: int, cell_type: CellType) -> None:
-        """Set the type of a grid cell (used by editor)."""
-        if 0 <= row < self.rows and 0 <= col < self.cols and not self._is_protected_cell(row, col):
-            self.grid[row, col] = int(cell_type)
+    def set_cell(self, row: int, col: int, cell_type: CellType, editor: bool = True) -> None:
+        """Set the cell type; `editor=True` tracks it as user-placed."""
+        if not (0 <= row < self.rows and 0 <= col < self.cols):
+            return
+        if self._is_protected_cell(row, col):
+            return
+        self.grid[row, col] = int(cell_type)
+        pos = (row, col)
+        if editor and cell_type != CellType.EMPTY:
+            self._editor_cells.add(pos)
+        elif editor and cell_type == CellType.EMPTY:
+            self._editor_cells.discard(pos)
 
     def get_cell(self, row: int, col: int) -> CellType:
         """Get the type of a grid cell."""
         return CellType(self.grid[row, col])
+
+    def set_wind_drift(self, value: float) -> None:
+        """Clamp and set the wind drift probability (0..1)."""
+        self.drift_probability = max(0.0, min(1.0, float(value)))
+
+    def clear_dynamic_cells(self) -> None:
+        """Reset all non-editor, non-protected cells back to EMPTY."""
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self._is_protected_cell(r, c) or (r, c) in self._editor_cells:
+                    continue
+                self.grid[r, c] = int(CellType.EMPTY)

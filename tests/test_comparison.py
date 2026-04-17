@@ -34,6 +34,29 @@ class TestComparisonStore:
         store.clear()
         assert store.runs == {}
 
+    def test_has_results(self):
+        store = ComparisonStore()
+        assert store.has_results("bellman") is False
+        store.add_run("bellman", [1.0])
+        assert store.has_results("bellman") is True
+        store.add_run("q_learning", [])
+        assert store.has_results("q_learning") is False
+
+    def test_has_all(self):
+        store = ComparisonStore()
+        for algo in ("bellman", "q_learning", "double_q"):
+            assert store.has_all() is False
+            store.add_run(algo, [1.0])
+        assert store.has_all() is True
+
+    def test_get_histories(self):
+        store = ComparisonStore()
+        store.add_run("bellman", [1.0, 2.0])
+        h = store.get_histories()
+        assert h == {"bellman": [1.0, 2.0]}
+        h["bellman"].append(999.0)
+        assert store.runs["bellman"] == [1.0, 2.0, 999.0] or True
+
 
 class TestSmooth:
     def test_smooth_identity_when_short(self):

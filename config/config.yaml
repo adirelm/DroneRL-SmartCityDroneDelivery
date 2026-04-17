@@ -76,6 +76,7 @@ dynamic_board:
   wind_ratio: 0.3         # fraction of hazards that become wind
   building_ratio: 0.2     # fraction of hazards that become buildings
   seed: null              # integer for reproducibility, null = random
+  randomize_per_episode: false  # if true, re-rolls hazards each episode
 
 # GUI settings
 gui:

@@ -32,6 +32,7 @@ class GameLogic:
         self.demo_last_reward = 0.0
         self.demo_trail = []  # path trail for demo visualization
         self.converged = False
+        self.on_episode_end = None  # optional callback fired after each episode
         self.state = self.env.reset()
 
     @property
@@ -56,6 +57,8 @@ class GameLogic:
             self.agent.decay_epsilon()
             self.episode += 1
             self.total_reward, self.steps = 0.0, 0
+            if self.on_episode_end is not None:
+                self.on_episode_end()
             self.state = self.env.reset()
 
     def check_convergence(self) -> bool:
@@ -133,6 +136,8 @@ class GameLogic:
             "episode": self.episode,
             "total_reward": display_reward,
             "epsilon": self.agent.epsilon,
+            "alpha": getattr(self.agent, "alpha", None),
             "steps": self.steps,
             "goal_rate": self.goal_rate,
+            "algorithm": self.agent.algorithm_name,
         }
