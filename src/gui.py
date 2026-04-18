@@ -51,11 +51,10 @@ class GUI:
             )
 
     def _state(self):
-        return {"paused": self.paused, "fast_mode": self.fast_mode,
+        return {"paused": self.paused, "fast_mode": self.fast_mode, "algo_name": self.agent.algorithm_name,
                 "show_heatmap": self.show_heatmap, "show_arrows": self.show_arrows,
                 "editor_active": self.editor.active, "demo_mode": self.logic.demo_mode,
-                "has_trained": self.logic.episode > 0,
-                "converged": self.logic.converged}
+                "has_trained": self.logic.episode > 0, "converged": self.logic.converged}
 
     def run(self):
         """Run the main Pygame event loop."""
@@ -125,10 +124,11 @@ class GUI:
         if self.logic.demo_mode and self.logic.demo_trail:
             self.overlays.draw_trail(self.screen, self.logic.demo_trail)
         self.renderer.draw_drone(self.screen, self.env.drone_pos)
-        self.dashboard.draw(self.screen, self.logic.get_metrics(),
-                            self.logic.reward_history, self._state())
+        end_y = self.dashboard.draw(self.screen, self.logic.get_metrics(),
+                                    self.logic.reward_history, self._state())
         if self.editor.active:
             self.editor.draw_ui(self.screen, pygame.mouse.get_pos())
+            self.sliders.set_y(end_y + 12)
             self.sliders.draw(self.screen)
         self._status_bar()
         pygame.display.flip()

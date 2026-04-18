@@ -48,6 +48,42 @@ def test_button_panel_draw_hover_click_and_custom_button(ui_config, ui_surface):
     custom.draw(ui_surface, font, panel.colors)
 
 
+def test_persistent_algo_and_control_buttons_appear_in_active_states(ui_config, ui_surface):
+    """Algorithm selector + Compare + Regen Hazards show in paused/running/converged states."""
+    panel = ButtonPanel(ui_config)
+    state = {
+        "editor_active": False, "demo_mode": False, "paused": True, "converged": False,
+        "fast_mode": False, "show_heatmap": False, "show_arrows": False, "has_trained": True,
+        "algo_name": "Q-Learning",
+    }
+    panel.draw(ui_surface, state, 20)
+    actions = [b.action for b in panel.buttons]
+    for expected in ("use_bellman", "use_q_learning", "use_double_q",
+                     "run_comparison", "regenerate_hazards"):
+        assert expected in actions
+
+    q_btn = next(b for b in panel.buttons if b.action == "use_q_learning")
+    bellman_btn = next(b for b in panel.buttons if b.action == "use_bellman")
+    assert q_btn.primary is True
+    assert bellman_btn.primary is False
+
+
+def test_persistent_buttons_shown_in_editor_and_hidden_in_demo(ui_config, ui_surface):
+    """Algo/Compare/Regen buttons visible in editor (choose before train), hidden in demo."""
+    panel = ButtonPanel(ui_config)
+    editor_state = {
+        "editor_active": True, "demo_mode": False, "paused": True, "converged": False,
+        "fast_mode": False, "show_heatmap": False, "show_arrows": False, "has_trained": False,
+        "algo_name": "Bellman",
+    }
+    panel.draw(ui_surface, editor_state, 20)
+    assert "use_q_learning" in [b.action for b in panel.buttons]
+
+    demo_state = dict(editor_state, editor_active=False, demo_mode=True)
+    panel.draw(ui_surface, demo_state, 20)
+    assert "run_comparison" not in [b.action for b in panel.buttons]
+
+
 def test_editor_draw_and_click_flow(ui_config, ui_surface):
     editor = Editor(ui_config)
     editor.draw_ui(ui_surface, (10, 10))

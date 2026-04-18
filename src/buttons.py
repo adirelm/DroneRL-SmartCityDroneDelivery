@@ -44,6 +44,17 @@ def _overlay_btns(hmap, arrows):
     return [Button(f"Heatmap: {'ON' if hmap else 'OFF'}", "toggle_heatmap"),
             Button(f"Arrows: {'ON' if arrows else 'OFF'}", "toggle_arrows")]
 
+def _algo_extras(s):
+    """Algorithm selector + comparison/hazards buttons for non-editor/non-demo states."""
+    algo = s.get("algo_name", "")
+    triples = [("Bellman", "use_bellman", "Bellman"),
+               ("Q-Learn", "use_q_learning", "Q-Learning"),
+               ("Double Q", "use_double_q", "Double Q-Learning")]
+    btns = [Button(lbl, act, primary=(full == algo)) for lbl, act, full in triples]
+    return btns + [Button("Compare", "run_comparison"),
+                   Button("Regen Hazards", "regenerate_hazards")]
+
+
 def _get_buttons(s, c_demo, c_primary):
     """Return buttons for current state using config colors."""
     editing, demo, paused = s.get("editor_active"), s.get("demo_mode"), s.get("paused")
@@ -53,28 +64,30 @@ def _get_buttons(s, c_demo, c_primary):
     ov = _overlay_btns(hmap, arrows)
 
     if converged and paused and not demo and not editing:
-        return [btn("Watch Optimal Path", "start_demo", True, c_demo),
+        base = [btn("Watch Optimal Path", "start_demo", True, c_demo),
                 btn("Continue Training", "resume", color=c_primary),
                 *ov, btn("Edit Map", "open_editor"),
                 btn("Save Brain", "save"), btn("Reset", "reset")]
-    if demo:
+    elif demo:
         return [btn("Stop Demo", "stop_demo", True),
                 btn("Continue Training", "continue_training", color=c_primary),
                 *ov, btn("Edit Map", "open_editor"),
                 btn("Save Brain", "save"), btn("Reset", "reset")]
-    if editing:
-        return [btn("Train", "start_training", True), *ov,
+    elif editing:
+        base = [btn("Train", "start_training", True), *ov,
                 btn("Load Brain", "load"), btn("Reset", "reset")]
-    if paused:
-        btns = [btn("Resume", "resume", True),
+    elif paused:
+        base = [btn("Resume", "resume", True),
                 btn(f"Fast: {'ON' if fast else 'OFF'}", "toggle_fast"), *ov,
                 btn("Edit Map", "open_editor")]
         if trained:
-            btns += [btn("Demo", "start_demo"), btn("Save Brain", "save")]
-        return btns + [btn("Load Brain", "load"), btn("Reset", "reset")]
-    return [btn("Pause", "pause", True),
-            btn(f"Fast: {'ON' if fast else 'OFF'}", "toggle_fast"), *ov,
-            btn("Edit Map", "open_editor"), btn("Save Brain", "save"), btn("Reset", "reset")]
+            base += [btn("Demo", "start_demo"), btn("Save Brain", "save")]
+        base += [btn("Load Brain", "load"), btn("Reset", "reset")]
+    else:
+        base = [btn("Pause", "pause", True),
+                btn(f"Fast: {'ON' if fast else 'OFF'}", "toggle_fast"), *ov,
+                btn("Edit Map", "open_editor"), btn("Save Brain", "save"), btn("Reset", "reset")]
+    return base + _algo_extras(s)
 
 
 class ButtonPanel:

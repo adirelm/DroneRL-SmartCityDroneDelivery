@@ -46,8 +46,8 @@ class Dashboard:
             self.small_font = pygame.font.SysFont(self.font_name, 14)
 
     def draw(self, surface: pygame.Surface, metrics: dict,
-             reward_history: list, state_dict: dict = None) -> None:
-        """Draw the full dashboard: title, metrics, graph, legend, buttons."""
+             reward_history: list, state_dict: dict = None) -> int:
+        """Draw the full dashboard and return the y position below the buttons."""
         self._ensure_fonts()
         pygame.draw.rect(surface, self.bg, (self.x, 0, self.width, self.height))
         y = self._draw_title(surface, 14)
@@ -57,7 +57,7 @@ class Dashboard:
         sd = state_dict or {}
         if sd.get("converged") and not sd.get("demo_mode"):
             y = self._draw_banner(surface, y)
-        self.buttons.draw(surface, sd, y)
+        return self.buttons.draw(surface, sd, y)
 
     def _draw_title(self, surface, y) -> int:
         title = self.title_font.render("DroneRL Dashboard", True, self.text_color)

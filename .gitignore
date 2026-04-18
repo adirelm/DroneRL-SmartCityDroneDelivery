@@ -32,10 +32,17 @@ Thumbs.db
 *.pkl
 .soft_cache/
 
+# Testing / linting caches
+.pytest_cache/
+.ruff_cache/
+
 # Coverage
 htmlcov/
 .coverage
 coverage.xml
+
+# Saved RL agents (user-specific, not submission data)
+*.npy
 
 # Environment
 .env
