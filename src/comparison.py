@@ -61,33 +61,51 @@ def smooth(values: list[float], window: int) -> list[float]:
     return list(np.convolve(arr, kernel, mode="same"))
 
 
+def _rolling_std(values: list[float], window: int) -> np.ndarray:
+    """Rolling standard deviation (same length as input)."""
+    arr = np.asarray(values, dtype=float)
+    if len(arr) < 2 or window <= 1:
+        return np.zeros_like(arr)
+    w = min(window, len(arr))
+    pad = w // 2
+    padded = np.pad(arr, (pad, w - pad - 1), mode="edge")
+    return np.array([padded[i:i + w].std() for i in range(len(arr))])
+
+
 def generate_comparison_chart(
     store: ComparisonStore,
     output_path: str,
     title: str = "Convergence Comparison",
     smoothing_window: int = 50,
 ) -> str:
-    """Render a convergence comparison chart and save as PNG. Returns the path."""
+    """Render a convergence comparison chart with confidence bands. Returns the path."""
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(11, 6.5))
+    summary_lines = []
     for algo in ("bellman", "q_learning", "double_q"):
         history = store.runs.get(algo)
         if not history:
             continue
-        smoothed = smooth(history, smoothing_window)
+        smoothed = np.array(smooth(history, smoothing_window))
+        std = _rolling_std(history, smoothing_window)
         x = np.arange(len(smoothed))
-        ax.plot(
-            x, smoothed,
-            label=ALGORITHM_LABELS[algo],
-            color=ALGORITHM_COLORS[algo],
-            linewidth=2,
-        )
+        color = ALGORITHM_COLORS[algo]
+        ax.fill_between(x, smoothed - std, smoothed + std, color=color, alpha=0.15)
+        ax.plot(x, smoothed, label=ALGORITHM_LABELS[algo], color=color, linewidth=2)
+        tail = np.asarray(history[-200:], dtype=float)
+        summary_lines.append(f"{ALGORITHM_LABELS[algo]:<28s}  mean={tail.mean():6.1f}  std={tail.std():5.1f}")
     ax.set_xlabel("Episode")
-    ax.set_ylabel(f"Total Reward (smoothed, window={smoothing_window})")
-    ax.set_title(title)
+    ax.set_ylabel(f"Total Reward (smoothed, window={smoothing_window}; shaded = ±1σ)")
+    ax.set_title(title, fontsize=12, fontweight="bold")
     ax.grid(True, alpha=0.3)
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", framealpha=0.92)
+    if summary_lines:
+        text = "Last-200-episode stats:\n" + "\n".join(summary_lines)
+        ax.text(0.015, 0.97, text, transform=ax.transAxes, va="top", ha="left",
+                fontsize=9, family="monospace",
+                bbox={"boxstyle": "round,pad=0.5", "facecolor": "white",
+                      "edgecolor": "#888", "alpha": 0.92})
     fig.tight_layout()
     fig.savefig(target, dpi=120)
     plt.close(fig)
