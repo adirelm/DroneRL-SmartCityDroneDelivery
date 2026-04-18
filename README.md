@@ -70,6 +70,25 @@ uv run python scripts/generate_comparison_charts.py
 
 ---
 
+## Screenshots
+
+**Editor mode — sliders + algorithm selector + Compare / Regen Hazards buttons**
+![Editor with sliders and algorithm buttons](assets/assignment-2/01_editor_sliders_and_algo_buttons.png)
+
+**Dynamic board — user-placed Pit cells + generator-placed hazards**
+![Dynamic board with pits](assets/assignment-2/02_dynamic_board_with_pits.png)
+
+**Bellman agent after 400 episodes — heatmap + policy arrows**
+![Bellman trained](assets/assignment-2/03_training_bellman.png)
+
+**Q-Learning agent after 400 episodes — notice smoother Q-value gradient thanks to decaying α**
+![Q-Learning trained](assets/assignment-2/04_training_q_learning.png)
+
+**Double Q-Learning agent after 400 episodes — combined `Q_A + Q_B` heatmap**
+![Double Q-Learning trained](assets/assignment-2/05_training_double_q.png)
+
+---
+
 ## Algorithm Comparison
 
 ### Scenario 1 — Medium difficulty (noisy environment)
