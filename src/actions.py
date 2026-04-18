@@ -71,11 +71,28 @@ def dispatch(gui, a):
 
 
 def _run_comparison_scripts(gui) -> None:
-    """Launch the comparison chart generation in a subprocess (non-blocking)."""
+    """Open the existing comparison chart; regenerate in the background if missing."""
     import subprocess
     import sys
-    subprocess.Popen(
-        [sys.executable, "scripts/generate_comparison_charts.py"],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
+    from pathlib import Path
+    chart = Path(gui.cfg.comparison.output_dir) / "comparison.png"
+    if chart.exists():
+        _open_file(str(chart))
+    else:
+        subprocess.Popen(
+            [sys.executable, "scripts/generate_comparison_charts.py"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
     gui.paused = True
+
+
+def _open_file(path: str) -> None:
+    """Open a file with the OS's default viewer (macOS / Linux / Windows)."""
+    import subprocess
+    import sys
+    if sys.platform == "darwin":
+        subprocess.Popen(["open", path])
+    elif sys.platform == "win32":
+        subprocess.Popen(["explorer", path])
+    else:
+        subprocess.Popen(["xdg-open", path])

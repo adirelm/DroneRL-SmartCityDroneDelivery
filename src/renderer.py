@@ -33,6 +33,7 @@ class Renderer:
         self.c_drone_glow = tuple(c.drone_glow)
         self.c_grid = tuple(c.grid_line)
         self.c_start = tuple(c.start_marker)
+        self.c_white = tuple(c.white)
 
     def _draw_empty(self, surf, x, y):
         s = self.cs
@@ -72,7 +73,7 @@ class Renderer:
         cx, cy = x + s // 2, y + s // 2
         for r in (s // 5, s // 9):
             pygame.draw.circle(surf, self.c_goal_acc, (cx, cy), r, 2)
-        pygame.draw.circle(surf, (255, 255, 255), (cx, cy), 2)
+        pygame.draw.circle(surf, self.c_white, (cx, cy), 2)
 
     def _draw_wind(self, surf, x, y):
         s = self.cs
@@ -121,11 +122,11 @@ class Renderer:
         pygame.draw.line(surface, self.c_drone, (cx + arm, cy - arm), (cx - arm, cy + arm), 3)
         # Center
         pygame.draw.circle(surface, self.c_drone, (cx, cy), s // 8)
-        pygame.draw.circle(surface, (255, 255, 255), (cx, cy), s // 8, 1)
+        pygame.draw.circle(surface, self.c_white, (cx, cy), s // 8, 1)
         # Rotors at 4 corners of the cross
         rr = s // 7
         for dx, dy in [(-arm, -arm), (arm, -arm), (-arm, arm), (arm, arm)]:
-            pygame.draw.circle(surface, (255, 255, 255), (cx + dx, cy + dy), rr, 2)
+            pygame.draw.circle(surface, self.c_white, (cx + dx, cy + dy), rr, 2)
             pygame.draw.circle(surface, self.c_drone, (cx + dx, cy + dy), rr - 2)
 
     def draw_grid_lines(self, surface: pygame.Surface) -> None:

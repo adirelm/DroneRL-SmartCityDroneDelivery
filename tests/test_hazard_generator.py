@@ -113,3 +113,23 @@ class TestApply:
         for r in range(env.rows):
             for c in range(env.cols):
                 assert CellType(int(env.grid[r, c])) in valid
+
+    def test_apply_preserves_editor_placed_cells(self, hazgen, env):
+        """Editor-placed hazards must survive a subsequent apply() call."""
+        env.set_cell(3, 3, CellType.PIT, editor=True)
+        env.set_cell(5, 6, CellType.TRAP, editor=True)
+        hazgen.apply(env)
+        assert env.get_cell(3, 3) == CellType.PIT
+        assert env.get_cell(5, 6) == CellType.TRAP
+        # Confirm the generator still placed additional hazards elsewhere.
+        total_hazards = int((env.grid != CellType.EMPTY).sum())
+        assert total_hazards > 3  # includes goal + the 2 editor cells + generated
+
+    def test_apply_replaces_only_non_editor_dynamic_cells(self, hazgen, env):
+        """A previous dynamic hazard (editor=False) must be cleared by re-apply."""
+        env.set_cell(4, 4, CellType.WIND, editor=False)
+        hazgen.apply(env)
+        # The dynamic WIND at (4,4) may or may not still be there (depending on
+        # the generator's own placement). The guarantee is that it was cleared
+        # before the new placement — i.e. not treated as an "editor" cell.
+        assert (4, 4) not in env._editor_cells

@@ -80,12 +80,12 @@ dynamic_board:
 
 # GUI settings
 gui:
-  window_width: 1100
-  window_height: 780
-  grid_area_width: 660
-  cell_size: 55
+  window_width: 1340
+  window_height: 900
+  grid_area_width: 780
+  cell_size: 65
   fps: 60
-  dashboard_width: 440
+  dashboard_width: 560
   reward_history_size: 100
   fast_mode_episodes_per_frame: 100
   demo_speed: 8

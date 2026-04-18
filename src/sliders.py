@@ -41,6 +41,9 @@ class Slider:
         self.value = new_value
         return changed
 
+    def set_y(self, y: int) -> None:
+        self.rect.y = y
+
     def draw(self, surface, font, colors) -> None:
         pygame.draw.rect(surface, tuple(colors.btn_bg), self.rect, border_radius=3)
         fill = pygame.Rect(self.rect.x, self.rect.y, self._handle_x() - self.rect.x, self.rect.h)
@@ -76,6 +79,11 @@ class SliderPanel:
 
     def get(self, name: str) -> float:
         return self.sliders[name].value
+
+    def set_y(self, y: int) -> None:
+        """Reposition sliders vertically; keeps the 40px row spacing."""
+        for i, slider in enumerate(self.sliders.values()):
+            slider.set_y(y + i * 40)
 
     def draw(self, surface) -> None:
         self._ensure_font()
