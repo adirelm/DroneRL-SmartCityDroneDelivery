@@ -21,18 +21,23 @@ ALGORITHM_COLORS = {
 
 
 class ComparisonStore:
-    """Collects per-algorithm reward histories for plotting."""
+    """Collects per-algorithm reward + steps histories for plotting."""
 
     def __init__(self):
         self.runs: dict[str, list[float]] = {}
+        self.steps: dict[str, list[int]] = {}
 
-    def add_run(self, algorithm: str, reward_history: list[float]) -> None:
-        """Store a reward history for an algorithm."""
+    def add_run(self, algorithm: str, reward_history: list[float],
+                steps_history: list[int] | None = None) -> None:
+        """Store reward (and optionally steps) history for an algorithm."""
         self.runs[algorithm] = list(reward_history)
+        if steps_history is not None:
+            self.steps[algorithm] = list(steps_history)
 
     def clear(self) -> None:
         """Remove all stored runs."""
         self.runs.clear()
+        self.steps.clear()
 
     def algorithms(self) -> list[str]:
         """Return list of algorithms with stored runs."""
@@ -72,19 +77,11 @@ def _rolling_std(values: list[float], window: int) -> np.ndarray:
     return np.array([padded[i:i + w].std() for i in range(len(arr))])
 
 
-def generate_comparison_chart(
-    store: ComparisonStore,
-    output_path: str,
-    title: str = "Convergence Comparison",
-    smoothing_window: int = 50,
-) -> str:
-    """Render a convergence comparison chart with confidence bands. Returns the path."""
-    target = Path(output_path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(11, 6.5))
-    summary_lines = []
+def _plot_series(ax, store_dict, smoothing_window, ylabel, title, fmt="6.1f"):
+    """Draw per-algorithm smoothed curves + ±1σ bands + stats box on a single axis."""
+    summary = []
     for algo in ("bellman", "q_learning", "double_q"):
-        history = store.runs.get(algo)
+        history = store_dict.get(algo)
         if not history:
             continue
         smoothed = np.array(smooth(history, smoothing_window))
@@ -94,18 +91,46 @@ def generate_comparison_chart(
         ax.fill_between(x, smoothed - std, smoothed + std, color=color, alpha=0.15)
         ax.plot(x, smoothed, label=ALGORITHM_LABELS[algo], color=color, linewidth=2)
         tail = np.asarray(history[-200:], dtype=float)
-        summary_lines.append(f"{ALGORITHM_LABELS[algo]:<28s}  mean={tail.mean():6.1f}  std={tail.std():5.1f}")
-    ax.set_xlabel("Episode")
-    ax.set_ylabel(f"Total Reward (smoothed, window={smoothing_window}; shaded = ±1σ)")
-    ax.set_title(title, fontsize=12, fontweight="bold")
+        summary.append(f"{ALGORITHM_LABELS[algo]:<28s}  mean={tail.mean():{fmt}}  std={tail.std():{fmt}}")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=11, fontweight="bold")
     ax.grid(True, alpha=0.3)
-    ax.legend(loc="lower right", framealpha=0.92)
-    if summary_lines:
-        text = "Last-200-episode stats:\n" + "\n".join(summary_lines)
-        ax.text(0.015, 0.97, text, transform=ax.transAxes, va="top", ha="left",
-                fontsize=9, family="monospace",
-                bbox={"boxstyle": "round,pad=0.5", "facecolor": "white",
+    ax.legend(loc="lower right", framealpha=0.92, fontsize=8)
+    if summary:
+        ax.text(0.015, 0.97, "Last-200-episode:\n" + "\n".join(summary),
+                transform=ax.transAxes, va="top", ha="left", fontsize=8, family="monospace",
+                bbox={"boxstyle": "round,pad=0.4", "facecolor": "white",
                       "edgecolor": "#888", "alpha": 0.92})
+
+
+def generate_comparison_chart(
+    store: ComparisonStore,
+    output_path: str,
+    title: str = "Convergence Comparison",
+    smoothing_window: int = 50,
+) -> str:
+    """Render the convergence chart. If steps are stored, adds a lower subplot.
+
+    The lecturer's Scenario 2 spec is "lower score AND longer time" — both
+    dimensions are shown when steps data is available.
+    """
+    target = Path(output_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    has_steps = bool(store.steps) and all(store.steps.get(a) for a in store.runs)
+    if has_steps:
+        fig, (ax_r, ax_s) = plt.subplots(2, 1, figsize=(11, 8.5), sharex=True)
+        _plot_series(ax_r, store.runs, smoothing_window,
+                     f"Total Reward (smoothed w={smoothing_window}; ±1σ)", title)
+        _plot_series(ax_s, store.steps, smoothing_window,
+                     "Steps per Episode (lower = faster)",
+                     "Episode length: failing algorithms take longer to reach the goal",
+                     fmt="6.1f")
+        ax_s.set_xlabel("Episode")
+    else:
+        fig, ax = plt.subplots(figsize=(11, 6.5))
+        _plot_series(ax, store.runs, smoothing_window,
+                     f"Total Reward (smoothed w={smoothing_window}; ±1σ)", title)
+        ax.set_xlabel("Episode")
     fig.tight_layout()
     fig.savefig(target, dpi=120)
     plt.close(fig)

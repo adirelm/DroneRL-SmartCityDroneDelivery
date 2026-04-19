@@ -22,7 +22,7 @@ from src.hazard_generator import HazardGenerator  # noqa: E402
 ALGORITHMS = ("bellman", "q_learning", "double_q")
 
 
-def _train_one(cfg: Config, episodes: int, seed: int) -> list[float]:
+def _train_one(cfg: Config, episodes: int, seed: int) -> tuple[list[float], list[int]]:
     from src.agent_factory import create_agent
     from src.trainer import Trainer
 
@@ -38,7 +38,7 @@ def _train_one(cfg: Config, episodes: int, seed: int) -> list[float]:
     trainer = Trainer(agent, env, cfg)
     for _ in range(episodes):
         trainer.run_episode()
-    return list(trainer.reward_history)
+    return list(trainer.reward_history), list(trainer.steps_history)
 
 
 def _scenario_config(noise: float, density: float, difficulty: float, seed: int,
@@ -73,11 +73,12 @@ def run_scenario(name: str, raw: dict, episodes: int, title: str, out_path: str,
     for algo in ALGORITHMS:
         raw_copy = {**raw, "algorithm": {"name": algo}}
         cfg = Config(raw_copy)
-        history = _train_one(cfg, episodes, seed=seed)
-        store.add_run(algo, history)
-        avg_last = sum(history[-200:]) / max(1, len(history[-200:]))
-        std_last = float(np.std(history[-200:])) if len(history) >= 2 else 0.0
-        print(f"  {algo:12s}: avg(last 200) = {avg_last:7.2f}   std(last 200) = {std_last:6.2f}")
+        rewards, steps = _train_one(cfg, episodes, seed=seed)
+        store.add_run(algo, rewards, steps)
+        avg_last = sum(rewards[-200:]) / max(1, len(rewards[-200:]))
+        std_last = float(np.std(rewards[-200:])) if len(rewards) >= 2 else 0.0
+        avg_steps = sum(steps[-200:]) / max(1, len(steps[-200:]))
+        print(f"  {algo:12s}: reward={avg_last:6.1f}±{std_last:5.1f}  steps/ep={avg_steps:5.1f}")
     path = generate_comparison_chart(store, out_path, title=title, smoothing_window=50)
     print(f"  -> saved: {path}")
     return path

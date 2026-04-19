@@ -33,6 +33,10 @@ class Trainer:
     def reward_history(self) -> list[float]:
         return self._reward_history
 
+    @property
+    def steps_history(self) -> list[int]:
+        return self._steps_history
+
     def run_episode(self) -> tuple[float, int, bool]:
         """Run a single training episode.
 

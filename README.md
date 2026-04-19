@@ -119,7 +119,11 @@ uv run python scripts/generate_comparison_charts.py
 | Q-Learning | 75.7 | 19.3 |
 | **Double Q-Learning** | **78.2** | **1.8** |
 
-**Reading the graph:** all three algorithms eventually "succeed" (per the lecturer's clarification that *fail* means *lower score and more time*, not total failure). The story is in the σ column. Bellman's constant α keeps absorbing noisy TD targets — the band stays wide at σ=25. Q-Learning's α never fully decays on this harder board, so σ=19 remains substantial. Double-Q locks onto the optimal policy and holds it — **σ=1.8 is ~14× tighter than Bellman's σ=25**. This is the overestimation bias, now made visible in numbers: only Double-Q's cross-table evaluation converges to a single stable value, while the single-table agents keep oscillating around it.
+**Reading the graph (two subplots — both dimensions the lecturer asked for):**
+
+*Top — Total Reward.* All three eventually "succeed" (per the lecturer's clarification that *fail* means *lower score AND longer episodes*, not total failure). The story is in the σ column. Bellman's constant α keeps absorbing noisy TD targets — the band stays wide at σ=25. Q-Learning's α never fully decays on this harder board, so σ=19 remains substantial. Double-Q locks onto the optimal policy and holds it — **σ=1.8 is ~14× tighter than Bellman's σ=25**. This is the overestimation bias, now made visible in numbers: only Double-Q's cross-table evaluation converges to a single stable value, while the single-table agents keep oscillating around it.
+
+*Bottom — Steps per Episode.* During the learning phase (episodes 0-2000), Bellman's band is visibly wider and slower to drop than Double-Q's — "longer time to goal" as the lecturer described. Once converged all three paths approach the optimal ~22-step route (12×12 grid shortest path), but the *transient* shows Bellman wandering more.
 
 ---
 
