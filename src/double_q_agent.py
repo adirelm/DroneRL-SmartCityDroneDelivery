@@ -20,6 +20,7 @@ class DoubleQAgent(BaseAgent):
         self.alpha = d_cfg.alpha_start
         self.alpha_end = d_cfg.alpha_end
         self.alpha_decay = d_cfg.alpha_decay
+        self.update_a_probability = getattr(d_cfg, "update_a_probability", 0.5)
         self.q_table_a = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))
         self.q_table_b = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))
 
@@ -43,7 +44,7 @@ class DoubleQAgent(BaseAgent):
         """Update one Q-table using the other for evaluation (50/50 split)."""
         r, c = state
         nr, nc = next_state
-        if random.random() < 0.5:
+        if random.random() < self.update_a_probability:
             best_a = int(np.argmax(self.q_table_a[nr, nc]))
             next_val = 0.0 if done else float(self.q_table_b[nr, nc, best_a])
             target = reward + self.gamma * next_val
