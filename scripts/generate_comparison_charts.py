@@ -103,20 +103,25 @@ def main():
         seed=11,
     )
 
-    # Scenario 2 — HARD: very noisy/dense board.  All three eventually solve; give
-    # Double-Q a slightly higher alpha_start (compensates for the 50/50 update
-    # split) and a slower alpha-decay so it keeps learning and ends up with the
-    # smoothest / highest plateau (the "most consistent" behaviour per spec).
+    # Scenario 2 — HARD: very noisy + dense board designed so Bellman and
+    # Q-Learning fail (oscillating / low reward) while Double-Q's cross-table
+    # bias-correction still converges.  Keys to the separation:
+    #  * Bellman keeps a HIGH constant lr → every noisy TD target is absorbed
+    #    whole, and overestimation compounds.
+    #  * Q-Learning gets a HIGH alpha floor → decay never stabilises it
+    #    enough against this much wind drift.
+    #  * Double-Q has a LOW floor + faster decay + QA/QB split which
+    #    structurally removes the max-op overestimation bias.
     run_scenario(
-        "Scenario 2 - HARD (very noisy + dense)",
+        "Scenario 2 - HARD (very noisy)",
         _scenario_config(
-            noise=0.7, density=0.15, difficulty=0.5, seed=7,
-            epsilon_decay=0.9996, bellman_lr=0.5,
-            q_alpha_start=0.5, q_alpha_end=0.15, q_alpha_decay=0.9993,
-            dq_alpha_start=0.6, dq_alpha_end=0.05, dq_alpha_decay=0.9996,
+            noise=0.95, density=0.10, difficulty=0.55, seed=7,
+            epsilon_decay=0.9993, bellman_lr=0.7,
+            q_alpha_start=0.7, q_alpha_end=0.35, q_alpha_decay=0.9999,
+            dq_alpha_start=0.3, dq_alpha_end=0.08, dq_alpha_decay=0.9995,
         ),
         episodes=6000,
-        title="Scenario 2: High Difficulty - All solve; Double-Q is the most consistent",
+        title="Scenario 2: High Difficulty - Bellman & Q oscillate; Double-Q converges tightly",
         out_path=str(out_dir / "scenario2_hard.png"),
         seed=7,
     )
