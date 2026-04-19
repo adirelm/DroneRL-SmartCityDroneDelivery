@@ -51,6 +51,8 @@ double_q:
   alpha_start: 0.5
   alpha_end: 0.05
   alpha_decay: 0.9995
+  # Probability of updating table A each step; 1 - p updates B. 0.5 = Hasselt 2010.
+  update_a_probability: 0.5
 
 # Training settings
 training:

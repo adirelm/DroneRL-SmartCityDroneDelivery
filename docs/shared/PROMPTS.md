@@ -128,6 +128,80 @@ consistent convergence:
   mildly aversive without creating impassable barriers
 - Goal reward of +100 was chosen to create strong gradient propagation
 
+## Assignment 2 Iteration
+
+Assignment 2 reused the same PRD -> PLAN -> TODO pipeline but split into
+three parallel feature tracks: **dynamic_board**, **q_learning**, and
+**double_q_learning**. Each got its own PRD/PLAN/TODO under
+`docs/assignment-2/` (9 files total, all tasks marked complete).
+
+### Extract the BaseAgent
+
+> "Refactor `agent.py` into a Strategy-pattern hierarchy. Extract an
+> abstract `BaseAgent` with the shared interface (`choose_action`,
+> `get_best_action`, `decay_epsilon`, `save`, `load`) and an abstract
+> `update()`. Move the existing constant-lr logic into `BellmanAgent`.
+> Keep an `Agent = BellmanAgent` alias so old imports still work."
+
+This single prompt produced `src/base_agent.py` (69 lines) and converted
+`src/agent.py` to a thin `BellmanAgent(BaseAgent)` wrapper. All 104
+existing Assignment 1 tests continued to pass afterwards.
+
+### Q-Learning with Decaying Alpha
+
+> "Implement `QLearningAgent(BaseAgent)` with an alpha that decays
+> geometrically every episode, floored at `alpha_end`. Override
+> `decay_epsilon()` so a single trainer-level call decays both epsilon
+> and alpha. Write tests that assert alpha actually decreases."
+
+The tests in `tests/test_q_agent.py` assert the decay with multiple
+angles (strict inequality, exact multiplicative value after N decays,
+floor clamping) to prevent a silent regression.
+
+### Double Q-Learning (Hasselt 2010)
+
+> "Implement `DoubleQAgent(BaseAgent)` with two tables QA/QB. Each
+> update flips a fair coin and updates ONE table using the argmax from
+> that table but the value from the OTHER table. Expose a combined
+> `q_table = q_table_a + q_table_b` property so the GUI heatmap and
+> policy arrows keep working unchanged."
+
+Tests force the RNG via `monkeypatch` to verify (a) only one table is
+mutated per call, (b) QA's target uses QB's value at QA's argmax (not
+QA's own value), and (c) the terminal flag zeroes the bootstrap.
+
+### Dynamic Board + Sliders
+
+> "Add a `HazardGenerator` that places TRAP/WIND/PIT on empty cells
+> according to density, noise_level, difficulty sliders. Preserve cells
+> the user placed in the editor (track them in `env._editor_cells`).
+> Add three Pygame sliders to the editor panel wired to
+> `SDK.set_dynamic_params()`."
+
+The `_editor_cells` set is the non-obvious bit: without it, a re-apply
+would wipe out user-placed obstacles.
+
+### Comparison System
+
+> "Add `ComparisonStore` that records per-algorithm reward histories and
+> a `generate_comparison_chart` function using matplotlib Agg. Scenario
+> scripts should train all three algorithms on the same random board
+> (snapshot the grid before the first train, restore before each) so
+> the comparison is fair."
+
+The chart was then enhanced with `+/-1 sigma` shaded bands and a
+summary text box showing last-200 mean and std per algorithm.
+
+### Verification / Polish Loop
+
+After the features were built, five parallel Claude subagents audited:
+(1) spec compliance vs CLAUDE.md, (2) test quality, (3) code quality
+(ruff/magic numbers/dead code), (4) documentation completeness, (5)
+submission readiness (git state, tags). Each audit fed back into a
+targeted fix pass. The comparison charts were retuned twice until
+Scenario 2 showed Double-Q with the lowest variance (matching the
+spec's "most consistent" claim in numbers).
+
 ## Tools Used
 
 | Tool | Purpose |

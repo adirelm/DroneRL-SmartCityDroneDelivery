@@ -61,7 +61,9 @@ uv run python scripts/generate_comparison_charts.py
 | `A` | Toggle policy arrows |
 | `E` | Toggle level editor |
 | `T` | Cycle editor obstacle (Building / Trap / Wind / Pit) |
+| `D` | Watch the trained agent's optimal path (demo mode) |
 | `G` | Regenerate random hazards (uses sliders) |
+| `C` | Open the 3-algorithm convergence comparison chart |
 | `1` | Switch to **Bellman** agent |
 | `2` | Switch to **Q-Learning** agent |
 | `3` | Switch to **Double Q-Learning** agent |
@@ -183,7 +185,7 @@ $$\text{otherwise}: Q_B(s,a) \leftarrow Q_B(s,a) + \alpha [r + \gamma Q_A(s', \a
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 187 pytest tests, 98%+ coverage
+├── tests/                  # 282 pytest tests, 97%+ coverage
 ├── scripts/
 │   └── generate_comparison_charts.py
 ├── config/config.yaml      # All parameters
