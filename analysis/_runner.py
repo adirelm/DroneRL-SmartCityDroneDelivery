@@ -7,6 +7,8 @@ scripts compose this into multi-seed sweeps and parameter sweeps.
 
 from __future__ import annotations
 
+import multiprocessing as mp
+import os
 import random
 from copy import deepcopy
 
@@ -18,6 +20,9 @@ from dronerl.config_loader import Config, load_config
 from dronerl.environment import Environment
 from dronerl.hazard_generator import HazardGenerator
 from dronerl.trainer import Trainer
+
+CellArgs = tuple[dict, str, int, int, dict]
+CellResult = tuple[str, int, list[float], list[int]]
 
 
 def base_raw_config() -> dict:
@@ -57,3 +62,34 @@ def last_window_stats(history: list[float], window: int = 200) -> tuple[float, f
         return 0.0, 0.0
     tail = np.asarray(history[-window:], dtype=float)
     return float(tail.mean()), float(tail.std())
+
+
+def _train_cell(args: CellArgs) -> CellResult:
+    """Worker: train one (algorithm, seed) cell. Top-level so it pickles."""
+    raw, algo, seed, episodes, board = args
+    cfg = with_overrides(raw, algorithm=algo, seed=seed, **board)
+    rewards, steps = train_run(cfg, episodes, seed=seed)
+    return algo, seed, rewards, steps
+
+
+def resolve_workers(requested: int | None = None) -> int:
+    """Resolve worker count from arg, ``DRONERL_PARALLEL`` env, or default 1.
+
+    Returns 1 (serial) unless explicitly opted in. Capped at ``os.cpu_count()``.
+    """
+    n = requested if requested is not None else int(os.environ.get("DRONERL_PARALLEL", "1") or "1")
+    return max(1, min(n, os.cpu_count() or 1))
+
+
+def train_cells(cells: list[CellArgs], n_workers: int = 1) -> list[CellResult]:
+    """Train a batch of cells, optionally in parallel via ``multiprocessing.Pool``.
+
+    Determinism: each cell is seeded inside the worker via :func:`train_run`'s
+    ``random.seed(seed)`` / ``np.random.seed(seed)`` calls, so results are
+    independent of worker scheduling order.
+    """
+    if n_workers <= 1:
+        return [_train_cell(c) for c in cells]
+    ctx = mp.get_context("spawn")
+    with ctx.Pool(processes=n_workers) as pool:
+        return list(pool.imap_unordered(_train_cell, cells))

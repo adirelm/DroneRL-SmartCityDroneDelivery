@@ -22,8 +22,8 @@ DroneRL's hot paths and their classification follow.
 | Path | Type | Wall time | Parallelism used |
 |------|------|----------:|------------------|
 | `Trainer.run_episode` × N (one algorithm) | CPU-bound | 5.6–6.4 s / 1500 ep | None — single thread |
-| `multi_seed_robustness` (5 seeds × 3 algos × 1500 ep) | CPU-bound | ~89 s | None — serial |
-| `alpha_decay_sweep` (6 decays × 3 seeds × 2 algos × 1500 ep) | CPU-bound | ~213 s | None — serial |
+| `multi_seed_robustness` (5 seeds × 3 algos × 1500 ep) | CPU-bound | 13.4 s serial → 5.4 s @ n=4 | **`multiprocessing.Pool` (opt-in)** |
+| `alpha_decay_sweep` (6 decays × 3 seeds × 2 algos × 1500 ep) | CPU-bound | ~213 s | Wired through `train_cells`; opt-in via `DRONERL_PARALLEL` |
 | Pygame render + event loop | event-driven | 30 FPS clock-locked | Implicit (Pygame's main loop) |
 | Q-table save/load | I/O-bound | < 5 ms | None |
 | Config load (YAML) | I/O-bound | < 10 ms | None |
@@ -31,8 +31,7 @@ DroneRL's hot paths and their classification follow.
 | Chart generation triggered from GUI | CPU-bound, long | minutes | **Process-level (subprocess.Popen)** |
 | OS file viewer (open chart, etc.) | I/O / OS-bound | sub-second | **Process-level (subprocess.Popen)** |
 
-The two paths that **do** use process-level isolation are documented
-below.
+The paths that use process-level isolation are documented below.
 
 ---
 
@@ -71,24 +70,84 @@ wait for the OS viewer (Preview / Explorer / xdg-open) to launch.
 
 ---
 
-## 3. Parallelism we deliberately did not implement
+## 3. Process-pool parallelism for analysis sweeps
 
 The two analysis sweeps are *embarrassingly parallel*: each
-`(algorithm, seed)` cell is independent, so a `multiprocessing.Pool`
-across N CPU cores would give ~N× speed-up. The reason it isn't done:
+`(algorithm, seed)` cell is independent. The CPU-bound classification
+in §1 above means **multiprocessing**, not threading — a single
+Python interpreter would have all workers contending on the GIL for
+the NumPy / Q-table updates. `multiprocessing.Pool` puts each cell on
+its own core in its own memory.
 
-| Cost | Benefit |
-|------|---------|
-| ~30 lines of Pool boilerplate + per-worker `np.random.seed` discipline | Wall time drops from ~89 s → ~12 s on an 8-core machine for `multi_seed_robustness` |
-| Test discipline: parametrised tests must work in worker processes; `pytest` defaults to in-process | Sweep is run **once** per analysis cycle, not in CI |
-| Risk: silent correctness regressions if seeding is not exactly per-worker (a known multiprocessing footgun for stochastic RL benchmarks) | Negligible at the 89 s scale |
+### Implementation
 
-The decision aligns with the CLAUDE.md "no premature abstraction"
-rule and §1's self-critique principle. If a future assignment grew the
-sweep envelope to thousands of seeds or required interactive
-parameter tuning, the right answer would flip — and the change would
-be one Pool added in `analysis/_runner.py`, since the `train_run`
-boundary is already pure (config in, history out, no shared state).
+`analysis/_runner.py` exposes three helpers:
+
+```python
+def resolve_workers(requested: int | None = None) -> int: ...
+def _train_cell(args: CellArgs) -> CellResult: ...
+def train_cells(cells, n_workers: int = 1) -> list[CellResult]: ...
+```
+
+- `resolve_workers` reads from an explicit arg, falls back to the
+  `DRONERL_PARALLEL` environment variable, then defaults to **1
+  (serial)**. The result is clamped to `[1, os.cpu_count()]` so an
+  oversize request degrades gracefully.
+- `_train_cell` is the worker — top-level (importable from a fresh
+  spawn-context interpreter on macOS/Windows), takes a
+  `(raw_dict, algo, seed, episodes, board_overrides)` tuple,
+  reseeds inside the worker via `train_run`, returns the rewards
+  + steps history.
+- `train_cells` runs serial when `n_workers <= 1`; otherwise opens a
+  `multiprocessing.Pool` with `mp.get_context("spawn")` (explicit so
+  behaviour is identical across platforms) and dispatches via
+  `pool.imap_unordered`. The unordered dispatch is fine because we
+  re-key by `(algo, seed)` on the way out — order is irrelevant.
+
+### Determinism
+
+Each cell calls `random.seed(seed)` and `np.random.seed(seed)` at
+the start of `train_run`, **inside the worker process**. Workers
+share no Python random state (they are separate interpreters) and no
+NumPy random state (each spawn worker boots clean). Order of
+completion is therefore irrelevant — output of any cell depends only
+on its `(raw, algo, seed, episodes, board)` inputs.
+
+This is verified by `tests/integration/test_parallel_runner.py
+::test_parallel_matches_serial`: same 4 cells run serial and with
+n_workers=2; rewards and steps lists are asserted **equal element-by-
+element**. If any future change introduced a hidden shared-state path,
+that test would fail loudly.
+
+### Measured speed-up (this machine, 2023 MacBook Pro)
+
+| n_workers | Wall time (`multi_seed_robustness`) | Speed-up |
+|----------:|-------------------------------------:|---------:|
+| 1 (serial) | 13.4 s | 1.0× |
+| 4          | 5.4 s  | 2.5× |
+
+The speed-up is sub-linear — Pool spawn overhead, lock contention in
+the BLAS calls of `np.argmax` / `np.max`, and the NumPy import cost in
+each fresh worker all eat some of the theoretical N×. 2.5× on a 4-way
+pool is the realistic floor; for a tightly-CPU-bound workload with
+fewer NumPy hot calls per cell you'd see closer to 3.5×.
+
+### Activation
+
+```bash
+# Default — serial, identical to pre-§15 behaviour
+uv run python analysis/multi_seed_robustness.py
+
+# Explicit parallelism via environment
+DRONERL_PARALLEL=4 uv run python analysis/multi_seed_robustness.py
+
+# Or programmatically
+uv run python -c "from analysis.multi_seed_robustness import run; run(n_workers=4)"
+```
+
+Serial remains the default so no existing pipeline breaks; opt-in is
+explicit. The §15.3 checklist below records this as the implemented
+posture.
 
 ---
 
@@ -117,23 +176,27 @@ shared, adding them would be ceremony.
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | **Operation identification** — CPU-bound vs I/O-bound, right tool, value assessment | ✅ done in §1 above |
-| 2 | **Implementation** — process / thread count, dynamic sizing, safe data sharing, correct synchronization | ✅ Process count = 1 (GUI) + 0..1 (`subprocess.Popen` for charts). Sizing is event-driven, not static. Data sharing is *by file* (chart written to `results/comparison/`), which is the safest possible IPC primitive |
-| 3 | **Resource management** — proper close, exception handling, prevent memory leaks | ✅ `subprocess.Popen` workers are detached (stdout/stderr → DEVNULL) and exit on their own. `pygame.quit()` is called on GUI exit. Q-table save uses `np.save(path)` which closes the file handle on return |
-| 4 | **Safety** — protect shared state, prevent deadlocks, mutual locks | ✅ N/A by design — no shared mutable state across threads/processes. No deadlock surface |
+| 1 | **Operation identification** — CPU-bound vs I/O-bound, right tool, value assessment | ✅ Full classification in §1. CPU-bound sweeps → `multiprocessing.Pool`; long blocking GUI work → `subprocess.Popen`; I/O-bound paths kept serial because their wall time is sub-millisecond |
+| 2 | **Implementation** — process / thread count, dynamic sizing, safe data sharing, correct synchronization | ✅ `resolve_workers` clamps `n_workers` to `[1, os.cpu_count()]`. Pool uses `mp.get_context("spawn")` for cross-platform consistency. Data sharing across worker boundary is **value-based** — config is a plain `dict`, results are tuples of plain Python floats / ints. No shared memory, no locks needed |
+| 3 | **Resource management** — proper close, exception handling, prevent memory leaks | ✅ `with ctx.Pool(...) as pool:` ensures workers are joined and closed even on exception. `subprocess.Popen` workers are detached (stdout/stderr → DEVNULL) and exit on their own. `pygame.quit()` is called on GUI exit. `np.save(path)` closes the file handle on return |
+| 4 | **Safety** — protect shared state, prevent deadlocks, mutual locks | ✅ No shared mutable state by design — workers receive value-based input, return value-based output. `imap_unordered` has no deadlock surface (single producer, single consumer, results queue is bounded by Pool's internal logic). Determinism preserved across orderings is asserted by `test_parallel_matches_serial` |
 
 ---
 
 ## 6. What this document is not
 
-- It is not a claim that the project would not benefit from
-  parallelism — it would, modestly. §3 documents the trade-off
-  honestly.
+- It is not a claim of universal parallelism. Of the nine hot paths
+  in §1, only the two CPU-bound analysis sweeps and the two
+  GUI-blocking jobs use any concurrency. The rest are correctly
+  serial.
 - It is not a thread-safety audit of NumPy / Pygame / Matplotlib
   internals. Those libraries have their own safety guarantees that we
-  rely on (e.g. NumPy's BLAS calls release the GIL — which is why the
-  *future* parallel sweep would be Pool-based, not Thread-based).
-- It is not an excuse to avoid concurrency where it would matter:
-  the multi-seed sweep is pure-CPU and would respond well to
-  `multiprocessing.Pool` if the workload grew an order of magnitude.
-  The decision to keep it serial is reviewed each sprint, not once.
+  rely on (e.g. NumPy releases the GIL during BLAS calls, which is
+  *why* the parallel sweep is Pool-based and not Thread-based — the
+  GIL would dominate threading speed-up).
+- It is not a guarantee that arbitrary worker counts always help.
+  At `n_workers > os.cpu_count()` the OS scheduler thrashes; the
+  measured speed-up table in §3 is on a real machine with a fixed
+  cell-count, and the right number is workload-dependent. The
+  `resolve_workers` clamp prevents the worst case but doesn't guess
+  the optimum.

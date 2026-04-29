@@ -19,7 +19,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from analysis._runner import ALGORITHMS, base_raw_config, train_run, with_overrides
+from analysis._runner import (
+    ALGORITHMS,
+    base_raw_config,
+    resolve_workers,
+    train_cells,
+)
 from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS, smooth
 
 SEEDS = (3, 7, 11, 17, 23)
@@ -37,26 +42,32 @@ def _ci_band(stack: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return mean, mean - 1.96 * se, mean + 1.96 * se
 
 
-def run() -> dict[str, np.ndarray]:
-    """Train each algorithm across SEEDS; return smoothed reward stacks."""
+def run(n_workers: int | None = None) -> dict[str, np.ndarray]:
+    """Train each algorithm across SEEDS; return smoothed reward stacks.
+
+    ``n_workers`` controls multiprocessing: ``1`` (default) is serial; ``>1``
+    runs ``(algo, seed)`` cells in a ``multiprocessing.Pool``. Determinism is
+    preserved because each cell reseeds inside its worker.
+    """
     raw = base_raw_config()
     raw["dynamic_board"]["enabled"] = True
     raw["agent"]["learning_rate"] = 0.7
     raw["q_learning"].update({"alpha_start": 0.5, "alpha_decay": 0.9995})
     raw["double_q"].update({"alpha_start": 0.6, "alpha_decay": 0.9995})
 
+    board = {"noise_level": NOISE, "hazard_density": DENSITY, "difficulty": DIFFICULTY}
+    cells = [(raw, algo, seed, EPISODES, board) for algo in ALGORITHMS for seed in SEEDS]
+    workers = resolve_workers(n_workers)
+    print(f"  workers: {workers} ({'parallel' if workers > 1 else 'serial'})")
+    results = train_cells(cells, n_workers=workers)
+
+    by_algo: dict[str, dict[int, list[float]]] = {algo: {} for algo in ALGORITHMS}
+    for algo, seed, rewards, _ in results:
+        by_algo[algo][seed] = list(smooth(rewards, SMOOTHING))
+
     stacks: dict[str, np.ndarray] = {}
     for algo in ALGORITHMS:
-        rows = []
-        for seed in SEEDS:
-            cfg = with_overrides(
-                raw, algorithm=algo,
-                noise_level=NOISE, hazard_density=DENSITY,
-                difficulty=DIFFICULTY, seed=seed,
-            )
-            rewards, _ = train_run(cfg, EPISODES, seed=seed)
-            rows.append(np.asarray(smooth(rewards, SMOOTHING)))
-        stacks[algo] = np.vstack(rows)
+        stacks[algo] = np.vstack([by_algo[algo][s] for s in SEEDS])
         last_means = stacks[algo][:, -200:].mean(axis=1)
         print(f"  {algo:12s}: per-seed last-200 means = "
               f"{[f'{m:6.1f}' for m in last_means]}  "
