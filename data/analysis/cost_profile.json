@@ -3,10 +3,10 @@
     {
       "algorithm": "bellman",
       "episodes": 1500,
-      "elapsed_s": 5.828,
-      "episodes_per_s": 257.4,
-      "us_per_episode": 3885.0,
-      "peak_traced_kb": 971.3,
+      "elapsed_s": 5.887,
+      "episodes_per_s": 254.8,
+      "us_per_episode": 3924.6,
+      "peak_traced_kb": 970.1,
       "q_table_bytes": 4608,
       "tables": 1,
       "final_mean_200": 78.0,
@@ -16,9 +16,9 @@
     {
       "algorithm": "q_learning",
       "episodes": 1500,
-      "elapsed_s": 5.549,
-      "episodes_per_s": 270.3,
-      "us_per_episode": 3699.6,
+      "elapsed_s": 5.611,
+      "episodes_per_s": 267.3,
+      "us_per_episode": 3741.0,
       "peak_traced_kb": 89.8,
       "q_table_bytes": 4608,
       "tables": 1,
@@ -29,9 +29,9 @@
     {
       "algorithm": "double_q",
       "episodes": 1500,
-      "elapsed_s": 6.367,
-      "episodes_per_s": 235.6,
-      "us_per_episode": 4244.8,
+      "elapsed_s": 6.486,
+      "episodes_per_s": 231.3,
+      "us_per_episode": 4324.2,
       "peak_traced_kb": 94.5,
       "q_table_bytes": 9216,
       "tables": 2,
@@ -43,28 +43,28 @@
   "projections": {
     "Single 1500-ep run (development)": {
       "episodes": 1500,
-      "estimated_seconds": 5.9,
+      "estimated_seconds": 6.0,
       "estimated_minutes": 0.1
     },
     "Scenario 1 in repo (3500 ep \u00d7 3 algos)": {
       "episodes": 10500,
-      "estimated_seconds": 41.4,
-      "estimated_minutes": 0.69
+      "estimated_seconds": 42.0,
+      "estimated_minutes": 0.7
     },
     "Scenario 2 in repo (6000 ep \u00d7 3 algos)": {
       "episodes": 18000,
-      "estimated_seconds": 71.0,
-      "estimated_minutes": 1.18
+      "estimated_seconds": 71.9,
+      "estimated_minutes": 1.2
     },
     "Multi-seed sweep (5 seeds \u00d7 1500 ep \u00d7 3 algos)": {
       "episodes": 22500,
-      "estimated_seconds": 88.7,
-      "estimated_minutes": 1.48
+      "estimated_seconds": 89.9,
+      "estimated_minutes": 1.5
     },
     "Alpha-decay sweep (6 decays \u00d7 3 seeds \u00d7 1500 ep \u00d7 2 algos)": {
       "episodes": 54000,
-      "estimated_seconds": 212.9,
-      "estimated_minutes": 3.55
+      "estimated_seconds": 215.8,
+      "estimated_minutes": 3.6
     }
   }
 }

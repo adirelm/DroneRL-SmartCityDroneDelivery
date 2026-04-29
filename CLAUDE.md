@@ -78,7 +78,7 @@ Save charts as PNG in `data/comparison/`.
 
 - Same repository as Assignment 1
 - Branch: `assignment-2`
-- Version: 1.1.0
+- Version: 1.1.1
 
 ## Config Structure
 
