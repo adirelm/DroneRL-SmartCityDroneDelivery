@@ -81,3 +81,23 @@ All config in `config/config.yaml`:
 - double_q (alpha_start, alpha_end, alpha_decay)
 - comparison (max_episodes, output_dir)
 - gui, colors, logging, paths
+
+## Pre-Submission Review Methodology
+
+Before any submission (or whenever the user asks "is this ready?"),
+walk the methodology in `instructions/review_methodology/` (gitignored,
+local only). It is a 9-phase iterative pre-submission audit with
+explicit self-critique prompts at every step.
+
+- Start with `instructions/review_methodology/00_README.md`.
+- The most important file in the framework is
+  `instructions/review_methodology/10_self_critique_prompts.md` —
+  read it before claiming any phase is done.
+- Per-assignment progress trackers live in
+  `instructions/<assignment>/final_review_progress.md`.
+- Lecturer feedback (verbatim) is in
+  `instructions/<assignment>/lecturer_feedback.md`.
+
+The methodology is reusable across assignments. Update the phase
+files only when the *process* improves, not when the assignment
+content changes.

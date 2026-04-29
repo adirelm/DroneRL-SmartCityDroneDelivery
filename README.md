@@ -434,7 +434,7 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 284 tests pass, ≥85% line coverage (current: 97.62%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **Pytest + coverage** | pre-push, CI | 301 tests pass, ≥85% line coverage (current: 97.62%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
 | **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 lines. |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
@@ -524,7 +524,7 @@ process is at least as much of the assignment as the final code is.
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 284 pytest tests, 97%+ coverage
+├── tests/                  # 301 pytest tests, 97%+ coverage
 ├── analysis/               # Headless research experiments (multi-seed, sweep, cost)
 ├── scripts/
 │   ├── generate_comparison_charts.py
@@ -551,7 +551,7 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/                              # 284 tests, 97.62% coverage, gate enforced
+uv run pytest tests/                              # 301 tests, 97.62% coverage, gate enforced
 uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```
