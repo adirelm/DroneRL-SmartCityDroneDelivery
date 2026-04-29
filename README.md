@@ -565,6 +565,6 @@ Follow the rules in [CLAUDE.md](CLAUDE.md):
 
 ## License & Credits
 
-MIT License © 2026 Adir Elmakais.
+Released under the [MIT License](LICENSE) — © 2026 Adir Elmakais.
 Course material: Dr. Yoram Segal, *Vibe Coding Workshop*, Bar-Ilan University.
 Algorithm references: Watkins (1989) for Q-Learning and Hado van Hasselt (2010) "Double Q-Learning" NeurIPS.

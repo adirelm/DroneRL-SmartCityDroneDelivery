@@ -4,6 +4,9 @@ version = "1.0.0"
 description = "DroneRL - Smart City Drone Delivery using Tabular Q-Learning"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Adir Elmakais" }]
 dependencies = [
     "pygame>=2.5.0",
     "numpy>=1.24.0",
