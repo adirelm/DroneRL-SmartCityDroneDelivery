@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import shutil
 from pathlib import Path
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
@@ -86,23 +85,12 @@ def shot_training_double_q() -> None:
     _train_algo("double_q", 400, "05_training_double_q.png")
 
 
-def copy_comparison_charts() -> None:
-    src_dir = Path("data/comparison")
-    for name in ("comparison.png", "scenario1_medium.png", "scenario2_hard.png"):
-        src = src_dir / name
-        if src.exists():
-            dst = OUT / f"06_{name}"
-            shutil.copy(src, dst)
-            print(f"copied {dst}")
-
-
 def main() -> None:
     shot_editor_with_sliders()
     shot_pit_and_hazards()
     shot_training_bellman()
     shot_training_q_learning()
     shot_training_double_q()
-    copy_comparison_charts()
 
 
 if __name__ == "__main__":
