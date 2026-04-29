@@ -51,6 +51,7 @@ docs/
 └── shared/
     ├── ARCHITECTURE.md        ← navigation index + ADRs
     ├── QUALITY_STANDARDS.md   ← ISO/IEC 25010 quality-characteristics map
+    ├── CONCURRENCY.md         ← multiprocessing / threading / thread safety
     └── PROMPTS.md             ← prompt log + post-feedback iteration
 ```
 
@@ -73,3 +74,8 @@ docs/
    [`shared/QUALITY_STANDARDS.md`](shared/QUALITY_STANDARDS.md). It maps
    each of the eight 25010 characteristics to the artefact, file, or
    gate in this repo that satisfies it.
+7. **For concurrency / parallelism trade-offs**, see
+   [`shared/CONCURRENCY.md`](shared/CONCURRENCY.md). It classifies
+   each hot path as CPU- or I/O-bound, documents the two
+   `subprocess.Popen` surfaces that *are* in use, and explains the
+   cost-benefit of the parallel sweep we deliberately did not add.

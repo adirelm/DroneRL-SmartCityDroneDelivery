@@ -18,6 +18,7 @@ points to the file that backs it up.
 | **Project planning trail (PRD → PLAN → TODO)** | [docs/assignment-1/](../assignment-1/) (PRD/PLAN/TODO), [docs/assignment-2/PRD_*.md](../assignment-2/), [docs/assignment-2/PLAN_*.md](../assignment-2/), [docs/assignment-2/TODO_*.md](../assignment-2/) |
 | **AI-assisted development workflow** | [docs/shared/PROMPTS.md](PROMPTS.md) — original development + post-feedback iteration log |
 | **ISO/IEC 25010 quality-characteristics map** | [docs/shared/QUALITY_STANDARDS.md](QUALITY_STANDARDS.md) — maps each of the 8 25010 characteristics to the concrete file, gate, or doc that satisfies it |
+| **Concurrency, parallelism & thread safety** | [docs/shared/CONCURRENCY.md](CONCURRENCY.md) — what is/isn't parallel, why, the §15.3 checklist with auditable answers |
 | **Coding standards (the rules this project enforces)** | [CLAUDE.md](../../CLAUDE.md) — 150-line file limit, ≥85% coverage, no magic numbers, ruff zero violations, UV-only |
 | **How to run / install** | [README.md](../../README.md) §Installation, §Running |
 | **License** | [LICENSE](../../LICENSE) — MIT |
