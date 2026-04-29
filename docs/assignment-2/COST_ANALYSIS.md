@@ -198,6 +198,78 @@ subscription, *plus* whatever fraction of API costs were incurred when
 specific features (e.g. occasional Codex/GPT cross-checks) hit other
 providers.
 
+### Per-model breakdown
+
+Estimated token usage by model and direction across the whole project
+(both assignments + the post-feedback iteration). These are
+order-of-magnitude figures derived from typical session sizes — I did
+not instrument the sessions; the runtime / billing platform does the
+exact accounting.
+
+| Model | Input Tokens (est.) | Output Tokens (est.) | List-price unit | Total Cost (est.) |
+|-------|--------------------:|---------------------:|-----------------|------------------:|
+| Anthropic Claude Sonnet 4.x (Claude Code) | ~6 M | ~1.5 M | $3 / $15 per MTok | ~$40 |
+| Anthropic Claude Opus 4.x (Claude Code, harder turns) | ~1.5 M | ~0.4 M | $15 / $75 per MTok | ~$53 |
+| OpenAI GPT-5.4-Codex (Codex rescue, occasional) | ~0.2 M | ~0.05 M | included in Codex sub | $0 (sub) |
+| **Total (list-price equivalent)** | **~7.7 M** | **~1.95 M** | — | **~$93** |
+| Subscription paid (Claude Max × 2 months + Codex sub) | — | — | flat | **~$300** |
+
+Two reasons the real outlay (~$300 subscription) is higher than the
+list-price equivalent (~$93): (a) subscriptions buy access to
+*capabilities* (rate limits, caching, longer context) that an
+unsubscribed pay-as-you-go user wouldn't necessarily get; (b) flat
+fees overpay for any individual project that doesn't fully consume
+the rate-limit envelope. The list-price column is what an external
+consumer would pay if they tried to reproduce this exact project
+through pay-per-token API access only.
+
+### Optimization strategies
+
+Per §11.1 of the submission guidelines, cost-control techniques that
+apply to AI-assisted development:
+
+- **Prompt caching** — Anthropic's prompt cache (5-minute TTL) cuts
+  the cost of repeated context (CLAUDE.md, AGENTS.md, recent file
+  reads) by ~90 % on cache hits. The methodology's
+  [10_self_critique_prompts.md](../../instructions/review_methodology/10_self_critique_prompts.md)
+  explicitly chooses cache-friendly delays for `ScheduleWakeup`-style
+  loops.
+- **Smaller model for boilerplate, larger model for design.** Claude
+  Sonnet 4.x covered ~80 % of the project; Opus was reached for only
+  the harder design calls (the registry refactor, the Pass-2
+  retrospective). This kept the Opus token volume below 2 MTok total.
+- **Methodology over re-prompting** — once the
+  `instructions/review_methodology/` framework was in place, each
+  audit phase ran in one prompt instead of being rebuilt from
+  scratch. That's what the user-side "one prompt per phase" rule
+  is buying.
+- **Avoid model thrash** — when Codex's GPT-5 cross-checks failed
+  twice in the post-feedback session, I dropped them rather than
+  retrying with random model variants. The rule of thumb:
+  if a non-primary model fails twice, don't pay for a third try.
+- **Batch verification at the gate** — pre-commit hooks run all
+  checks locally so a CI re-run isn't needed for a typo. CI is paid
+  per-minute on cloud runners; local cheap pre-commit is the
+  batching equivalent of "use a smaller model first".
+
+### Budget management (§11.2)
+
+For a solo coursework project the budget controls are lightweight:
+
+- **Forecasting at scale** — the per-experiment cost projections in
+  §2 above (`~$0.01` for the runtime suite) plus the dev-cost
+  estimates in this section give a clear order-of-magnitude
+  ceiling. Doubling the project size would roughly double the
+  Claude subscription months and barely move the runtime cost.
+- **Real-time monitoring** — the Claude / Codex billing dashboards
+  show usage live; both have built-in soft limits at the
+  subscription tier. No custom telemetry pipeline is needed at this
+  scale.
+- **Overrun alerts** — the subscriptions themselves alert at the
+  rate-limit ceiling. A serious production project would add a
+  cost-per-merge dashboard via the GitHub Actions billing API, but
+  for a coursework deliverable that's over-engineering.
+
 ### Hidden costs of the AI workflow
 
 These are easy to under-count and worth naming explicitly:
