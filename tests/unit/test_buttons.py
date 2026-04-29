@@ -1,6 +1,6 @@
 """Tests for the button panel (state-dependent layout, persistent algo buttons).
 
-Editor and dashboard tests live in test_ui_editor_dashboard.py to keep each
+Editor and dashboard tests live in tests/unit/test_editor.py and test_dashboard.py to keep each
 file under the 150-line project cap.
 """
 
