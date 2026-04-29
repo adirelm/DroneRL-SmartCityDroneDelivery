@@ -76,6 +76,39 @@ uv run python scripts/generate_comparison_charts.py
 | `S` / `L` | Save / Load Q-table |
 | `R` | Hard reset (clears training) |
 
+### UX & accessibility notes
+
+The Pygame interface is built keyboard-first; every operation has a
+shortcut so the app is fully usable without a mouse. A few deliberate
+choices about how the UI handles **Nielsen's usability heuristics**:
+
+- **Visibility of system status** — bottom status bar always shows the
+  current mode (`EDIT` / `TRAIN` / `DEMO` / `PAUSED` / `CONVERGED`) and
+  the active algorithm. The dashboard panel surfaces episode count,
+  total reward, ε, steps, and goal-rate live. The reward-history
+  graph turns the trend into a visual signal.
+- **Recognition over recall** — every keyboard shortcut appears in the
+  status bar so the user never has to memorise them. Buttons in the
+  side panel show available actions; the active algorithm button is
+  highlighted.
+- **Error prevention** — the editor refuses placement on the start
+  and goal cells via [`Environment.is_protected_cell`](src/dronerl/environment.py),
+  and `S`/`L` for save/load is a no-op when the brain file is missing
+  rather than crashing.
+- **User control & freedom** — `R` (hard reset) and `SPACE` (pause)
+  are always available; algorithm switching never resets the board.
+
+**Accessibility considerations and known limits.** The algorithm
+colours are picked from the [`ALGORITHM_REGISTRY`](src/dronerl/algorithms.py)
+in distinct hues (orange / blue / green) so they survive the most
+common forms of red-green colour blindness. The grid colour palette
+is fully driven by `config/config.yaml` so a user with different
+contrast needs can adjust it without code changes. **Known
+limitations**: the Pygame surface doesn't integrate with screen
+readers, and the font sizes are configured in `config/config.yaml`
+under `gui.*_font_size` rather than auto-scaled to the system DPI —
+both gaps documented in [What I'd do differently](#what-id-do-differently).
+
 ---
 
 ## Screenshots
@@ -547,6 +580,12 @@ process is at least as much of the assignment as the final code is.
   and Double-Q. Once I started implementing Double-Q, the abstraction broke and I had to
   redesign it. The lesson I took away: AI is good at producing the obvious shape; deciding
   whether the obvious shape is the right one is still the human's job.
+
+- **Accessibility is shallow.** Pygame doesn't talk to screen readers,
+  font sizes don't auto-scale to system DPI, and the colour palette is
+  config-driven but not bundled with a high-contrast preset. The
+  algorithm chart colours were picked to survive red-green colour
+  blindness, but that's the only deliberate accessibility decision.
 
 - **I don't think I deserve a 100 on this.** Submitting at 95 last time was already meant as
   honest headroom, and after seeing the feedback I'm submitting at 88. The biggest gaps I'm
