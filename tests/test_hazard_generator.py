@@ -132,4 +132,4 @@ class TestApply:
         # The dynamic WIND at (4,4) may or may not still be there (depending on
         # the generator's own placement). The guarantee is that it was cleared
         # before the new placement — i.e. not treated as an "editor" cell.
-        assert (4, 4) not in env._editor_cells
+        assert (4, 4) not in env.editor_cells

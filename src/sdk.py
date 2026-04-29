@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from src.agent_factory import create_agent
+from src.algorithms import ALGORITHMS
 from src.comparison import ComparisonStore, generate_comparison_chart
 from src.config_loader import Config, load_config
 from src.environment import CellType, Environment
@@ -22,10 +23,17 @@ class DroneRLSDK:
         self.logger = setup_logger("DroneRL", self.config.logging.level)
         self.agent = create_agent(self.config)
         self.environment = Environment(self.config)
-        self.trainer = Trainer(self.agent, self.environment, self.config)
         self.hazards = HazardGenerator(self.config)
+        self.trainer = self._new_trainer()
         self.comparison = ComparisonStore()
         self.logger.info("DroneRL SDK initialized (algorithm=%s)", self.config.algorithm.name)
+
+    def _new_trainer(self) -> Trainer:
+        """Create a trainer wired to optional per-episode board randomization."""
+        trainer = Trainer(self.agent, self.environment, self.config)
+        if getattr(self.config.dynamic_board, "randomize_per_episode", False):
+            trainer.on_episode_start = self.regenerate_hazards
+        return trainer
 
     def train_step(self) -> dict:
         """Run one training episode and return metrics."""
@@ -40,13 +48,15 @@ class DroneRLSDK:
         """Reset agent, environment, and trainer to initial state."""
         self.agent = create_agent(self.config)
         self.environment = Environment(self.config)
-        self.trainer = Trainer(self.agent, self.environment, self.config)
+        self.hazards = HazardGenerator(self.config)
+        self.trainer = self._new_trainer()
         self.logger.info("SDK reset complete")
 
     def switch_algorithm(self, name: str) -> None:
-        """Swap to a different algorithm and reset training state."""
+        """Swap algorithms and reset training state while preserving the board."""
         self.config.algorithm.name = name
-        self.reset()
+        self.agent = create_agent(self.config)
+        self.trainer = self._new_trainer()
         self.logger.info("Switched algorithm to %s", name)
 
     def run_comparison(self, episodes: int | None = None) -> dict[str, list[float]]:
@@ -55,16 +65,19 @@ class DroneRLSDK:
         original = self.config.algorithm.name
         # Snapshot the current board so all algorithms train on identical hazards
         shared_grid = self.environment.grid.copy()
+        shared_editor = self.environment.editor_cells
         shared_drift = self.environment.drift_probability
         self.comparison.clear()
-        for algo in ("bellman", "q_learning", "double_q"):
+        for algo in ALGORITHMS:
             self.switch_algorithm(algo)
             self.environment.grid[:] = shared_grid
+            self.environment.restore_editor_cells(shared_editor)
             self.environment.drift_probability = shared_drift
             self.train_batch(n)
-            self.comparison.add_run(algo, self.trainer.reward_history)
+            self.comparison.add_run(algo, self.trainer.reward_history, self.trainer.steps_history)
         self.switch_algorithm(original)
         self.environment.grid[:] = shared_grid
+        self.environment.restore_editor_cells(shared_editor)
         self.environment.drift_probability = shared_drift
         return dict(self.comparison.runs)
 

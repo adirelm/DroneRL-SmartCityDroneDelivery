@@ -55,9 +55,18 @@ class Environment:
         self.drone_pos = self.start
         return self.drone_pos
 
-    def _is_protected_cell(self, row: int, col: int) -> bool:
+    def is_protected_cell(self, row: int, col: int) -> bool:
         """Return True when the cell is reserved for start or goal."""
         return (row, col) in {self.start, self.goal}
+
+    @property
+    def editor_cells(self) -> frozenset[tuple[int, int]]:
+        """Read-only snapshot of user-placed cells."""
+        return frozenset(self._editor_cells)
+
+    def restore_editor_cells(self, cells) -> None:
+        """Replace the editor-cell set from any iterable of (row, col)."""
+        self._editor_cells = {tuple(c) for c in cells}
 
     def step(self, action: int) -> tuple[tuple[int, int], float, bool, dict]:
         """Execute an action and return (next_state, reward, done, info).
@@ -109,7 +118,7 @@ class Environment:
         """Set the cell type; `editor=True` tracks it as user-placed."""
         if not (0 <= row < self.rows and 0 <= col < self.cols):
             return
-        if self._is_protected_cell(row, col):
+        if self.is_protected_cell(row, col):
             return
         self.grid[row, col] = int(cell_type)
         pos = (row, col)
@@ -130,6 +139,6 @@ class Environment:
         """Reset all non-editor, non-protected cells back to EMPTY."""
         for r in range(self.rows):
             for c in range(self.cols):
-                if self._is_protected_cell(r, c) or (r, c) in self._editor_cells:
+                if self.is_protected_cell(r, c) or (r, c) in self._editor_cells:
                     continue
                 self.grid[r, c] = int(CellType.EMPTY)

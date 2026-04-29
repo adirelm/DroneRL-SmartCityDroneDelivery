@@ -62,7 +62,10 @@ def dispatch(gui, a):
         gui.editor.next_type()
     elif a in _ALGO_KEYS:
         gui.cfg.algorithm.name = _ALGO_KEYS[a]
-        dispatch(gui, "reset")
+        gui.agent = create_agent(gui.cfg)
+        gui.logic.reset(gui.agent, gui.env)
+        gui.paused = True
+        gui.show_heatmap = gui.show_arrows = False
     elif a == "regenerate_hazards":
         gui.hazards.apply(gui.env)
         gui.env.set_wind_drift(gui.hazards.effective_drift())

@@ -1,4 +1,7 @@
-"""Comparison store and chart generator for the 3 RL algorithms."""
+"""Comparison store and chart generator for the registered RL algorithms.
+
+Algorithm names, labels, and chart colors live in :mod:`src.algorithms`.
+"""
 
 from pathlib import Path
 
@@ -8,16 +11,12 @@ matplotlib.use("Agg")  # Headless backend
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-ALGORITHM_LABELS = {
-    "bellman": "Bellman (constant α)",
-    "q_learning": "Q-Learning (decaying α)",
-    "double_q": "Double Q-Learning",
-}
-ALGORITHM_COLORS = {
-    "bellman": "#d35400",
-    "q_learning": "#2980b9",
-    "double_q": "#27ae60",
-}
+from src.algorithms import ALGORITHM_COLORS, ALGORITHM_LABELS, ALGORITHMS  # noqa: E402
+
+__all__ = (
+    "ALGORITHM_COLORS", "ALGORITHM_LABELS", "ALGORITHMS",
+    "ComparisonStore", "generate_comparison_chart", "smooth",
+)
 
 
 class ComparisonStore:
@@ -48,8 +47,8 @@ class ComparisonStore:
         return algorithm in self.runs and bool(self.runs[algorithm])
 
     def has_all(self) -> bool:
-        """Return True if bellman, q_learning, and double_q are all stored."""
-        return all(self.has_results(a) for a in ("bellman", "q_learning", "double_q"))
+        """Return True if every registered algorithm has stored results."""
+        return all(self.has_results(a) for a in ALGORITHMS)
 
     def get_histories(self) -> dict[str, list[float]]:
         """Return a shallow copy of the stored run histories."""
@@ -80,7 +79,7 @@ def _rolling_std(values: list[float], window: int) -> np.ndarray:
 def _plot_series(ax, store_dict, smoothing_window, ylabel, title, fmt="6.1f"):
     """Draw per-algorithm smoothed curves + ±1σ bands + stats box on a single axis."""
     summary = []
-    for algo in ("bellman", "q_learning", "double_q"):
+    for algo in ALGORITHMS:
         history = store_dict.get(algo)
         if not history:
             continue

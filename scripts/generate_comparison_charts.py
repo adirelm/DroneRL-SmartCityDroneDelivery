@@ -14,12 +14,11 @@ sys.path.insert(0, str(ROOT))
 
 import numpy as np  # noqa: E402
 
+from src.algorithms import ALGORITHMS  # noqa: E402
 from src.comparison import ComparisonStore, generate_comparison_chart  # noqa: E402
 from src.config_loader import Config, load_config  # noqa: E402
 from src.environment import Environment  # noqa: E402
 from src.hazard_generator import HazardGenerator  # noqa: E402
-
-ALGORITHMS = ("bellman", "q_learning", "double_q")
 
 
 def _train_one(cfg: Config, episodes: int, seed: int) -> tuple[list[float], list[int]]:

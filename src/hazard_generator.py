@@ -49,11 +49,12 @@ class HazardGenerator:
     def apply(self, env: Environment) -> int:
         """Clear auto-hazards then place new ones. Returns number placed."""
         self._clear_hazards(env)
+        editor_cells = env.editor_cells
         eligible = [
             (r, c) for r in range(env.rows) for c in range(env.cols)
             if env.grid[r, c] == CellType.EMPTY
-            and not env._is_protected_cell(r, c)
-            and (r, c) not in env._editor_cells
+            and not env.is_protected_cell(r, c)
+            and (r, c) not in editor_cells
         ]
         target = int(len(eligible) * self.effective_density())
         target = min(target, len(eligible))
@@ -68,9 +69,10 @@ class HazardGenerator:
 
     def _clear_hazards(self, env: Environment) -> None:
         """Reset auto-placed hazards but preserve protected and editor cells."""
+        editor_cells = env.editor_cells
         for r in range(env.rows):
             for c in range(env.cols):
-                if env._is_protected_cell(r, c) or (r, c) in env._editor_cells:
+                if env.is_protected_cell(r, c) or (r, c) in editor_cells:
                     continue
                 if env.grid[r, c] in [int(t) for t in HAZARD_TYPES]:
                     env.grid[r, c] = int(CellType.EMPTY)

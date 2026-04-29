@@ -25,7 +25,7 @@ def test_editor_draw_and_click_flow(ui_config, ui_surface):
 
 
 def test_editor_pit_metadata_and_placement_tracking(ui_config, ui_env):
-    """PIT is editable, has a label and color, cycles in rotation, and tracks in _editor_cells."""
+    """PIT is editable, has a label and color, cycles in rotation, and tracks in editor_cells."""
     editor = Editor(ui_config)
     assert CellType.PIT in EDITABLE_TYPES
     assert TYPE_NAMES[CellType.PIT] == "Pit"
@@ -39,9 +39,9 @@ def test_editor_pit_metadata_and_placement_tracking(ui_config, ui_env):
         editor.next_type()
     assert CellType.PIT in seen
 
-    # Placing PIT via environment.set_cell tracks it in _editor_cells.
+    # Placing PIT via environment.set_cell tracks it in editor_cells.
     ui_env.set_cell(0, 1, CellType.PIT, editor=True)
-    assert (0, 1) in ui_env._editor_cells
+    assert (0, 1) in ui_env.editor_cells
     assert int(ui_env.grid[0, 1]) == int(CellType.PIT)
 
 

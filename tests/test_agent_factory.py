@@ -4,6 +4,7 @@ import pytest
 
 from src.agent import BellmanAgent
 from src.agent_factory import create_agent
+from src.algorithms import ALGORITHMS
 from src.base_agent import BaseAgent
 from src.config_loader import Config, load_config
 from src.double_q_agent import DoubleQAgent
@@ -37,7 +38,7 @@ def test_factory_creates_double_q():
 
 
 def test_factory_returns_base_agent_subclass():
-    for name in ("bellman", "q_learning", "double_q"):
+    for name in ALGORITHMS:
         agent = create_agent(_make_config(name))
         assert isinstance(agent, BaseAgent)
 
@@ -73,7 +74,7 @@ def test_factory_none_raises():
 
 
 class TestFactoryAgentApi:
-    @pytest.fixture(params=["bellman", "q_learning", "double_q"])
+    @pytest.fixture(params=list(ALGORITHMS))
     def agent(self, request):
         return create_agent(_make_config(request.param))
 

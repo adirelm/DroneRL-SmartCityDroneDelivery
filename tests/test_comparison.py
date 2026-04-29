@@ -1,6 +1,7 @@
 """Tests for the comparison store and chart generator."""
 
 
+from src.algorithms import ALGORITHMS
 from src.comparison import (
     ALGORITHM_LABELS,
     ComparisonStore,
@@ -44,7 +45,7 @@ class TestComparisonStore:
 
     def test_has_all(self):
         store = ComparisonStore()
-        for algo in ("bellman", "q_learning", "double_q"):
+        for algo in ALGORITHMS:
             assert store.has_all() is False
             store.add_run(algo, [1.0])
         assert store.has_all() is True
@@ -66,7 +67,7 @@ class TestComparisonStore:
 
     def test_clear_resets_has_all_and_has_results(self):
         store = ComparisonStore()
-        for algo in ("bellman", "q_learning", "double_q"):
+        for algo in ALGORITHMS:
             store.add_run(algo, [1.0])
         store.clear()
         assert store.has_all() is False

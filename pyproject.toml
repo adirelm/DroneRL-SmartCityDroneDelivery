@@ -27,6 +27,13 @@ fail_under = 85
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-fail-under=85",
+    "-ra",
+]
 
 [dependency-groups]
 dev = [

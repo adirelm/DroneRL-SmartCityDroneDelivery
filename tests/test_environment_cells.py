@@ -46,16 +46,16 @@ class TestSetGetCell:
 
     def test_editor_flag_tracks_user_cells(self, env):
         env.set_cell(3, 3, CellType.TRAP, editor=True)
-        assert (3, 3) in env._editor_cells
+        assert (3, 3) in env.editor_cells
 
     def test_editor_flag_false_does_not_track(self, env):
         env.set_cell(3, 3, CellType.TRAP, editor=False)
-        assert (3, 3) not in env._editor_cells
+        assert (3, 3) not in env.editor_cells
 
     def test_set_cell_empty_removes_from_editor_set(self, env):
         env.set_cell(2, 2, CellType.TRAP, editor=True)
         env.set_cell(2, 2, CellType.EMPTY, editor=True)
-        assert (2, 2) not in env._editor_cells
+        assert (2, 2) not in env.editor_cells
 
     def test_set_wind_drift_clamps(self, env):
         env.set_wind_drift(1.5)

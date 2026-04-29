@@ -1,0 +1,70 @@
+{
+  "profiles": [
+    {
+      "algorithm": "bellman",
+      "episodes": 1500,
+      "elapsed_s": 5.828,
+      "episodes_per_s": 257.4,
+      "us_per_episode": 3885.0,
+      "peak_traced_kb": 971.3,
+      "q_table_bytes": 4608,
+      "tables": 1,
+      "final_mean_200": 78.0,
+      "final_std_200": 10.5,
+      "avg_steps_200": 22.2
+    },
+    {
+      "algorithm": "q_learning",
+      "episodes": 1500,
+      "elapsed_s": 5.549,
+      "episodes_per_s": 270.3,
+      "us_per_episode": 3699.6,
+      "peak_traced_kb": 89.8,
+      "q_table_bytes": 4608,
+      "tables": 1,
+      "final_mean_200": 78.0,
+      "final_std_200": 10.5,
+      "avg_steps_200": 22.2
+    },
+    {
+      "algorithm": "double_q",
+      "episodes": 1500,
+      "elapsed_s": 6.367,
+      "episodes_per_s": 235.6,
+      "us_per_episode": 4244.8,
+      "peak_traced_kb": 94.5,
+      "q_table_bytes": 9216,
+      "tables": 2,
+      "final_mean_200": 77.0,
+      "final_std_200": 14.9,
+      "avg_steps_200": 22.3
+    }
+  ],
+  "projections": {
+    "Single 1500-ep run (development)": {
+      "episodes": 1500,
+      "estimated_seconds": 5.9,
+      "estimated_minutes": 0.1
+    },
+    "Scenario 1 in repo (3500 ep \u00d7 3 algos)": {
+      "episodes": 10500,
+      "estimated_seconds": 41.4,
+      "estimated_minutes": 0.69
+    },
+    "Scenario 2 in repo (6000 ep \u00d7 3 algos)": {
+      "episodes": 18000,
+      "estimated_seconds": 71.0,
+      "estimated_minutes": 1.18
+    },
+    "Multi-seed sweep (5 seeds \u00d7 1500 ep \u00d7 3 algos)": {
+      "episodes": 22500,
+      "estimated_seconds": 88.7,
+      "estimated_minutes": 1.48
+    },
+    "Alpha-decay sweep (6 decays \u00d7 3 seeds \u00d7 1500 ep \u00d7 2 algos)": {
+      "episodes": 54000,
+      "estimated_seconds": 212.9,
+      "estimated_minutes": 3.55
+    }
+  }
+}

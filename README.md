@@ -1,5 +1,11 @@
 # DroneRL — Smart City Drone Delivery
 
+[![CI](https://github.com/adirelm/DroneRL-SmartCityDroneDelivery/actions/workflows/ci.yml/badge.svg?branch=assignment-2)](https://github.com/adirelm/DroneRL-SmartCityDroneDelivery/actions/workflows/ci.yml)
+[![Python 3.11–3.13](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![Coverage 97%](https://img.shields.io/badge/coverage-97%25-brightgreen.svg)](#quality-bar)
+[![Ruff](https://img.shields.io/badge/lint-ruff-orange.svg)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](#license--credits)
+
 An educational reinforcement learning lab that compares **three tabular RL algorithms** — Bellman (constant α), Q-Learning (decaying α), and Double Q-Learning (dual tables) — on a configurable smart-city drone delivery task. Built with Python + Pygame.
 
 > Bar-Ilan University, Vibe Coding Workshop — Assignment 2
@@ -129,10 +135,10 @@ uv run python scripts/generate_comparison_charts.py
 
 ## Conclusions
 
-1. **Constant α (Bellman) is fundamentally limited in stochastic environments.** Watkins' convergence theorem requires Σα_t = ∞ AND Σα_t² < ∞ — a constant α fails the second. Empirically this shows up as a persistently wide σ band (46 in Scenario 1, 25 in Scenario 2) — the agent never settles because each update keeps yanking the value in the direction of the latest noisy return.
+1. **Constant α (Bellman) is limited under enough noise.** Watkins' convergence theorem requires Σα_t = ∞ AND Σα_t² < ∞ — a constant α fails the second. Empirically this shows up as a persistently wide σ band (46 in Scenario 1, 25 in Scenario 2) — the agent never settles because each update keeps yanking the value in the direction of the latest noisy return. *Caveat from the multi-seed sweep below: at medium difficulty (noise=0.5) Bellman is essentially as good as the decay-based methods. The "noise breaks Bellman" claim is a slope, not a switch.*
 2. **Q-Learning's decaying α fixes the instability but inherits `max`-operator bias.** With the same value bootstrapped by `max_a Q(s', a)`, Jensen's inequality says `E[max] ≥ max[E]` — the target is systematically biased upward when returns are noisy. In Scenario 2 this shows as Q-Learning's σ=19 ending ~10× higher than Double-Q's σ=1.8.
-3. **Double Q-Learning removes the bias by decorrelating argmax and value.** One table picks the action, the other evaluates it. In both scenarios Double-Q ends with the **highest mean AND lowest variance** in the last 200 episodes — the signature of genuine unbiased convergence, not just "learned something fast".
-4. **Environment shape matters more than hyper-parameters.** The same three algorithms behave qualitatively differently as the noise / density / difficulty sliders push the board into higher-variance regimes — a reminder that in RL, algorithm choice depends on the *environment's stochasticity*, not on a universal "best algorithm".
+3. **Double Q-Learning removes the bias by decorrelating argmax and value, but only with enough training.** One table picks the action, the other evaluates it. In Scenario 2 (6,000 episodes) Double-Q ends with the highest mean AND lowest variance — the signature of genuine unbiased convergence. At a shorter 1,500-episode budget on the medium board, the same algorithm is *catastrophically* seed-dependent (see [EXPERIMENTS.md](docs/assignment-2/EXPERIMENTS.md), H3).
+4. **Environment shape matters more than hyper-parameters.** The three algorithms behave qualitatively differently as noise / density / difficulty push the board into higher-variance regimes. The alpha-decay sweep also showed Q-Learning's final reward varies less than 2 points across `alpha_decay ∈ [0.999, 1.0]` — a reminder that the *qualitative* picture in RL depends more on the environment than on a precisely-tuned hyperparameter.
 
 ---
 
@@ -169,6 +175,327 @@ $$\text{otherwise}: Q_B(s,a) \leftarrow Q_B(s,a) + \alpha [r + \gamma Q_A(s', \a
 
 ---
 
+## Experimental design & findings
+
+The two scenario charts above answer the assignment's literal comparison
+requirement, but they each show a single seed. To check whether the
+qualitative ordering between algorithms is real or seed-dependent I ran two
+follow-up experiments. Both are reproducible from this repo:
+
+```bash
+uv run python -m analysis.multi_seed_robustness   # 5 seeds × 1500 ep × 3 algos
+uv run python -m analysis.alpha_decay_sweep       # 6 decays × 3 seeds × 2 algos
+```
+
+The training loop is shared in [analysis/_runner.py](analysis/_runner.py) so
+both experiments use identical configs. The full hypothesis-by-hypothesis
+write-up — including the two findings that contradicted my expectations —
+lives in [docs/assignment-2/EXPERIMENTS.md](docs/assignment-2/EXPERIMENTS.md).
+
+### Multi-seed robustness
+
+5 seeds, medium board (noise=0.5, density=0.12, difficulty=0.3), 1500 episodes.
+
+![Multi-seed robustness](data/analysis/multi_seed_robustness.png)
+
+Per-seed last-200-episode means (mean reward over the last 200 episodes of
+each run):
+
+| Algorithm  | Per-seed means                       | Spread |
+|------------|--------------------------------------|--------|
+| Bellman    | 74.6, 74.5, 75.8, 74.8, 75.8         | 1.4    |
+| Q-Learning | 74.4, 76.3, 75.7, 75.3, 75.6         | 1.8    |
+| Double-Q   | **−184.5, −195.3**, 74.7, 76.2, 76.0 | 271.5  |
+
+**Surprise.** I expected Double-Q to be the safest bet. With 1,500 episodes
+it is in fact the *most* seed-sensitive: 2 out of 5 seeds collapse to a
+catastrophic policy while the other 3 converge normally. The Scenario 1
+chart above (single seed=11) sits inside Double-Q's *good* basin — which is
+correct but not generic. Bellman and Q-Learning are essentially tied at this
+difficulty, both with a 1–2 point spread.
+
+The takeaway is not "Double-Q is bad" — Scenario 2 with 6,000 episodes shows
+exactly the textbook ordering. It's that **Double-Q's bias-correction
+benefit needs enough samples to dominate the higher initial variance from
+running two interleaved Q-tables.** Reporting a single seed at a tight
+training budget can flip the qualitative story.
+
+### Alpha-decay sensitivity
+
+6 decay values × 3 seeds × {Q-Learning, Double-Q}, same medium board, 1500
+episodes. Bellman shown as a horizontal reference (no decay).
+
+![Alpha-decay sweep](data/analysis/alpha_decay_sweep.png)
+
+| `alpha_decay` | Q-Learning (mean ± SEM) | Double-Q (mean ± SEM) |
+|---------------|-------------------------|-----------------------|
+| 0.9990 | 78.0 ± 0.4  | −105.2 ± 91.6 |
+| 0.9993 | 76.7 ± 0.8  | −198.4 ± 3.8  |
+| 0.9995 | 77.4 ± 0.5  | −11.5  ± 89.3 |
+| 0.9997 | 76.5 ± 1.5  | −198.7 ± 4.3  |
+| 0.9999 | 77.9 ± 0.4  | −11.6  ± 89.3 |
+| 1.0000 | 76.4 ± 1.7  | −110.3 ± 92.6 |
+
+Bellman reference: **77.5**.
+
+**Surprise.** Q-Learning's curve is essentially flat (76 → 78 across the
+entire grid) — even at `decay=1.0`, which is constant α and therefore
+mathematically identical to Bellman. At this episode budget on this board,
+the decay parameter that separates Q-Learning from Bellman *in theory* makes
+no measurable difference *in practice*. That's a useful sanity check on the
+overall comparison: the difference between Bellman and Q-Learning shows up
+primarily at higher noise, not at the medium setting where Scenario 1 was
+tuned.
+
+Double-Q's curve is a different story — high SEM (≈90) reflects the bimodal
+distribution from the multi-seed experiment (some seeds converge to ~75,
+others crash to ~−200). The means are not centered "low" — they're averages
+of two basins.
+
+### What this changed in the project
+
+Honest version: writing the experiments above is what made me notice that
+the original Scenario 1 framing (*"Bellman struggles, Q-Learning converges,
+Double-Q fastest"*) was leaning on a favorable seed. The Scenario 2 result
+holds up — at high noise / longer training, the textbook ordering
+reappears — but the medium-difficulty story needed the qualifier that's now
+in [Conclusions](#conclusions). The chart for the medium scenario was
+*correct*, but I was over-claiming what it generalised to.
+
+## Cost & resource footprint
+
+The numbers below are from `analysis/cost_profile.py`, run on a 2023 MacBook
+Pro (Apple silicon, Python 3.13). The full write-up — including a scaling
+model and the regime where this design *would* become expensive — lives in
+[docs/assignment-2/COST_ANALYSIS.md](docs/assignment-2/COST_ANALYSIS.md).
+
+```bash
+uv run python -m analysis.cost_profile
+```
+
+### Measured per-algorithm cost (1500 episodes, medium board)
+
+| Algorithm  | Wall time | Episodes/s | µs/episode | Q-table memory |
+|------------|----------:|-----------:|-----------:|---------------:|
+| Bellman    | 5.83 s    | 257        | 3,885      | 4,608 B        |
+| Q-Learning | 5.55 s    | 270        | 3,700      | 4,608 B        |
+| Double-Q   | 6.37 s    | 236        | 4,245      | 9,216 B (2 tables) |
+
+**Reading the numbers.** Q-Learning is the cheapest per episode; Double-Q
+pays a real ~15% time premium for keeping two tables in sync, which is
+consistent with its design. The Q-table itself fits in roughly 5 KB —
+memory is not a constraint at this scale.
+
+### Cost model
+
+```
+Wall time ≈ episodes × avg_steps_per_episode × T_step    (T_step ≈ 3.7–4.2 µs)
+Memory   ≈ rows × cols × actions × tables × 8 bytes      (float64)
+```
+
+Cost is linear in the number of *environment transitions*, not in grid
+size — meaning the same architecture will scale comfortably until the state
+space (not the grid resolution) blows up.
+
+### Workload projections from measured timings
+
+| Workload                                                   | Episodes | Estimated time |
+|------------------------------------------------------------|---------:|----------------|
+| Single dev run (1 algo, 1500 ep)                           | 1,500    | ~6 s           |
+| Scenario 1 in repo (3 algos × 3,500 ep)                    | 10,500   | ~41 s          |
+| Scenario 2 in repo (3 algos × 6,000 ep)                    | 18,000   | ~71 s          |
+| Multi-seed sweep (5 seeds × 3 algos × 1,500 ep)            | 22,500   | ~89 s          |
+| Alpha-decay sweep (6 decays × 3 seeds × 2 algos × 1,500 ep)| 54,000   | ~213 s         |
+
+Translated to AWS `c7i.large` on-demand pricing (~$0.09/hr): the entire
+suite of comparison + multi-seed + decay-sweep costs roughly **$0.01** of
+compute. The cost gates here are developer time and chart disk space, not
+CPU.
+
+### Where this design stops being free
+
+Tabular Q-learning has a hard ceiling — every state needs its own row in
+the Q-table. The bytes are cheap; the *samples needed to fill them* are
+not. Sample complexity is roughly `O(|S| × |A| / (1−γ)²)` (Even-Dar &
+Mansour, 2003), so the model only stays cheap while the state space stays
+small.
+
+| Grid       | States  | Approx. training time at 1,500 ep × 1 algo |
+|------------|--------:|--------------------------------------------|
+| 12×12 (current) | 144   | ~6 s |
+| 24×24      | 576     | ~40 s |
+| 48×48      | 2,304   | ~3 min |
+| 96×96 or with a velocity dim (~36K states) | 36,000+ | ~50 min |
+
+At ~10⁴ states the linear cost model breaks down and function
+approximation (DQN with a small MLP) starts being faster *and* more
+memory-efficient because the network parameters don't grow with the state
+count — at the cost of needing a GPU and ~$5–10 per comparison sweep
+instead of ~$0.01.
+
+### Development cost — the part that actually mattered
+
+The runtime numbers above are the cheap part. This is a "Vibe Coding"
+workshop project: most of the code was generated by Claude through Claude
+Code, which makes the *development* cost — not the runtime cost — the
+honest economic story.
+
+| Bucket                                                     | Estimate         |
+|------------------------------------------------------------|------------------|
+| Total focused dev hours (both assignments + polish)        | ~50–80 h         |
+| Token usage across all sessions (prompt-cached)            | ~5–40 M tokens   |
+| Claude Max subscription (effective cost path I used)       | ~$200–400        |
+| API list-price equivalent if I'd been billed per-token     | ~$30–300         |
+| AI-rework tax (verification + redoing wrong-but-clean code)| ~20–30% of hours |
+
+The ranges are wide because I'm not faking precision. The takeaway isn't
+"AI made me 10× faster" — it's that **AI redistributes the work**:
+less time writing boilerplate, more time reading generated code and
+catching subtle behavior changes (the `switch_algorithm` board-regen bug
+in [What I'd do differently](#what-id-do-differently) is one such case).
+
+The strongest design-choice signal here: the 150-line file limit and the
+85% coverage gate aren't style rules — they're *verification-cost*
+optimizations. AI-generated code is cheap to write and expensive to
+verify, and small modules + tight tests are how this project keeps the
+verification cost bounded.
+
+The full development-cost breakdown — including hidden costs like context
+restoration and prompts that don't land — is in section 5 of
+[COST_ANALYSIS.md](docs/assignment-2/COST_ANALYSIS.md).
+
+## Extending it
+
+I'll be specific about what extending each surface actually costs. The
+architecture has one clean extension point and a few that aren't (yet).
+
+### Adding a new RL algorithm — one place
+
+This is the case the project is most explicitly designed for. Every consumer
+of "the list of algorithms" — the factory, the GUI keybindings, the
+comparison runner, the chart code, the analysis scripts, the parametrised
+tests — pulls from `src/algorithms.py`:
+
+```python
+# src/algorithms.py
+ALGORITHM_REGISTRY: tuple[AlgorithmSpec, ...] = (
+    AlgorithmSpec("bellman", "Bellman (constant α)", "#d35400", BellmanAgent),
+    AlgorithmSpec("q_learning", "Q-Learning (decaying α)", "#2980b9", QLearningAgent),
+    AlgorithmSpec("double_q", "Double Q-Learning", "#27ae60", DoubleQAgent),
+    # AlgorithmSpec("sarsa", "SARSA", "#8e44ad", SarsaAgent),  ← one new line
+)
+```
+
+To add SARSA: write a `SarsaAgent` class subclassing `BaseAgent` (one new
+file), then add the one-line `AlgorithmSpec` above. The factory picks it up,
+the parametrised `TestFactoryAgentApi` fixtures automatically run their
+sanity checks against it, and the comparison runner / chart renderer pick up
+the new label and color.
+
+This was not always true: the same string tuple was previously duplicated
+across 13 sites in 9 files (see [git history](../../commits/assignment-2)).
+The refactor is the bulk of the Extensibility section's improvements.
+
+### Adding a new hazard type — multiple places, by design
+
+Hazards aren't behind a single registry yet, because each one has
+genuinely different rendering, reward, and movement logic. Adding a new
+cell type ("ICE" that randomly redirects movement, say) currently touches:
+
+- `src/environment.py` — add to `CellType`, add the per-cell movement / reward branch in `step()`.
+- `config/config.yaml` — add the reward/penalty value.
+- `src/editor.py` — add to `EDITABLE_TYPES`, name, and color.
+- `src/hazard_generator.py` — add to `HAZARD_TYPES` and `ratios`.
+- `src/renderer.py` — add a `_draw_ice` method and entry in the dispatch dict.
+- `src/overlays.py` — decide if the heatmap should skip it.
+- A test in `tests/test_environment_cells.py` for the movement / reward.
+
+This is honestly more places than I'd like. A `CellTypeSpec` registry like
+the algorithm one is the right next step but I haven't done it — the cells
+have richer per-type behavior (drawing function, reward, drift, blocking)
+that doesn't compress as neatly into a single dataclass. Worth doing if a
+future assignment adds a fourth or fifth hazard.
+
+### Other surfaces
+
+- **New scenario** → add a config block in [scripts/generate_comparison_charts.py](scripts/generate_comparison_charts.py); the runner iterates registered algorithms automatically.
+- **New analysis experiment** → add a script in [analysis/](analysis/); reuse [analysis/_runner.py](analysis/_runner.py) for the training loop.
+- **Different board size, difficulty, or hyperparameters** → [config/config.yaml](config/config.yaml) only. No code change.
+- **New dashboard metric** → expose it from `Trainer.get_metrics()` / `GameLogic.get_metrics()`; the dashboard renders whatever it gets.
+- **Replacing the GUI** → `DroneRLSDK` is the only orchestration entry point. GUI, scripts, and analysis all go through it, so a CLI or web frontend can slot in at the same boundary without touching the RL code.
+
+## Quality bar
+
+Code quality is enforced by tooling, not by manual review. Each gate fails the
+build (locally and in CI) if violated — there is no path where a degraded
+state silently lands on a branch.
+
+| Gate | Where it runs | What it enforces |
+|------|---------------|------------------|
+| **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
+| **Pytest + coverage** | pre-push, CI | 284 tests pass, ≥85% line coverage (current: 97.59%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 lines. |
+| **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
+| **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
+
+Reproduce locally:
+
+```bash
+uv sync --dev
+uv run ruff check src/ tests/ analysis/ scripts/ main.py
+uv run pytest tests/                       # implicitly --cov=src --cov-fail-under=85
+pre-commit install && pre-commit install --hook-type pre-push
+```
+
+The CI workflow lives in [.github/workflows/ci.yml](.github/workflows/ci.yml);
+pre-commit hooks in [.pre-commit-config.yaml](.pre-commit-config.yaml);
+Dependabot config in [.github/dependabot.yml](.github/dependabot.yml).
+
+Every reward, color, grid size, and algorithm hyperparameter lives in
+`config/config.yaml`; the source code holds no magic numbers. The 150-line
+limit makes some files (`gui.py`, `dashboard.py`) sit right at the cap, which
+forces structural decisions earlier than they would otherwise come up — but
+also keeps each module small enough that reviewing a diff doesn't require
+loading a thousand-line file into your head.
+
+## What I'd do differently
+
+A few things I noticed in retrospect, both about the project and about the way I worked on it.
+I'm calling them out honestly rather than presenting only the polished version, because the
+process is at least as much of the assignment as the final code is.
+
+- **Bellman vs. Q-Learning was harder to differentiate than I expected.** My first pass at
+  Scenario 1 used noise levels low enough that all three algorithms converged to similar
+  rewards, which made the comparison plot look like the algorithms were equivalent. I had to
+  redesign the scenario specifically to push Bellman into its failure mode — that work isn't
+  visible in the final config, but it's why the two scenarios exist instead of one.
+
+- **`switch_algorithm` used to silently regenerate the board.** When comparing algorithms in
+  the GUI I noticed the layout shifting between runs. Tracing it back, the SDK's
+  `switch_algorithm` was calling `reset()`, which reseeded the hazard generator. Until that
+  was fixed, every "comparison" I'd been eyeballing was actually three different boards —
+  exactly the kind of bug that produces confident-but-wrong conclusions. The current code
+  preserves the grid through the switch, and there's a regression test for it.
+
+- **The 150-line file limit is sometimes annoying.** A few modules (`gui.py`, `dashboard.py`)
+  are sitting right at 150 lines, which means the next small feature will force a split.
+  That's the rule working as intended — it pushes me to factor before things get tangled —
+  but I won't pretend it always feels good in the moment.
+
+- **AI assistance was useful as a drafting tool, less useful for judgment.** The first draft
+  of `BaseAgent` looked clean but assumed the same update signature for Bellman, Q-Learning,
+  and Double-Q. Once I started implementing Double-Q, the abstraction broke and I had to
+  redesign it. The lesson I took away: AI is good at producing the obvious shape; deciding
+  whether the obvious shape is the right one is still the human's job.
+
+- **I don't think I deserve a 100 on this.** Submitting at 95 last time was already meant as
+  honest headroom, and after seeing the feedback I'm submitting at 88. The biggest gaps I'm
+  aware of are: I haven't run a hyperparameter sweep (I tuned by intuition + a few targeted
+  experiments), and the Pygame UI tests cover behavior but not visual regressions. Both are
+  on my list for if the project continues.
+
+---
+
 ## Project Structure
 
 ```
@@ -189,7 +516,7 @@ $$\text{otherwise}: Q_B(s,a) \leftarrow Q_B(s,a) + \alpha [r + \gamma Q_A(s', \a
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 282 pytest tests, 97%+ coverage
+├── tests/                  # 284 pytest tests, 97%+ coverage
 ├── scripts/
 │   └── generate_comparison_charts.py
 ├── config/config.yaml      # All parameters
@@ -213,7 +540,7 @@ uv run pytest tests/ --cov=src --cov-report=term-missing
 uv run ruff check src/ tests/ main.py
 ```
 
-Current state: **282 tests passing**, **98% coverage**, zero ruff violations.
+Current state: **284 tests passing**, **98% coverage**, zero ruff violations.
 
 ---
 

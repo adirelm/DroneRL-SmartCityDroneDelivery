@@ -2,7 +2,9 @@
 
 import pytest
 
+from src.algorithms import ALGORITHMS
 from src.config_loader import Config, load_config
+from src.environment import CellType
 from src.sdk import DroneRLSDK
 
 
@@ -27,13 +29,20 @@ class TestSwitchAlgorithm:
         sdk.switch_algorithm("q_learning")
         assert sdk.episode_count == 0
 
+    def test_switch_preserves_current_board(self, sdk):
+        sdk.set_cell(3, 3, CellType.PIT)
+        before = sdk.get_grid().copy()
+        sdk.switch_algorithm("double_q")
+        assert (sdk.get_grid() == before).all()
+
 
 class TestComparison:
     def test_run_comparison_populates_store(self, sdk):
         sdk.run_comparison(episodes=2)
-        assert set(sdk.comparison.runs) == {"bellman", "q_learning", "double_q"}
+        assert set(sdk.comparison.runs) == set(ALGORITHMS)
         for runs in sdk.comparison.runs.values():
             assert len(runs) == 2
+        assert set(sdk.comparison.steps) == set(ALGORITHMS)
 
     def test_run_comparison_restores_original_algorithm(self, sdk):
         original = sdk.config.algorithm.name
@@ -68,8 +77,16 @@ class TestHazardIntegration:
         assert sdk.hazards.density == 0.3
         assert sdk.hazards.difficulty == 0.7
 
+    def test_randomize_per_episode_is_wired_to_trainer(self, monkeypatch, sdk):
+        calls = []
+        monkeypatch.setattr(sdk, "regenerate_hazards", lambda: calls.append("called"))
+        sdk.config.dynamic_board.randomize_per_episode = True
+        sdk.trainer = sdk._new_trainer()
+        sdk.train_step()
+        assert calls == ["called"]
+
 
 def test_config_loader_still_valid():
     """Sanity: Config class still works after all additions."""
     cfg = Config(load_config("config/config.yaml"))
-    assert cfg.algorithm.name in {"bellman", "q_learning", "double_q"}
+    assert cfg.algorithm.name in set(ALGORITHMS)

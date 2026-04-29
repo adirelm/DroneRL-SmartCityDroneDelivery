@@ -46,3 +46,6 @@ coverage.xml
 
 # Environment
 .env
+
+# Codex agent definitions (mirror of CLAUDE.md, kept local)
+AGENTS.md

@@ -13,6 +13,7 @@ class Trainer:
         self.agent = agent
         self.env = environment
         self.max_steps = config.training.max_steps_per_episode
+        self.on_episode_start = None
 
         self._episode_count = 0
         self._goal_count = 0
@@ -43,6 +44,8 @@ class Trainer:
         Returns:
             Tuple of (total_reward, steps_taken, reached_goal).
         """
+        if self.on_episode_start is not None:
+            self.on_episode_start()
         state = self.env.reset()
         total_reward = 0.0
         reached_goal = False
