@@ -498,14 +498,21 @@ process is at least as much of the assignment as the final code is.
 
 ## Project Structure
 
+> For a full navigation index — what to read for each kind of evidence
+> (algorithms, experiments, cost analysis, planning trail, AI workflow,
+> CI) — see [docs/shared/ARCHITECTURE.md](docs/shared/ARCHITECTURE.md).
+> That document is the single entry point designed for graders, code
+> reviewers, and AI agents auditing the project.
+
 ```
 ├── src/
 │   ├── base_agent.py       # Abstract base for the 3 algorithms
 │   ├── agent.py            # BellmanAgent (constant α)
 │   ├── q_agent.py          # QLearningAgent (decaying α)
 │   ├── double_q_agent.py   # DoubleQAgent (QA + QB tables)
-│   ├── agent_factory.py    # Selects algorithm from config
-│   ├── environment.py      # Smart-city grid + cell types (incl. PIT)
+│   ├── algorithms.py       # Algorithm registry — single source of truth
+│   ├── agent_factory.py    # Thin validating wrapper over the registry
+│   ├── environment.py      # Smart-city grid + cell types (incl. PIT) + public editor_cells API
 │   ├── hazard_generator.py # Random hazard placer driven by sliders
 │   ├── sliders.py          # Pygame slider widgets
 │   ├── trainer.py          # Episode-level training loop
@@ -517,16 +524,24 @@ process is at least as much of the assignment as the final code is.
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
 ├── tests/                  # 284 pytest tests, 97%+ coverage
+├── analysis/               # Headless research experiments (multi-seed, sweep, cost)
 ├── scripts/
-│   └── generate_comparison_charts.py
+│   ├── generate_comparison_charts.py
+│   ├── capture_assignment2_screenshots.py
+│   └── check_file_sizes.sh
 ├── config/config.yaml      # All parameters
-├── data/comparison/        # Generated convergence PNGs
+├── data/
+│   ├── comparison/         # Required Scenario 1 / Scenario 2 PNGs
+│   └── analysis/           # Multi-seed CI band, decay sweep, cost JSON
 ├── docs/
 │   ├── assignment-1/       # PRD, PLAN, TODO from Assignment 1
-│   ├── assignment-2/       # 3× PRD/PLAN/TODO for new features
-│   └── shared/             # ARCHITECTURE.md, PROMPTS.md
+│   ├── assignment-2/       # 3× PRD/PLAN/TODO + EXPERIMENTS.md + COST_ANALYSIS.md
+│   └── shared/             # ARCHITECTURE.md (navigation index), PROMPTS.md
+├── .github/                # CI workflow + Dependabot
+├── .pre-commit-config.yaml
 ├── main.py
 ├── pyproject.toml
+├── LICENSE                 # MIT
 └── CLAUDE.md               # Global coding standards (150-line cap, TDD, OOP, …)
 ```
 
