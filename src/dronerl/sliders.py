@@ -17,6 +17,7 @@ class Slider:
 
     @property
     def fraction(self) -> float:
+        """Current value normalised to [0.0, 1.0] for fill-bar / handle position."""
         return 0.0 if self.maximum == 0 else self.value / self.maximum
 
     def _handle_x(self) -> int:
@@ -42,9 +43,11 @@ class Slider:
         return changed
 
     def set_y(self, y: int) -> None:
+        """Reposition this slider's row vertically."""
         self.rect.y = y
 
     def draw(self, surface, font, colors) -> None:
+        """Render track, fill, draggable handle, and ``label: value`` text."""
         pygame.draw.rect(surface, tuple(colors.btn_bg), self.rect, border_radius=3)
         fill = pygame.Rect(self.rect.x, self.rect.y, self._handle_x() - self.rect.x, self.rect.h)
         pygame.draw.rect(surface, tuple(colors.accent), fill, border_radius=3)
@@ -78,6 +81,7 @@ class SliderPanel:
         return None
 
     def get(self, name: str) -> float:
+        """Return the current value of the slider identified by ``name``."""
         return self.sliders[name].value
 
     def set_y(self, y: int) -> None:
@@ -86,6 +90,7 @@ class SliderPanel:
             slider.set_y(y + i * 40)
 
     def draw(self, surface) -> None:
+        """Render every slider in the panel."""
         self._ensure_font()
         for slider in self.sliders.values():
             slider.draw(surface, self._font, self.colors)

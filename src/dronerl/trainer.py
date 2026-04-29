@@ -22,20 +22,24 @@ class Trainer:
 
     @property
     def episode_count(self) -> int:
+        """Number of episodes that have been run through ``run_episode``."""
         return self._episode_count
 
     @property
     def goal_rate(self) -> float:
+        """Fraction of episodes that ended at the goal (0.0 if no episodes yet)."""
         if self._episode_count == 0:
             return 0.0
         return self._goal_count / self._episode_count
 
     @property
     def reward_history(self) -> list[float]:
+        """Total reward per episode in chronological order."""
         return self._reward_history
 
     @property
     def steps_history(self) -> list[int]:
+        """Number of environment steps each episode took, in chronological order."""
         return self._steps_history
 
     def run_episode(self) -> tuple[float, int, bool]:

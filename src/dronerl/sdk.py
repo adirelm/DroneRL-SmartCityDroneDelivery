@@ -108,41 +108,52 @@ class DroneRLSDK:
         self.environment.set_wind_drift(self.hazards.effective_drift())
 
     def get_q_table(self) -> np.ndarray:
+        """Return the agent's current Q-table (combined QA+QB for Double-Q)."""
         return self.agent.q_table
 
     def get_grid(self) -> np.ndarray:
+        """Return the environment's current cell-type grid."""
         return self.environment.grid
 
     def get_metrics(self) -> dict:
+        """Return a dict of training metrics (episode count, goal rate, reward stats)."""
         return self.trainer.get_metrics()
 
     def save_brain(self, path: str) -> None:
+        """Persist the agent's Q-table(s) to disk via the agent's save protocol."""
         self.agent.save(path)
         self.logger.info("Q-table saved to %s", path)
 
     def load_brain(self, path: str) -> None:
+        """Restore Q-table(s) from a previously saved file."""
         self.agent.load(path)
         self.logger.info("Q-table loaded from %s", path)
 
     def set_cell(self, row: int, col: int, cell_type: CellType) -> None:
+        """Place ``cell_type`` at ``(row, col)`` via the editor path (tracked as user-placed)."""
         self.environment.set_cell(row, col, cell_type)
 
     @property
     def episode_count(self) -> int:
+        """Number of completed training episodes."""
         return self.trainer.episode_count
 
     @property
     def epsilon(self) -> float:
+        """Current exploration rate (decays over training)."""
         return self.agent.epsilon
 
     @property
     def drone_position(self):
+        """Current ``(row, col)`` position of the drone in the environment."""
         return self.environment.drone_pos
 
     @property
     def goal_rate(self) -> float:
+        """Fraction of recent episodes that reached the goal (0.0–1.0)."""
         return self.trainer.goal_rate
 
     @property
     def reward_history(self) -> list[float]:
+        """Total reward per episode for every completed episode."""
         return self.trainer.reward_history
