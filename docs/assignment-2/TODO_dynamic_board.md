@@ -1,3 +1,24 @@
+# TODO — Dynamic Board (Assignment 2)
+
+## Conventions
+
+Per `software_submission_guidelines-V3.pdf` §2.2.c.
+
+**Status legend.** `[x] = done · [ ] = open`. Every task here is `[x]`.
+**Priorities.** Tasks are in implementation order; earlier tasks gate
+later ones. **Responsibility.** Single-author (Adir Elmakais).
+
+| Phase gate | Definition-of-Done |
+|------------|--------------------|
+| `CellType.PIT` integration | step on PIT terminates the episode with `pit_penalty`; renderer / overlays / editor all handle PIT |
+| `HazardGenerator` | `apply()` populates the grid honoring `density × difficulty`; user-placed `editor_cells` survive regeneration |
+| Slider widgets | three sliders render in editor mode and feed into `SDK.set_dynamic_params` |
+| GUI integration | sliders → SDK → HazardGenerator → Environment is a single round-trip; no GUI mutation of env state directly |
+| Tests | per-component tests + an integration test for the full slider-to-env path; coverage ≥ 85% |
+| Backward compatibility | `dynamic_board.enabled = false` reproduces Assignment 1 behaviour bit-for-bit |
+
+---
+
 ## CellType.PIT integration
 
 - [x] Task 1: Add PIT member to CellType enum in src/environment.py

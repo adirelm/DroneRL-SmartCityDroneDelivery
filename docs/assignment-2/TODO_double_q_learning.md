@@ -1,5 +1,24 @@
 # TODO — Double Q-Learning (Assignment 2)
 
+## Conventions
+
+Per `software_submission_guidelines-V3.pdf` §2.2.c.
+
+**Status legend.** `[x] = done · [ ] = open`. Every task here is `[x]`.
+**Priorities.** Tasks are in implementation order; earlier tasks gate
+later ones. **Responsibility.** Single-author (Adir Elmakais).
+
+| Phase gate | Definition-of-Done |
+|------------|--------------------|
+| `DoubleQAgent` | two tables QA / QB; coin-flip update uses argmax from one table and value from the other; `q_table` property returns `QA + QB` |
+| Factory registration | `create_agent(config)` with `algorithm.name = "double_q"` returns a `DoubleQAgent` |
+| Comparison runner | `SDK.run_comparison()` trains all three algorithms on the same board snapshot |
+| Chart generation | `data/comparison/scenario2_hard.png` shows Double-Q's σ on the last 200 episodes is the smallest of the three |
+| GUI integration | algorithm selector buttons + keyboard shortcuts switch agents without resetting the board |
+| Tests | `tests/test_double_q_agent.py` asserts the cross-table evaluation and coin-flip mechanics |
+
+---
+
 ## DoubleQAgent file setup
 - [x] Task 1: Create src/double_q_agent.py file
 - [x] Task 2: Add module-level docstring describing DoubleQAgent

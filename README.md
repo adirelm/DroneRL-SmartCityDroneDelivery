@@ -160,6 +160,65 @@ $$\text{otherwise}: Q_B(s,a) \leftarrow Q_B(s,a) + \alpha [r + \gamma Q_A(s', \a
 
 ---
 
+## Configuration
+
+Two configuration surfaces, both read at startup. Editing either does
+not require code changes; `uv run main.py` (or any analysis script)
+will pick up the new values.
+
+### `config/config.yaml`
+
+A single source of truth for every tunable RL parameter, environment
+dimension, hazard ratio, GUI value, and colour. Top-level sections:
+
+| Section | Purpose |
+|---------|---------|
+| `environment` | Grid size, start / goal positions, default obstacles |
+| `rewards` | Magnitudes for `step_penalty`, `wall_collision`, `wind_penalty`, `trap_penalty`, `pit_penalty`, `goal_reward` |
+| `agent` | Bellman learning rate (constant α), `discount_factor`, `epsilon_start` / `_end` / `_decay` |
+| `training` | Maximum episodes per training run, `max_steps_per_episode` |
+| `wind` | Base `drift_probability` (further modulated by the `dynamic_board.noise_level` slider) |
+| `dynamic_board` | `enabled` flag, `noise_level`, `hazard_density`, `difficulty`, per-hazard ratios, `seed`, `randomize_per_episode` |
+| `algorithm` | `name` selector — one of `bellman`, `q_learning`, `double_q` |
+| `q_learning` | `alpha_start`, `alpha_end`, `alpha_decay` (decay rule: `α ← max(α_end, α · alpha_decay)`) |
+| `double_q` | Same three knobs as `q_learning`; both QA and QB share them |
+| `comparison` | `max_episodes`, `output_dir`, `smoothing_window` for the canonical scenario charts |
+| `gui` | Window size, cell size, FPS, dashboard width, fast-mode episodes-per-frame, font name |
+| `colors` | RGB triplets for every cell type and overlay element (palette is config-driven, not hardcoded) |
+| `logging` | Stdlib log `level` (`DEBUG` / `INFO` / `WARNING` / `ERROR`) |
+| `paths` | Default brain-save / brain-load locations |
+
+Adding a new RL algorithm? See [Extending it → Adding a new RL algorithm](#extending-it).
+Renaming the seed or shrinking the grid? Edit `config/config.yaml`
+directly, save, rerun.
+
+### `.env` (optional, copied from `.env-example`)
+
+Only two environment-level overrides are read; both are optional and
+have sensible defaults. The committed `.env-example` is the template:
+
+```bash
+LOG_LEVEL=INFO        # DEBUG / INFO / WARNING / ERROR — overrides config.logging.level
+DATA_DIR=data         # where saved brains and comparison artefacts go
+```
+
+Copy `.env-example` to `.env` and edit if you need to override either.
+The `.env` file itself is gitignored.
+
+### How parameters compose
+
+The slider values in the GUI feed back into `dynamic_board.*` at
+runtime via `SDK.set_dynamic_params()`, which modulates wind drift
+through `wind.drift_probability * dynamic_board.noise_level *
+(1 + dynamic_board.difficulty)`. So sliders edit *the same config
+object* the YAML file initialises — the file holds the defaults, the
+sliders move them in-session.
+
+For the *effect* of each tunable on algorithm behaviour see the next
+section, [Parameter Analysis](#parameter-analysis).
+
+---
+
 ## Parameter Analysis
 
 `config/config.yaml` exposes every tunable value. Most influential for differentiating the algorithms:

@@ -230,3 +230,20 @@ colors:
 | 6 | Write tests for all new components |
 | 7 | Update config.yaml with new sections |
 | 8 | Verify backward compatibility with dynamic_board.enabled = false |
+
+---
+
+## Alternatives Considered
+
+The chosen design (slider-driven `HazardGenerator` operating on a public
+`Environment.editor_cells` API, with `CellType.PIT` joining the existing
+hazard taxonomy) was selected from several alternatives.
+
+| Alternative | Rejected because |
+|-------------|------------------|
+| **Procedural generation per episode (mazegen / Wave Function Collapse)** | Solves a different problem — "make every episode novel". The lecturer's brief is the opposite: *same* board, *configurable* difficulty (transcript: *"כל מיני סליידרים שמאפשרים להוסיף רעש, להבריד רעש"*). A user-controlled hazard density slider matches that intent better than autonomous procedural generation. |
+| **Fixed scenario presets (3-5 hand-designed boards)** | Less flexible for the comparison study — every difficulty axis (noise / density / mix) becomes a separate preset, exploding the matrix. Sliders give continuous control which is what the cross-algorithm comparison needs. |
+| **Subclass `Environment` for stochastic variants** | Inheritance for behavior change is the wrong tool here — the stochastic behavior is data (hazard placement) on the same Environment, not a different Environment. Composition (`HazardGenerator` operating on Environment) is cleaner. |
+| **Mutate `Environment` directly from the GUI without an SDK round-trip** | Violates the SDK-as-single-entry-point principle. All slider events go through `SDK.set_dynamic_params()` so headless tests and the GUI share one code path. |
+| **One slider for "difficulty," derived noise/density internally** | Loses control over which axis dominates. Decomposing into noise / density / difficulty (with `difficulty` as a master multiplier) lets the comparison experiments isolate which axis Bellman fails on (it's noise, not density — see EXPERIMENTS.md). |
+| **Make `editor_cells` a public attribute (not a property)** | Earlier draft did this. Rejected during the post-feedback Pass 1 review because it leaked an internal mutable container. Replaced with a `frozenset` property + `restore_editor_cells(iterable)` method so callers can't accidentally mutate the live set. |

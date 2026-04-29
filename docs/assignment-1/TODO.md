@@ -1,5 +1,35 @@
 # DroneRL Assignment 1 — TODO
 
+## Conventions
+
+This TODO file follows the structure required by the course-wide
+`software_submission_guidelines-V3.pdf` §2.2.c. Every task carries an
+implicit priority and a per-phase definition-of-done.
+
+**Status legend.** `[x] = done · [ ] = open`. Every task in this file is
+`[x]`; the implementation pass is complete.
+
+**Priorities.** Tasks are listed in implementation order, which is also
+priority order — earlier tasks are prerequisites for later ones. There
+are no parallel-priority lanes in this single-author project.
+
+**Phases & milestones.** Each `## ...` heading is a phase. Phase
+acceptance is gated by:
+
+| Phase gate | Definition-of-Done |
+|------------|--------------------|
+| Project setup | repo + `pyproject.toml` + `uv` env initialised; `uv run main.py` works |
+| Core RL (agent / environment / trainer) | unit tests pass; agent learns optimal policy on a deterministic 12×12 grid in ≤ 3000 episodes |
+| GUI (renderer / overlays / dashboard / editor) | all 8 keyboard shortcuts (SPACE / F / H / A / E / S / L / R) work; live heatmap and policy arrows render |
+| Testing | `uv run pytest tests/` passes with `--cov-fail-under=85` |
+| Linting | `uv run ruff check src/ tests/ main.py` reports 0 violations |
+| Submission | branch tagged `T1`; PDF references the GitHub repo URL |
+
+**Responsibility.** Single-author project (Adir Elmakais), so
+"responsibility allocation" applies to every task implicitly.
+
+---
+
 ## Project Setup
 - [x] Task 1: Create project root directory Assignment1-DroneRL-SmartCityDroneDelivery
 - [x] Task 2: Initialize git repository at project root

@@ -1,3 +1,23 @@
+# TODO — Q-Learning (Assignment 2)
+
+## Conventions
+
+Per `software_submission_guidelines-V3.pdf` §2.2.c.
+
+**Status legend.** `[x] = done · [ ] = open`. Every task here is `[x]`.
+**Priorities.** Tasks are in implementation order; earlier tasks gate
+later ones. **Responsibility.** Single-author (Adir Elmakais).
+
+| Phase gate | Definition-of-Done |
+|------------|--------------------|
+| BaseAgent extraction | `src/agent.py` 104 existing tests still pass; new `src/base_agent.py` ≤ 150 lines |
+| QLearningAgent | `tests/test_q_agent.py` passes; alpha decays by `alpha_decay` per episode and is floored at `alpha_end` |
+| Agent factory + registry | `create_agent(config)` returns the right class for each `algorithm.name`; unknown names raise `ValueError` |
+| SDK integration | `SDK.switch_algorithm("q_learning")` returns a clean state without resetting the board |
+| Convergence comparison | `data/comparison/scenario1_medium.png` exists and shows Q-Learning's σ smaller than Bellman's at noise=0.5 |
+
+---
+
 ## BaseAgent File Setup
 
 - [x] Task 1: Create src/base_agent.py module file

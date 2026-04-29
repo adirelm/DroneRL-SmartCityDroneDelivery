@@ -263,3 +263,20 @@ q_learning:
 | 6 | Add `algorithm` and `q_learning` sections to config.yaml |
 | 7 | Write tests for BaseAgent, QLearningAgent, factory |
 | 8 | Integrate factory into SDK |
+
+---
+
+## 9. Alternatives Considered
+
+The chosen design (decaying-α tabular Q-Learning + Strategy-pattern
+inheritance from `BaseAgent`) was selected from several plausible
+alternatives. Each was rejected for specific reasons documented here.
+
+| Alternative | Rejected because |
+|-------------|------------------|
+| **Keep `agent.py` monolithic, add `if config.algorithm == "q_learning"` branches** | Violates the Strategy pattern and creates a god-object as Assignment 2 adds Double-Q. The lecturer explicitly grades on "extensibility / separation of concerns." |
+| **SARSA (on-policy) instead of Q-Learning (off-policy)** | The lecturer's Assignment 2 brief explicitly names Q-Learning + Double Q-Learning. SARSA would have been valid pedagogically but doesn't match the assignment's named comparison set. |
+| **Constant α with a longer training budget** | Watkins (1989) requires Σα_t = ∞ AND Σα_t² < ∞ for convergence; constant α fails the second. The lecture transcript also explicitly says: *"אסור ל-Alpha להיות קבוע. אם ה-Alpha שלכם יישאר קבוע, יש סיכוי שהעסק יתבדר לכם, או לא יתכנס."* |
+| **Exponential decay vs. inverse-step `1/t` decay** | Exponential decay (`α ← max(α_min, α · decay)`) gives a tunable floor and bounded variance; `1/t` is theoretically convergent but slower in practice for small grids and exposes an unbounded number-of-steps coupling. We picked exponential with `α_end` floor. |
+| **Function approximation (small MLP) instead of tabular** | Out-of-scope for the assignment's "Tabular Q-Learning" framing. The state space (12×12 = 144 states) fits in memory; tabular is appropriate. Function approximation becomes the right call only at ~10⁴ states (see [COST_ANALYSIS.md](COST_ANALYSIS.md) §3). |
+| **Separate factory file vs. registry module** | The original plan put `_AGENTS` in `agent_factory.py`. After Assignment 2's Pass 1 review, the registry was extracted into `src/algorithms.py` because the same algorithm tuple was duplicated in 13 places across 9 files. The current design — `algorithms.py` registry + thin `agent_factory.py` wrapper — is the result of that refactor. |

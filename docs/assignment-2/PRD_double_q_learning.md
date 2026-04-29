@@ -341,3 +341,20 @@ The README must include:
 | 7 | Add algorithm selector buttons and keyboard shortcuts to GUI |
 | 8 | Generate comparison scenarios and tune parameters |
 | 9 | Save comparison charts, embed in README |
+
+---
+
+## Alternatives Considered
+
+The chosen design (Hasselt-2010 Double Q-Learning with `QA + QB`
+combined into a virtual `q_table` property for GUI compatibility) was
+selected from several alternatives.
+
+| Alternative | Rejected because |
+|-------------|------------------|
+| **Skip Double-Q entirely; deliver only Q-Learning** | The assignment brief explicitly names *both* Q-Learning *and* Double Q-Learning as required deliverables (lecture transcript: *"PRD של Double Q-Learning, זה שהיא עם ה-QA ועם ה-QB"*). Not delivering would lose grade. |
+| **Two completely independent agents (one for QA, one for QB)** | Would double the I/O (two separate Q-tables in the GUI), break the heatmap which expects a single Q-array, and require a separate save/load path. The chosen approach — one `DoubleQAgent` owning both tables internally — keeps the GUI contract identical to the other agents. |
+| **Average `(QA + QB) / 2` for the `q_table` property** | Smaller magnitudes, slightly muddier policy arrows. Sum (`QA + QB`) preserves the action-ranking that arg-max depends on without a divisor that shrinks the heatmap dynamic range. |
+| **Always use the same table for argmax and value (which is just Q-Learning again)** | Defeats the entire bias-correction purpose — Hasselt's whole point is decorrelating action selection (one table) from value evaluation (the other). The "flip a coin → update one table using the other's value at the chosen argmax" mechanism is the core algorithm. |
+| **Twin networks (TD3-style) generalising Double-Q to deep RL** | Out-of-scope for tabular. Useful future direction (see [EXPERIMENTS.md](EXPERIMENTS.md) "What I'd do next"), but the assignment is tabular. |
+| **Defer baseline comparison to the next assignment** | The assignment-2 spec requires showing convergence speed AND final values for *all three* algorithms (transcript: *"בעל הזה צריכים להראות את המהירות התכנסות של כל אחד מהם ולאיזה ערכים הגעתם"*). The comparison must ship now. |
