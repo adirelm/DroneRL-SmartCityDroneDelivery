@@ -21,7 +21,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## CellType.PIT integration
 
-- [x] Task 1: Add PIT member to CellType enum in src/environment.py
+- [x] Task 1: Add PIT member to CellType enum in src/dronerl/environment.py
 - [x] Task 2: Assign integer value 5 to CellType.PIT
 - [x] Task 3: Ensure PIT value does not collide with existing cell types
 - [x] Task 4: Document PIT semantics in CellType docstring
@@ -56,7 +56,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 33: Add PIT constant usage in dashboard legend
 - [x] Task 34: Add PIT constant usage in editor
 - [x] Task 35: Remove any legacy numeric references in favor of CellType.PIT
-- [x] Task 36: Ensure CellType.PIT is importable from src.environment
+- [x] Task 36: Ensure CellType.PIT is importable from dronerl.environment
 - [x] Task 37: Keep CellType values stable for save file compatibility
 - [x] Task 38: Add PIT to cell type legend ordering
 - [x] Task 39: Confirm PIT is rejected when placed on start or goal
@@ -279,7 +279,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## HazardGenerator class
 
-- [x] Task 241: Create src/hazard_generator.py module
+- [x] Task 241: Create src/dronerl/hazard_generator.py module
 - [x] Task 242: Define HazardGenerator class
 - [x] Task 243: Accept Environment reference in constructor
 - [x] Task 244: Accept config mapping in constructor
@@ -494,7 +494,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Slider widget implementation
 
-- [x] Task 441: Create src/sliders.py module
+- [x] Task 441: Create src/dronerl/sliders.py module
 - [x] Task 442: Define Slider class for a single slider
 - [x] Task 443: Store label text on instance
 - [x] Task 444: Store min value on instance
@@ -537,7 +537,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## SliderPanel three-slider layout
 
-- [x] Task 481: Define SliderPanel class in src/sliders.py
+- [x] Task 481: Define SliderPanel class in src/dronerl/sliders.py
 - [x] Task 482: Initialize three Slider instances inside panel
 - [x] Task 483: Create noise slider with label "Noise"
 - [x] Task 484: Create density slider with label "Density"
@@ -646,7 +646,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Editor PIT editable type
 
-- [x] Task 581: Add CellType.PIT to EDITABLE_TYPES tuple in src/editor.py
+- [x] Task 581: Add CellType.PIT to EDITABLE_TYPES tuple in src/dronerl/editor.py
 - [x] Task 582: Add "Pit" entry to TYPE_NAMES dict
 - [x] Task 583: Add pit color entry to editor type color map
 - [x] Task 584: Include PIT in editor cycle order
@@ -843,7 +843,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Actions regenerate_hazards dispatch
 
-- [x] Task 751: Add regenerate_hazards action constant in src/actions.py
+- [x] Task 751: Add regenerate_hazards action constant in src/dronerl/actions.py
 - [x] Task 752: Wire action to hazard_generator.apply invocation
 - [x] Task 753: Trigger action via GUI button press
 - [x] Task 754: Trigger action via keyboard shortcut

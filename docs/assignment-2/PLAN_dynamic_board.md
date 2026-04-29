@@ -8,16 +8,16 @@
 
 The dynamic board system introduces a **runtime-configurable hazard layer** on top of the existing static grid. The key architectural decisions are:
 
-1. **HazardGenerator as a standalone service** — A new `src/hazard_generator.py` class that operates on the Environment without subclassing it. The generator reads density/noise/difficulty parameters and places hazards on eligible empty cells, preserving editor-placed obstacles via Environment's public `editor_cells` snapshot and `restore_editor_cells()` API.
+1. **HazardGenerator as a standalone service** — A new `src/dronerl/hazard_generator.py` class that operates on the Environment without subclassing it. The generator reads density/noise/difficulty parameters and places hazards on eligible empty cells, preserving editor-placed obstacles via Environment's public `editor_cells` snapshot and `restore_editor_cells()` API.
 
 2. **PIT as a new CellType** — `CellType.PIT = 5` extends the existing IntEnum. The PIT integrates into the same step/render/overlay pipeline as TRAP (terminal, negative reward, skipped in heatmap).
 
-3. **SliderPanel as a reusable GUI widget** — A new `src/sliders.py` module provides a self-contained slider widget with track, fill, and draggable handle. Three sliders (noise, density, difficulty) live in the editor bar area and only render when editor mode is active.
+3. **SliderPanel as a reusable GUI widget** — A new `src/dronerl/sliders.py` module provides a self-contained slider widget with track, fill, and draggable handle. Three sliders (noise, density, difficulty) live in the editor bar area and only render when editor mode is active.
 
 4. **Separation of concerns** — The data flow is: `Sliders -> SDK -> HazardGenerator -> Environment`. The GUI never directly mutates environment state; it calls SDK methods that delegate to the generator.
 
 ```
-SliderPanel (src/sliders.py)
+SliderPanel (src/dronerl/sliders.py)
       |
       v
   SDK.set_dynamic_params()
@@ -49,7 +49,7 @@ Add the new PIT cell type to all existing modules that handle cell types.
 
 ### 1.1 Environment — PIT Cell Type and Handling (~10 lines added)
 
-**File**: `src/environment.py` (currently 110 lines -> ~125 lines)
+**File**: `src/dronerl/environment.py` (currently 110 lines -> ~125 lines)
 
 - Add `PIT = 5` to `CellType` IntEnum
 - Add an internal editor-cell store (initialized empty) plus a public `editor_cells` frozenset property and `restore_editor_cells(iterable)` method for the SDK comparison snapshot/restore path
@@ -60,7 +60,7 @@ Add the new PIT cell type to all existing modules that handle cell types.
 
 ### 1.2 Renderer — PIT Visual (~15 lines added)
 
-**File**: `src/renderer.py` (currently 135 lines -> ~150 lines)
+**File**: `src/dronerl/renderer.py` (currently 135 lines -> ~150 lines)
 
 - Add PIT color attributes (`c_pit`, `c_pit_acc`) from config in `__init__`
 - Add `_draw_pit(surf, x, y)` method: dark purple cell with a circular hole/void visual
@@ -68,13 +68,13 @@ Add the new PIT cell type to all existing modules that handle cell types.
 
 ### 1.3 Overlays — Skip PIT in Heatmap (~2 lines changed)
 
-**File**: `src/overlays.py` (currently 130 lines -> ~131 lines)
+**File**: `src/dronerl/overlays.py` (currently 130 lines -> ~131 lines)
 
 - Add `CellType.PIT` to `_SKIP_HEAT` set (line 10)
 
 ### 1.4 Editor — PIT in Editable Types (~3 lines changed)
 
-**File**: `src/editor.py` (currently 128 lines -> ~135 lines)
+**File**: `src/dronerl/editor.py` (currently 128 lines -> ~135 lines)
 
 - Add `CellType.PIT` to `EDITABLE_TYPES` list
 - Add `CellType.PIT: "Pit"` to `TYPE_NAMES` dict
@@ -108,7 +108,7 @@ Add the new PIT cell type to all existing modules that handle cell types.
 
 ### 2.1 HazardGenerator Class
 
-**File**: `src/hazard_generator.py` (~100 lines, new file)
+**File**: `src/dronerl/hazard_generator.py` (~100 lines, new file)
 
 ```
 class HazardGenerator:
@@ -166,7 +166,7 @@ dynamic_board:
 
 ### 3.1 SliderPanel Widget
 
-**File**: `src/sliders.py` (~140 lines, new file)
+**File**: `src/dronerl/sliders.py` (~140 lines, new file)
 
 ```
 class Slider:
@@ -216,7 +216,7 @@ slider_handle: [200, 210, 240]
 
 ### 4.1 SDK — Dynamic Board Methods (~15 lines added)
 
-**File**: `src/sdk.py` (currently 90 lines -> ~110 lines)
+**File**: `src/dronerl/sdk.py` (currently 90 lines -> ~110 lines)
 
 - Import and instantiate `HazardGenerator` in `__init__`
 - Add `set_dynamic_params(density, noise, difficulty)` — delegates to generator
@@ -225,7 +225,7 @@ slider_handle: [200, 210, 240]
 
 ### 4.2 GUI — Slider Integration (~15 lines added)
 
-**File**: `src/gui.py` (currently 129 lines -> ~145 lines)
+**File**: `src/dronerl/gui.py` (currently 129 lines -> ~145 lines)
 
 - Import `SliderPanel` in GUI
 - Create slider panel in `__init__`, set callback to `sdk.set_dynamic_params`
@@ -235,21 +235,21 @@ slider_handle: [200, 210, 240]
 
 ### 4.3 Editor — Randomize Button (~5 lines added)
 
-**File**: `src/editor.py` (after Phase 1: ~135 lines -> ~140 lines)
+**File**: `src/dronerl/editor.py` (after Phase 1: ~135 lines -> ~140 lines)
 
 - Add a "Randomize" button in the type button bar
 - Clicking it triggers `sdk.randomize_board()` action via the action dispatch system
 
 ### 4.4 Actions — New Dispatch Entries (~5 lines added)
 
-**File**: `src/actions.py` (currently 56 lines -> ~62 lines)
+**File**: `src/dronerl/actions.py` (currently 56 lines -> ~62 lines)
 
 - Add `"randomize"` action that calls `gui.sdk.randomize_board()` (if SDK is wired)
 - The randomize action is dispatched from editor "Randomize" button click
 
 ### 4.5 Trainer — Per-Episode Randomization (~5 lines added)
 
-**File**: `src/trainer.py` (currently 83 lines -> ~90 lines)
+**File**: `src/dronerl/trainer.py` (currently 83 lines -> ~90 lines)
 
 - Accept optional `hazard_generator` parameter in `__init__`
 - In `run_episode()`, if generator exists and `randomize_per_episode` is true, call `generator.apply(env)` before resetting
@@ -268,7 +268,7 @@ slider_handle: [200, 210, 240]
 
 ### 5.1 Dashboard — PIT in Legend (~3 lines added)
 
-**File**: `src/dashboard.py` (currently 147 lines -> ~150 lines)
+**File**: `src/dronerl/dashboard.py` (currently 147 lines -> ~150 lines)
 
 - Add `"Pit": tuple(c.pit)` to `self.cell_colors` dict in `__init__`
 
@@ -280,22 +280,22 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 
 | File | Current | After Changes | Status |
 |------|---------|---------------|--------|
-| `src/environment.py` | 110 | ~125 | OK |
-| `src/renderer.py` | 135 | ~150 | At limit |
-| `src/overlays.py` | 130 | ~131 | OK |
-| `src/editor.py` | 128 | ~140 | OK |
-| `src/hazard_generator.py` | 0 (new) | ~100 | OK |
-| `src/sliders.py` | 0 (new) | ~140 | OK |
-| `src/sdk.py` | 90 | ~110 | OK |
-| `src/gui.py` | 129 | ~145 | OK |
-| `src/actions.py` | 56 | ~62 | OK |
-| `src/trainer.py` | 83 | ~90 | OK |
-| `src/dashboard.py` | 147 | ~150 | At limit |
+| `src/dronerl/environment.py` | 110 | ~125 | OK |
+| `src/dronerl/renderer.py` | 135 | ~150 | At limit |
+| `src/dronerl/overlays.py` | 130 | ~131 | OK |
+| `src/dronerl/editor.py` | 128 | ~140 | OK |
+| `src/dronerl/hazard_generator.py` | 0 (new) | ~100 | OK |
+| `src/dronerl/sliders.py` | 0 (new) | ~140 | OK |
+| `src/dronerl/sdk.py` | 90 | ~110 | OK |
+| `src/dronerl/gui.py` | 129 | ~145 | OK |
+| `src/dronerl/actions.py` | 56 | ~62 | OK |
+| `src/dronerl/trainer.py` | 83 | ~90 | OK |
+| `src/dronerl/dashboard.py` | 147 | ~150 | At limit |
 | `config/config.yaml` | 121 | ~145 | OK |
 | `tests/test_hazard_generator.py` | 0 (new) | ~120 | OK |
 | `tests/test_sliders.py` | 0 (new) | ~80 | OK |
 
-**Risk mitigation**: If `renderer.py` exceeds 150 lines after adding PIT rendering, extract all `_draw_*` cell methods into a helper module `src/cell_drawers.py`. If `dashboard.py` exceeds 150 lines, the legend can be extracted into a small helper.
+**Risk mitigation**: If `renderer.py` exceeds 150 lines after adding PIT rendering, extract all `_draw_*` cell methods into a helper module `src/dronerl/cell_drawers.py`. If `dashboard.py` exceeds 150 lines, the legend can be extracted into a small helper.
 
 ---
 

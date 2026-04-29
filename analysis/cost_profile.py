@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from analysis._runner import base_raw_config, train_run, with_overrides
-from src.algorithms import ALGORITHM_REGISTRY, ALGORITHMS
+from dronerl.algorithms import ALGORITHM_REGISTRY, ALGORITHMS
 
 EPISODES = 1500
 SEED = 11
@@ -104,7 +104,7 @@ def main() -> None:
         print(f"    {label:60s}  ~{info['estimated_minutes']:6.2f} min "
               f"({info['estimated_seconds']:7.1f} s)")
 
-    out_path = Path("data/analysis/cost_profile.json")
+    out_path = Path("results/analysis/cost_profile.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(
         {"profiles": profiles, "projections": projections}, indent=2,

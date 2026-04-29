@@ -21,9 +21,9 @@ Assignment 2 requires a **dynamic, noisy environment** that:
 ### Existing Codebase Reference
 
 This PRD builds on the existing project structure. Key files to reference:
-- `src/environment.py` — Current `Environment` class with `CellType` enum (EMPTY, BUILDING, TRAP, GOAL, WIND)
-- `src/editor.py` — Level editor for manual obstacle placement
-- `src/renderer.py` — Grid cell rendering
+- `src/dronerl/environment.py` — Current `Environment` class with `CellType` enum (EMPTY, BUILDING, TRAP, GOAL, WIND)
+- `src/dronerl/editor.py` — Level editor for manual obstacle placement
+- `src/dronerl/renderer.py` — Grid cell rendering
 - `config/config.yaml` — All environment parameters
 - `docs/assignment-1/PRD.md` — Original project PRD
 
@@ -64,17 +64,17 @@ This PRD builds on the existing project structure. Key files to reference:
 
 ### 3.1 New Cell Type: PIT
 
-- **CellType.PIT = 5** added to the existing `CellType` IntEnum in `src/environment.py`
+- **CellType.PIT = 5** added to the existing `CellType` IntEnum in `src/dronerl/environment.py`
 - **Behavior**: When the drone steps onto a PIT cell, the episode terminates immediately (like TRAP)
 - **Reward**: Configurable `pit_penalty` (default: -75), stored in `config.yaml` under `rewards.pit_penalty`
-- **Visual**: Dark purple circle/hole rendered in `src/renderer.py`
-- **Editor**: PIT is added to `EDITABLE_TYPES` in `src/editor.py`, allowing manual placement
+- **Visual**: Dark purple circle/hole rendered in `src/dronerl/renderer.py`
+- **Editor**: PIT is added to `EDITABLE_TYPES` in `src/dronerl/editor.py`, allowing manual placement
 - **Overlays**: PIT cells are skipped in heatmap rendering (like BUILDING and TRAP)
 - **Info**: `step()` returns `info["event"] = "pit"` when drone falls into a pit
 
 ### 3.2 Hazard Generator
 
-A new class `HazardGenerator` in `src/hazard_generator.py` responsible for:
+A new class `HazardGenerator` in `src/dronerl/hazard_generator.py` responsible for:
 
 #### Parameters (all from config.yaml)
 
@@ -102,7 +102,7 @@ These ratios are configurable via config.yaml under `dynamic_board.hazard_ratios
 
 ### 3.3 Environment Extensions
 
-Modifications to `src/environment.py`:
+Modifications to `src/dronerl/environment.py`:
 
 - **Editor-cell tracking** — Environment maintains an internal set of editor-placed `(row, col)` coordinates updated by `set_cell(..., editor=True)`. The public surface is the `editor_cells` frozenset property (read-only snapshot) and `restore_editor_cells(iterable)` method (used by the SDK's compare-on-same-board flow). Dynamic hazards never overwrite editor cells.
 - **`set_wind_drift(probability: float)`** — Allows runtime modification of the wind drift probability, called by the hazard generator when noise_level changes.
@@ -111,7 +111,7 @@ Modifications to `src/environment.py`:
 
 ### 3.4 GUI Sliders
 
-A new `SliderPanel` widget in `src/sliders.py`:
+A new `SliderPanel` widget in `src/dronerl/sliders.py`:
 
 #### Slider Widget
 
@@ -170,7 +170,7 @@ colors:
 - **Performance**: Hazard generation must complete in < 1ms for a 12x12 grid (144 cells)
 - **Determinism**: When `randomize_per_episode` is false, the board remains stable between episodes
 - **Backward Compatibility**: When `dynamic_board.enabled` is false, the environment behaves identically to Assignment 1
-- **File Size**: `src/hazard_generator.py` ≤ 150 lines, `src/sliders.py` ≤ 150 lines
+- **File Size**: `src/dronerl/hazard_generator.py` ≤ 150 lines, `src/dronerl/sliders.py` ≤ 150 lines
 - **Test Coverage**: All new code must have 85%+ test coverage
 - **Linting**: Zero ruff violations
 - **Config-Driven**: Zero hardcoded values in source files

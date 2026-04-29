@@ -11,19 +11,19 @@ Double Q-Learning is the third agent in the inheritance hierarchy established by
 The comparison system is a separate concern: a **ComparisonStore** collects training results from all three algorithms, and a chart generator uses matplotlib to produce convergence comparison plots.
 
 ```
-BaseAgent (src/base_agent.py) — abstract
+BaseAgent (src/dronerl/base_agent.py) — abstract
     |
-    ├── BellmanAgent (src/agent.py)
+    ├── BellmanAgent (src/dronerl/agent.py)
     |
-    ├── QLearningAgent (src/q_agent.py)
+    ├── QLearningAgent (src/dronerl/q_agent.py)
     |
-    └── DoubleQAgent (src/double_q_agent.py)
+    └── DoubleQAgent (src/dronerl/double_q_agent.py)
               |
               ├── q_table_a: np.ndarray  — first Q-table
               ├── q_table_b: np.ndarray  — second Q-table
               └── q_table (property)     — returns q_table_a + q_table_b
 
-ComparisonStore (src/comparison.py)
+ComparisonStore (src/dronerl/comparison.py)
     |
     ├── store(name, history, metrics) — save results per algorithm
     ├── get_histories() -> dict       — all reward histories
@@ -76,10 +76,10 @@ New agent, reset trainer          generate_comparison_chart() -> PNG
 
 ### 1.1 DoubleQAgent Class
 
-**File**: `src/double_q_agent.py` (~95 lines, new file)
+**File**: `src/dronerl/double_q_agent.py` (~95 lines, new file)
 
 ```
-from src.base_agent import BaseAgent
+from dronerl.base_agent import BaseAgent
 
 class DoubleQAgent(BaseAgent):
     algorithm_name = "Double Q-Learning"
@@ -142,7 +142,7 @@ double_q:
 
 ### 1.3 Agent Factory — Register Double Q
 
-**File**: `src/agent_factory.py` (no line count change — `double_q` branch already planned in PRD 2)
+**File**: `src/dronerl/agent_factory.py` (no line count change — `double_q` branch already planned in PRD 2)
 
 - Verify the `"double_q"` branch imports and returns `DoubleQAgent`
 
@@ -173,7 +173,7 @@ double_q:
 
 ### 2.1 ComparisonStore Class
 
-**File**: `src/comparison.py` (~120 lines, new file)
+**File**: `src/dronerl/comparison.py` (~120 lines, new file)
 
 ```
 class ComparisonStore:
@@ -210,7 +210,7 @@ Chart generation details:
 - Uses `matplotlib.pyplot` (already a project dependency or easily added)
 - Smoothing via rolling mean with configurable window size (default: 50 episodes)
 - Colors from config: `colors.algo_bellman`, `colors.algo_q_learning`, `colors.algo_double_q`
-- Output directory: `data/comparison/` (created automatically via `os.makedirs`)
+- Output directory: `results/comparison/` (created automatically via `os.makedirs`)
 - Filename: `comparison.png`
 
 ### 2.2 Config — Comparison Settings
@@ -221,7 +221,7 @@ Chart generation details:
 # Comparison settings
 comparison:
   max_episodes: 5000
-  output_dir: data/comparison
+  output_dir: results/comparison
   smoothing_window: 50
 
 # Algorithm curve colors (under colors section)
@@ -253,7 +253,7 @@ colors:
 
 ### 3.1 SDK — Algorithm Switching and Comparison
 
-**File**: `src/sdk.py` (after PRD 2: ~100 lines -> ~130 lines)
+**File**: `src/dronerl/sdk.py` (after PRD 2: ~100 lines -> ~130 lines)
 
 New methods:
 
@@ -303,7 +303,7 @@ self.comparison_store = ComparisonStore()
 
 ### 4.1 Algorithm Selector Buttons
 
-**File**: `src/buttons.py` (currently 135 lines -> ~150 lines)
+**File**: `src/dronerl/buttons.py` (currently 135 lines -> ~150 lines)
 
 - Add algorithm selector buttons to `_get_buttons()` function
 - Three toggle-style buttons: "Bellman" / "Q-Learning" / "Double Q"
@@ -313,7 +313,7 @@ self.comparison_store = ComparisonStore()
 
 ### 4.2 Keyboard Shortcuts
 
-**File**: `src/gui.py` (after PRD 2: ~132 lines -> ~140 lines)
+**File**: `src/dronerl/gui.py` (after PRD 2: ~132 lines -> ~140 lines)
 
 - Add key mappings in `_on_key()`:
   - `pygame.K_1` -> `"algo_bellman"` — switch to Bellman
@@ -323,7 +323,7 @@ self.comparison_store = ComparisonStore()
 
 ### 4.3 Actions — Algorithm Switching Dispatch
 
-**File**: `src/actions.py` (after PRD 2: ~58 lines -> ~80 lines)
+**File**: `src/dronerl/actions.py` (after PRD 2: ~58 lines -> ~80 lines)
 
 Add new action handlers:
 
@@ -345,7 +345,7 @@ The `"compare"` action:
 
 ### 4.4 Status Bar — Algorithm Name
 
-**File**: `src/gui.py` (within `_status_bar()` method, ~2 lines changed)
+**File**: `src/dronerl/gui.py` (within `_status_bar()` method, ~2 lines changed)
 
 - Add current algorithm name to the mode string:
   ```
@@ -355,7 +355,7 @@ The `"compare"` action:
 
 ### 4.5 Dashboard — Alpha and Algorithm Display
 
-**File**: `src/dashboard.py` (after PRD 2: ~150 lines)
+**File**: `src/dronerl/dashboard.py` (after PRD 2: ~150 lines)
 
 - Show algorithm name in metrics panel: `"Algorithm: Double Q-Learning"`
 - Show alpha value when applicable: `"Alpha: 0.2345"`
@@ -365,7 +365,7 @@ Note: Dashboard is at the 150-line limit. To add these metrics, compress existin
 
 ### 4.6 Shortcuts Bar Update
 
-**File**: `src/gui.py` (within `_status_bar()`, ~1 line changed)
+**File**: `src/dronerl/gui.py` (within `_status_bar()`, ~1 line changed)
 
 - Update shortcuts string to include: `"1/2/3 Algorithm  C Compare"`
 
@@ -388,8 +388,8 @@ Expected new test files and counts:
 ### 5.2 Coverage Check
 
 Run `uv run pytest --cov=src --cov-report=html`:
-- `src/double_q_agent.py` — 85%+
-- `src/comparison.py` — 85%+
+- `src/dronerl/double_q_agent.py` — 85%+
+- `src/dronerl/comparison.py` — 85%+
 
 ### 5.3 Lint Check
 
@@ -412,22 +412,22 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 
 | File | Current | After Changes | Status |
 |------|---------|---------------|--------|
-| `src/double_q_agent.py` | 0 (new) | ~95 | OK |
-| `src/comparison.py` | 0 (new) | ~120 | OK |
-| `src/sdk.py` | ~100 (post PRD 2) | ~130 | OK |
-| `src/gui.py` | ~132 (post PRD 2) | ~140 | OK |
-| `src/actions.py` | ~58 (post PRD 2) | ~80 | OK |
-| `src/buttons.py` | 135 | ~150 | At limit |
-| `src/dashboard.py` | ~150 (post PRD 2) | ~150 | At limit |
-| `src/algorithms.py` | ~42 (from PRD 2) | ~42 | OK (one new AlgorithmSpec line for double_q) |
-| `src/agent_factory.py` | ~18 (from PRD 2) | ~18 | OK (no changes) |
+| `src/dronerl/double_q_agent.py` | 0 (new) | ~95 | OK |
+| `src/dronerl/comparison.py` | 0 (new) | ~120 | OK |
+| `src/dronerl/sdk.py` | ~100 (post PRD 2) | ~130 | OK |
+| `src/dronerl/gui.py` | ~132 (post PRD 2) | ~140 | OK |
+| `src/dronerl/actions.py` | ~58 (post PRD 2) | ~80 | OK |
+| `src/dronerl/buttons.py` | 135 | ~150 | At limit |
+| `src/dronerl/dashboard.py` | ~150 (post PRD 2) | ~150 | At limit |
+| `src/dronerl/algorithms.py` | ~42 (from PRD 2) | ~42 | OK (one new AlgorithmSpec line for double_q) |
+| `src/dronerl/agent_factory.py` | ~18 (from PRD 2) | ~18 | OK (no changes) |
 | `tests/test_double_q_agent.py` | 0 (new) | ~130 | OK |
 | `tests/test_comparison.py` | 0 (new) | ~100 | OK |
 
 **Risk mitigation**:
-- If `buttons.py` exceeds 150 lines after adding algorithm selector buttons, extract the `_get_buttons()` helper into a separate `src/button_config.py` module.
-- If `actions.py` exceeds 150 lines, split algorithm-related actions into `src/algo_actions.py`.
-- If `dashboard.py` cannot fit alpha display within 150 lines, extract the legend rendering into `src/legend.py`.
+- If `buttons.py` exceeds 150 lines after adding algorithm selector buttons, extract the `_get_buttons()` helper into a separate `src/dronerl/button_config.py` module.
+- If `actions.py` exceeds 150 lines, split algorithm-related actions into `src/dronerl/algo_actions.py`.
+- If `dashboard.py` cannot fit alpha display within 150 lines, extract the legend rendering into `src/dronerl/legend.py`.
 
 ---
 

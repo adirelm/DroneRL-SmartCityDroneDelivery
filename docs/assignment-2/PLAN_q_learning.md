@@ -9,20 +9,20 @@
 The refactor introduces a **Strategy Pattern via inheritance** to support multiple RL algorithms while preserving full backward compatibility. The existing monolithic `Agent` class is split into a shared abstract base and algorithm-specific subclasses.
 
 ```
-BaseAgent (src/base_agent.py) — abstract
+BaseAgent (src/dronerl/base_agent.py) — abstract
     |
-    ├── BellmanAgent (src/agent.py) — constant lr, existing behavior
+    ├── BellmanAgent (src/dronerl/agent.py) — constant lr, existing behavior
     |
-    └── QLearningAgent (src/q_agent.py) — decaying alpha
+    └── QLearningAgent (src/dronerl/q_agent.py) — decaying alpha
 ```
 
-A **factory function** in `src/agent_factory.py` creates the correct agent based on `config.algorithm.name`. The SDK and GUI never instantiate agents directly — they always go through the factory.
+A **factory function** in `src/dronerl/agent_factory.py` creates the correct agent based on `config.algorithm.name`. The SDK and GUI never instantiate agents directly — they always go through the factory.
 
 Key architectural decisions:
 
 1. **BaseAgent owns all shared logic** — Q-table initialization, epsilon-greedy action selection, `get_best_action()`, `get_max_q()`, `decay_epsilon()`, `save()`, `load()`. Subclasses only override `update()` and add algorithm-specific parameters.
 
-2. **Backward-compatible alias** — `src/agent.py` exports `Agent = BellmanAgent` so all existing `from src.agent import Agent` imports continue to work without changes.
+2. **Backward-compatible alias** — `src/dronerl/agent.py` exports `Agent = BellmanAgent` so all existing `from dronerl.agent import Agent` imports continue to work without changes.
 
 3. **Minimal test disruption** — The refactor preserves the exact method signatures and behavior of the existing Agent class. All 104 existing tests must pass without modification.
 
@@ -57,7 +57,7 @@ agent_factory.create_agent(config)
 
 ### 1.1 BaseAgent Abstract Class
 
-**File**: `src/base_agent.py` (~80 lines, new file)
+**File**: `src/dronerl/base_agent.py` (~80 lines, new file)
 
 ```
 from abc import ABC, abstractmethod
@@ -82,16 +82,16 @@ class BaseAgent(ABC):
     algorithm_name -> str      — human-readable name (abstract)
 ```
 
-All shared logic currently in `src/agent.py` (lines 12-72) moves here. The `q_table` is initialized as `np.zeros((rows, cols, NUM_ACTIONS))` in `__init__`. Subclasses that need different table structures (Double Q) override `__init__` and the `q_table` property.
+All shared logic currently in `src/dronerl/agent.py` (lines 12-72) moves here. The `q_table` is initialized as `np.zeros((rows, cols, NUM_ACTIONS))` in `__init__`. Subclasses that need different table structures (Double Q) override `__init__` and the `q_table` property.
 
 ### 1.2 BellmanAgent Refactor
 
-**File**: `src/agent.py` (currently 72 lines -> ~35 lines)
+**File**: `src/dronerl/agent.py` (currently 72 lines -> ~35 lines)
 
 After extraction, `agent.py` becomes minimal:
 
 ```
-from src.base_agent import BaseAgent
+from dronerl.base_agent import BaseAgent
 
 class BellmanAgent(BaseAgent):
     algorithm_name = "Bellman"
@@ -110,13 +110,13 @@ class BellmanAgent(BaseAgent):
 Agent = BellmanAgent
 ```
 
-The `Agent = BellmanAgent` alias ensures all existing imports (`from src.agent import Agent`) work without changes.
+The `Agent = BellmanAgent` alias ensures all existing imports (`from dronerl.agent import Agent`) work without changes.
 
 ### 1.3 Tests — Verify Backward Compatibility
 
 **Action**: Run full test suite (`uv run pytest`). All 104 tests must pass.
 
-**File**: `tests/test_agent.py` — No modifications needed. Tests import `Agent` from `src.agent`, which now resolves to `BellmanAgent`. All method signatures and behavior are identical.
+**File**: `tests/test_agent.py` — No modifications needed. Tests import `Agent` from `dronerl.agent`, which now resolves to `BellmanAgent`. All method signatures and behavior are identical.
 
 ### 1.4 Tests — BaseAgent Shared Interface
 
@@ -140,10 +140,10 @@ The `Agent = BellmanAgent` alias ensures all existing imports (`from src.agent i
 
 ### 2.1 QLearningAgent Class
 
-**File**: `src/q_agent.py` (~55 lines, new file)
+**File**: `src/dronerl/q_agent.py` (~55 lines, new file)
 
 ```
-from src.base_agent import BaseAgent
+from dronerl.base_agent import BaseAgent
 
 class QLearningAgent(BaseAgent):
     algorithm_name = "Q-Learning"
@@ -207,7 +207,7 @@ q_learning:
 
 ## Phase 3: Agent Factory and Algorithm Registry
 
-### 3.1 Algorithm Registry (`src/algorithms.py`)
+### 3.1 Algorithm Registry (`src/dronerl/algorithms.py`)
 
 The mapping from algorithm name to agent class lives in a single registry,
 which is the source of truth for the project's "list of algorithms":
@@ -231,14 +231,14 @@ ALGORITHM_COLORS = {s.name: s.color for s in ALGORITHM_REGISTRY}
 AGENT_CLASSES = {s.name: s.agent_class for s in ALGORITHM_REGISTRY}
 ```
 
-### 3.2 Factory Function (`src/agent_factory.py`)
+### 3.2 Factory Function (`src/dronerl/agent_factory.py`)
 
 A thin validating wrapper over `AGENT_CLASSES`:
 
 ```python
-from src.algorithms import AGENT_CLASSES, ALGORITHMS
-from src.base_agent import BaseAgent
-from src.config_loader import Config
+from dronerl.algorithms import AGENT_CLASSES, ALGORITHMS
+from dronerl.base_agent import BaseAgent
+from dronerl.config_loader import Config
 
 def create_agent(config: Config) -> BaseAgent:
     name = config.algorithm.name
@@ -270,9 +270,9 @@ algorithm is one new agent file plus one new line in `ALGORITHM_REGISTRY`.
 
 ### 4.1 SDK — Use Agent Factory
 
-**File**: `src/sdk.py` (currently 90 lines -> ~100 lines)
+**File**: `src/dronerl/sdk.py` (currently 90 lines -> ~100 lines)
 
-- Replace `from src.agent import Agent` with `from src.agent_factory import create_agent`
+- Replace `from dronerl.agent import Agent` with `from dronerl.agent_factory import create_agent`
 - Replace `self.agent = Agent(self.config)` with `self.agent = create_agent(self.config)`
 - In `reset()`, also use `create_agent(self.config)`
 - Add `algorithm_name` property: `return self.agent.algorithm_name`
@@ -280,35 +280,35 @@ algorithm is one new agent file plus one new line in `ALGORITHM_REGISTRY`.
 
 ### 4.2 GUI — Algorithm Name in Status Bar (~3 lines changed)
 
-**File**: `src/gui.py` (currently 129 lines -> ~132 lines)
+**File**: `src/dronerl/gui.py` (currently 129 lines -> ~132 lines)
 
 - Use agent factory via SDK (no direct Agent import changes needed since GUI uses `self.agent` from direct construction)
 - Update `_status_bar()` to include algorithm name from `self.agent.algorithm_name` (if available)
 
 ### 4.3 Actions — Use Factory for Reset (~3 lines changed)
 
-**File**: `src/actions.py` (currently 56 lines -> ~58 lines)
+**File**: `src/dronerl/actions.py` (currently 56 lines -> ~58 lines)
 
 - In the `"reset"` action, replace `Agent(gui.cfg)` with `create_agent(gui.cfg)` import
 - This ensures reset creates the correct agent type based on config
 
 ### 4.4 Game Logic — Accept BaseAgent Type (~2 lines changed)
 
-**File**: `src/game_logic.py` (currently 136 lines -> ~137 lines)
+**File**: `src/dronerl/game_logic.py` (currently 136 lines -> ~137 lines)
 
 - Change type hint from `Agent` to `BaseAgent` (or keep duck-typed)
 - Import `BaseAgent` instead of `Agent`
 
 ### 4.5 Trainer — Accept BaseAgent Type (~2 lines changed)
 
-**File**: `src/trainer.py` (currently 83 lines -> ~84 lines)
+**File**: `src/dronerl/trainer.py` (currently 83 lines -> ~84 lines)
 
 - Change type hint from `Agent` to `BaseAgent`
 - Import `BaseAgent` instead of `Agent`
 
 ### 4.6 Dashboard — Show Alpha Value (~5 lines added)
 
-**File**: `src/dashboard.py` (currently 147 lines -> ~150 lines)
+**File**: `src/dronerl/dashboard.py` (currently 147 lines -> ~150 lines)
 
 - In `_draw_metrics()`, if `metrics` dict contains `"alpha"`, render it below epsilon
 - This requires GameLogic/SDK to include alpha in the metrics dict
@@ -333,9 +333,9 @@ Run `uv run pytest` — all 104 existing tests plus new tests must pass.
 ### 5.2 Coverage Check
 
 Run `uv run pytest --cov=src --cov-report=html` — verify 85%+ coverage on all new files:
-- `src/base_agent.py` — 85%+
-- `src/q_agent.py` — 85%+
-- `src/agent_factory.py` — 85%+
+- `src/dronerl/base_agent.py` — 85%+
+- `src/dronerl/q_agent.py` — 85%+
+- `src/dronerl/agent_factory.py` — 85%+
 
 ### 5.3 Lint Check
 
@@ -349,17 +349,17 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 
 | File | Current | After Changes | Status |
 |------|---------|---------------|--------|
-| `src/base_agent.py` | 0 (new) | ~80 | OK |
-| `src/agent.py` | 72 | ~35 | OK (smaller after extraction) |
-| `src/q_agent.py` | 0 (new) | ~55 | OK |
-| `src/algorithms.py` | 0 (new) | ~42 | OK (registry: AlgorithmSpec + 4 derived dicts) |
-| `src/agent_factory.py` | 0 (new) | ~18 | OK (thin wrapper over registry) |
-| `src/sdk.py` | 90 | ~100 | OK |
-| `src/gui.py` | 129 | ~132 | OK |
-| `src/actions.py` | 56 | ~58 | OK |
-| `src/game_logic.py` | 136 | ~137 | OK |
-| `src/trainer.py` | 83 | ~84 | OK |
-| `src/dashboard.py` | 147 | ~150 | At limit |
+| `src/dronerl/base_agent.py` | 0 (new) | ~80 | OK |
+| `src/dronerl/agent.py` | 72 | ~35 | OK (smaller after extraction) |
+| `src/dronerl/q_agent.py` | 0 (new) | ~55 | OK |
+| `src/dronerl/algorithms.py` | 0 (new) | ~42 | OK (registry: AlgorithmSpec + 4 derived dicts) |
+| `src/dronerl/agent_factory.py` | 0 (new) | ~18 | OK (thin wrapper over registry) |
+| `src/dronerl/sdk.py` | 90 | ~100 | OK |
+| `src/dronerl/gui.py` | 129 | ~132 | OK |
+| `src/dronerl/actions.py` | 56 | ~58 | OK |
+| `src/dronerl/game_logic.py` | 136 | ~137 | OK |
+| `src/dronerl/trainer.py` | 83 | ~84 | OK |
+| `src/dronerl/dashboard.py` | 147 | ~150 | At limit |
 | `tests/test_base_agent.py` | 0 (new) | ~60 | OK |
 | `tests/test_q_agent.py` | 0 (new) | ~90 | OK |
 | `tests/test_agent_factory.py` | 0 (new) | ~50 | OK |
@@ -372,7 +372,7 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 
 The refactor is designed so that **zero existing tests need modification**:
 
-1. `from src.agent import Agent` still works (alias to BellmanAgent)
+1. `from dronerl.agent import Agent` still works (alias to BellmanAgent)
 2. `Agent(config)` constructor signature unchanged
 3. `agent.choose_action()`, `agent.update()`, `agent.decay_epsilon()` — same signatures
 4. `agent.q_table` — same 3D ndarray shape

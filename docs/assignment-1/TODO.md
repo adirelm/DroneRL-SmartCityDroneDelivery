@@ -68,7 +68,7 @@ acceptance is gated by:
 - [x] Task 35: Configure coverage fail_under threshold 85
 - [x] Task 36: Configure pytest testpaths to `tests`
 - [x] Task 37: Create `src/` package directory
-- [x] Task 38: Create `src/__init__.py` for package discovery
+- [x] Task 38: Create `src/dronerl/__init__.py` for package discovery
 - [x] Task 39: Create `tests/` directory for pytest suite
 - [x] Task 40: Create `tests/__init__.py` for test package
 - [x] Task 41: Create `config/` directory for YAML config
@@ -169,7 +169,7 @@ acceptance is gated by:
 - [x] Task 134: Add `logging` section with `level: INFO`
 - [x] Task 135: Set `logging.file: null` default
 - [x] Task 136: Add `paths.brain: data/brain.npy`
-- [x] Task 137: Create `src/config_loader.py` module
+- [x] Task 137: Create `src/dronerl/config_loader.py` module
 - [x] Task 138: Write `Config` class wrapping nested YAML dict
 - [x] Task 139: Recursively build `Config` objects for nested dicts
 - [x] Task 140: Store numeric lists as tuples for immutability
@@ -185,7 +185,7 @@ acceptance is gated by:
 - [x] Task 150: Reference config keys from every module
 
 ## Logging
-- [x] Task 151: Create `src/logger.py` module
+- [x] Task 151: Create `src/dronerl/logger.py` module
 - [x] Task 152: Implement `setup_logger(name, level)` function
 - [x] Task 153: Default logger name to `DroneRL`
 - [x] Task 154: Default level to `INFO`
@@ -202,7 +202,7 @@ acceptance is gated by:
 - [x] Task 165: Log Q-table loads via logger
 
 ## Environment
-- [x] Task 166: Create `src/environment.py` module
+- [x] Task 166: Create `src/dronerl/environment.py` module
 - [x] Task 167: Declare `CellType` IntEnum subclass
 - [x] Task 168: Document CellType docstring describing integer encoding
 - [x] Task 169: Define EMPTY = 0 cell type
@@ -264,7 +264,7 @@ acceptance is gated by:
 - [x] Task 225: Keep Environment under 150 lines
 
 ## Agent / RL
-- [x] Task 226: Create `src/base_agent.py` module for shared agent logic
+- [x] Task 226: Create `src/dronerl/base_agent.py` module for shared agent logic
 - [x] Task 227: Declare `BaseAgent` abstract class
 - [x] Task 228: Define NUM_ACTIONS = 4 class constant
 - [x] Task 229: Define `algorithm_name` class attribute
@@ -282,7 +282,7 @@ acceptance is gated by:
 - [x] Task 241: Implement `save(path)` using numpy .npy serialization
 - [x] Task 242: Ensure `save` creates missing parent directories
 - [x] Task 243: Implement `load(path)` to restore Q-table
-- [x] Task 244: Create `src/agent.py` module for BellmanAgent
+- [x] Task 244: Create `src/dronerl/agent.py` module for BellmanAgent
 - [x] Task 245: Subclass BaseAgent as BellmanAgent
 - [x] Task 246: Set `algorithm_name = "Bellman"`
 - [x] Task 247: Read constant `learning_rate` as `lr`
@@ -301,7 +301,7 @@ acceptance is gated by:
 - [x] Task 260: Verify epsilon-greedy respects epsilon parameter
 
 ## Trainer
-- [x] Task 261: Create `src/trainer.py` module
+- [x] Task 261: Create `src/dronerl/trainer.py` module
 - [x] Task 262: Declare `Trainer` class taking agent, env, config
 - [x] Task 263: Read `max_steps_per_episode` from training config
 - [x] Task 264: Initialize `_episode_count` to 0
@@ -335,7 +335,7 @@ acceptance is gated by:
 - [x] Task 292: Keep trainer.py under 150 lines
 
 ## SDK
-- [x] Task 293: Create `src/sdk.py` as central facade
+- [x] Task 293: Create `src/dronerl/sdk.py` as central facade
 - [x] Task 294: Declare `DroneRLSDK` class
 - [x] Task 295: Accept `config_path` with sensible default
 - [x] Task 296: Load raw YAML via `load_config`
@@ -366,7 +366,7 @@ acceptance is gated by:
 - [x] Task 321: Make SDK the single business-logic entry point
 
 ## Renderer
-- [x] Task 322: Create `src/renderer.py` module
+- [x] Task 322: Create `src/dronerl/renderer.py` module
 - [x] Task 323: Declare `Renderer` class
 - [x] Task 324: Load `cell_size` from gui config
 - [x] Task 325: Cache all cell colors from config on init
@@ -394,7 +394,7 @@ acceptance is gated by:
 - [x] Task 347: Keep renderer.py under 150 lines
 
 ## Overlays
-- [x] Task 348: Create `src/overlays.py` module
+- [x] Task 348: Create `src/dronerl/overlays.py` module
 - [x] Task 349: Declare `_SKIP_HEAT` set (BUILDING, TRAP, GOAL, PIT)
 - [x] Task 350: Declare `Overlays` class
 - [x] Task 351: Load rows, cols, cell_size from config
@@ -431,7 +431,7 @@ acceptance is gated by:
 - [x] Task 382: Keep overlays.py under 150 lines
 
 ## Dashboard
-- [x] Task 383: Create `src/dashboard.py` module
+- [x] Task 383: Create `src/dronerl/dashboard.py` module
 - [x] Task 384: Declare `Dashboard` class
 - [x] Task 385: Compute dashboard x offset from grid_area_width
 - [x] Task 386: Store dashboard width and height from config
@@ -466,7 +466,7 @@ acceptance is gated by:
 - [x] Task 415: Keep dashboard.py under 150 lines
 
 ## Buttons + Actions
-- [x] Task 416: Create `src/buttons.py` module
+- [x] Task 416: Create `src/dronerl/buttons.py` module
 - [x] Task 417: Declare `Button` class with label/action/primary/color
 - [x] Task 418: Store hover state per button
 - [x] Task 419: Store pygame.Rect per button
@@ -501,7 +501,7 @@ acceptance is gated by:
 - [x] Task 448: Layout remaining buttons in 2-column grid
 - [x] Task 449: Implement `handle_click(pos)` returning action name
 - [x] Task 450: Implement `handle_hover(pos)` updating hover flags
-- [x] Task 451: Create `src/actions.py` dispatch module
+- [x] Task 451: Create `src/dronerl/actions.py` dispatch module
 - [x] Task 452: Declare `_ALGO_KEYS` mapping for algorithm shortcuts
 - [x] Task 453: Implement `dispatch(gui, action)` router
 - [x] Task 454: Resolve `primary` action based on current mode
@@ -522,7 +522,7 @@ acceptance is gated by:
 - [x] Task 469: Keep actions.py under 100 lines
 
 ## Editor
-- [x] Task 470: Create `src/editor.py` module
+- [x] Task 470: Create `src/dronerl/editor.py` module
 - [x] Task 471: Declare `EDITABLE_TYPES` list (BUILDING, TRAP, WIND, PIT)
 - [x] Task 472: Declare `TYPE_NAMES` display mapping
 - [x] Task 473: Declare `Editor` class
@@ -550,7 +550,7 @@ acceptance is gated by:
 - [x] Task 495: Keep editor.py under 150 lines
 
 ## Game Logic
-- [x] Task 496: Create `src/game_logic.py` module
+- [x] Task 496: Create `src/dronerl/game_logic.py` module
 - [x] Task 497: Declare `GameLogic` class
 - [x] Task 498: Read max_steps, convergence params from config
 - [x] Task 499: Read demo_speed from gui config
@@ -593,7 +593,7 @@ acceptance is gated by:
 - [x] Task 536: Keep game_logic.py under 150 lines
 
 ## GUI
-- [x] Task 537: Create `src/gui.py` top-level module
+- [x] Task 537: Create `src/dronerl/gui.py` top-level module
 - [x] Task 538: Declare `GUI` class as orchestrator
 - [x] Task 539: Call `pygame.init()` on construction
 - [x] Task 540: Read window dimensions from config
@@ -846,21 +846,21 @@ acceptance is gated by:
 
 ## Quality
 - [x] Task 781: Verify every `.py` file stays under 150 lines
-- [x] Task 782: Check `src/agent.py` under 150 lines
-- [x] Task 783: Check `src/base_agent.py` under 150 lines
-- [x] Task 784: Check `src/environment.py` under 150 lines
-- [x] Task 785: Check `src/sdk.py` under 150 lines
-- [x] Task 786: Check `src/trainer.py` under 150 lines
-- [x] Task 787: Check `src/game_logic.py` under 150 lines
-- [x] Task 788: Check `src/gui.py` under 150 lines
-- [x] Task 789: Check `src/renderer.py` under 150 lines
-- [x] Task 790: Check `src/overlays.py` under 150 lines
-- [x] Task 791: Check `src/dashboard.py` under 150 lines
-- [x] Task 792: Check `src/buttons.py` under 150 lines
-- [x] Task 793: Check `src/actions.py` under 150 lines
-- [x] Task 794: Check `src/editor.py` under 150 lines
-- [x] Task 795: Check `src/config_loader.py` under 150 lines
-- [x] Task 796: Check `src/logger.py` under 150 lines
+- [x] Task 782: Check `src/dronerl/agent.py` under 150 lines
+- [x] Task 783: Check `src/dronerl/base_agent.py` under 150 lines
+- [x] Task 784: Check `src/dronerl/environment.py` under 150 lines
+- [x] Task 785: Check `src/dronerl/sdk.py` under 150 lines
+- [x] Task 786: Check `src/dronerl/trainer.py` under 150 lines
+- [x] Task 787: Check `src/dronerl/game_logic.py` under 150 lines
+- [x] Task 788: Check `src/dronerl/gui.py` under 150 lines
+- [x] Task 789: Check `src/dronerl/renderer.py` under 150 lines
+- [x] Task 790: Check `src/dronerl/overlays.py` under 150 lines
+- [x] Task 791: Check `src/dronerl/dashboard.py` under 150 lines
+- [x] Task 792: Check `src/dronerl/buttons.py` under 150 lines
+- [x] Task 793: Check `src/dronerl/actions.py` under 150 lines
+- [x] Task 794: Check `src/dronerl/editor.py` under 150 lines
+- [x] Task 795: Check `src/dronerl/config_loader.py` under 150 lines
+- [x] Task 796: Check `src/dronerl/logger.py` under 150 lines
 - [x] Task 797: Check `main.py` under 20 lines
 - [x] Task 798: Run `uv run ruff check src/ tests/ main.py`
 - [x] Task 799: Achieve zero ruff errors across the repository

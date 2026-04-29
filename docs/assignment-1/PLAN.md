@@ -45,18 +45,18 @@ Grid  Dashboard  Editor
 
 ### 1.2 Configuration System
 - Create `config/config.yaml` with all parameters.
-- Implement `src/config_loader.py` to load YAML config.
+- Implement `src/dronerl/config_loader.py` to load YAML config.
 - Parameters: grid size, rewards, RL hyperparameters, GUI settings, colors.
 
 ### 1.3 Logging
-- Implement `src/logger.py` with centralized logging.
+- Implement `src/dronerl/logger.py` with centralized logging.
 - Console + optional file output.
 
 ---
 
 ## Phase 2: Core RL Engine
 
-### 2.1 Environment (`src/environment.py`)
+### 2.1 Environment (`src/dronerl/environment.py`)
 - Grid class with configurable dimensions.
 - Cell types: EMPTY, BUILDING, TRAP, GOAL, WIND.
 - Step function: takes action, returns next_state, reward, done.
@@ -64,14 +64,14 @@ Grid  Dashboard  Editor
 - Reset function.
 - Methods to add/remove obstacles.
 
-### 2.2 Agent (`src/agent.py`)
+### 2.2 Agent (`src/dronerl/agent.py`)
 - Q-Table: 3D NumPy array `[rows, cols, 4]`.
 - `choose_action(state)`: Epsilon-Greedy selection.
 - `update(state, action, reward, next_state)`: Bellman equation.
 - Epsilon decay logic.
 - Save/load Q-table to/from file.
 
-### 2.3 Training Loop (`src/trainer.py`)
+### 2.3 Training Loop (`src/dronerl/trainer.py`)
 - Episode loop: reset env → agent acts → update Q → repeat.
 - Track metrics: rewards, steps, goal rate.
 - Support headless (fast) and GUI modes.
@@ -80,28 +80,28 @@ Grid  Dashboard  Editor
 
 ## Phase 3: GUI & Visualization
 
-### 3.1 Grid Renderer (`src/renderer.py`)
+### 3.1 Grid Renderer (`src/dronerl/renderer.py`)
 - Draw grid cells with type-based colors.
 - Draw drone sprite/icon.
 - Draw goal indicator.
 
-### 3.2 Overlays (`src/overlays.py`)
+### 3.2 Overlays (`src/dronerl/overlays.py`)
 - Value Heatmap: color cells by `max(Q(s,a))`.
 - Policy Arrows: draw arrows for `argmax(Q(s,a))`.
 - Toggle on/off.
 
-### 3.3 Dashboard (`src/dashboard.py`)
+### 3.3 Dashboard (`src/dronerl/dashboard.py`)
 - Right-side panel.
 - Display: episode, reward, epsilon, steps, goal rate.
 - Reward history line graph.
 - Legend for cell types.
 
-### 3.4 Level Editor (`src/editor.py`)
+### 3.4 Level Editor (`src/dronerl/editor.py`)
 - Toggle edit mode.
 - Click to place/remove: buildings, traps, wind zones.
 - Cell type selector.
 
-### 3.5 Main GUI (`src/gui.py`)
+### 3.5 Main GUI (`src/dronerl/gui.py`)
 - Pygame window initialization.
 - Main event loop.
 - Keyboard shortcut handling.
@@ -112,7 +112,7 @@ Grid  Dashboard  Editor
 
 ## Phase 4: SDK Layer
 
-### 4.1 SDK Class (`src/sdk.py`)
+### 4.1 SDK Class (`src/dronerl/sdk.py`)
 - Central orchestrator.
 - Exposes: `train_step()`, `reset()`, `get_state()`, `get_q_table()`, `save_brain()`, `load_brain()`.
 - Bridges agent, environment, and GUI.

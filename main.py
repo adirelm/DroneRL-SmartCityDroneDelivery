@@ -1,7 +1,7 @@
 """Entry point for the DroneRL application."""
 
-from src.config_loader import Config, load_config
-from src.gui import GUI
+from dronerl.config_loader import Config, load_config
+from dronerl.gui import GUI
 
 
 def main():

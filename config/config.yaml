@@ -155,8 +155,8 @@ logging:
 comparison:
   max_episodes: 5000
   smoothing_window: 50
-  output_dir: data/comparison
+  output_dir: results/comparison
 
 # Paths
 paths:
-  brain: data/brain.npy
+  brain: results/brain.npy

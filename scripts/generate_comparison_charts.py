@@ -10,20 +10,21 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
 import numpy as np  # noqa: E402
 
-from src.algorithms import ALGORITHMS  # noqa: E402
-from src.comparison import ComparisonStore, generate_comparison_chart  # noqa: E402
-from src.config_loader import Config, load_config  # noqa: E402
-from src.environment import Environment  # noqa: E402
-from src.hazard_generator import HazardGenerator  # noqa: E402
+from dronerl.algorithms import ALGORITHMS  # noqa: E402
+from dronerl.comparison import ComparisonStore, generate_comparison_chart  # noqa: E402
+from dronerl.config_loader import Config, load_config  # noqa: E402
+from dronerl.environment import Environment  # noqa: E402
+from dronerl.hazard_generator import HazardGenerator  # noqa: E402
 
 
 def _train_one(cfg: Config, episodes: int, seed: int) -> tuple[list[float], list[int]]:
-    from src.agent_factory import create_agent
-    from src.trainer import Trainer
+    from dronerl.agent_factory import create_agent
+    from dronerl.trainer import Trainer
 
     random.seed(seed)
     np.random.seed(seed)
@@ -84,7 +85,7 @@ def run_scenario(name: str, raw: dict, episodes: int, title: str, out_path: str,
 
 
 def main():
-    out_dir = Path("data/comparison")
+    out_dir = Path("results/comparison")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Scenario 1 — MEDIUM: Bellman's high constant lr becomes unstable in a noisy

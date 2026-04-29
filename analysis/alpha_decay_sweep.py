@@ -28,7 +28,7 @@ from analysis._runner import (
     train_run,
     with_overrides,
 )
-from src.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS
+from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS
 
 DECAY_GRID = (0.999, 0.9993, 0.9995, 0.9997, 0.9999, 1.0)
 SEEDS = (3, 11, 23)
@@ -121,7 +121,7 @@ def plot(out: dict, out_path: Path) -> str:
 def main():
     print(f"\n=== Alpha-decay sweep ({len(DECAY_GRID)} decays × {len(SEEDS)} seeds × 2 algos) ===")
     results = run()
-    out = Path("data/analysis/alpha_decay_sweep.png")
+    out = Path("results/analysis/alpha_decay_sweep.png")
     print(f"  -> saved: {plot(results, out)}")
 
 

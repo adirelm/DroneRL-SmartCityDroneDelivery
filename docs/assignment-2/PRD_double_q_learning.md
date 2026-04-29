@@ -37,11 +37,11 @@ For action selection (epsilon-greedy), use the combined table: `QA + QB`.
 
 ### Existing Codebase Reference
 
-- `src/base_agent.py` — BaseAgent abstract class (created in PRD_q_learning)
-- `src/q_agent.py` — QLearningAgent with decaying alpha (created in PRD_q_learning)
-- `src/agent_factory.py` — Agent factory (created in PRD_q_learning)
-- `src/overlays.py` — Reads `agent.q_table` for heatmap and arrows
-- `src/comparison.py` — Comparison system (to be created)
+- `src/dronerl/base_agent.py` — BaseAgent abstract class (created in PRD_q_learning)
+- `src/dronerl/q_agent.py` — QLearningAgent with decaying alpha (created in PRD_q_learning)
+- `src/dronerl/agent_factory.py` — Agent factory (created in PRD_q_learning)
+- `src/dronerl/overlays.py` — Reads `agent.q_table` for heatmap and arrows
+- `src/dronerl/comparison.py` — Comparison system (to be created)
 
 ---
 
@@ -80,7 +80,7 @@ For action selection (epsilon-greedy), use the combined table: `QA + QB`.
 
 ### 3.1 DoubleQAgent Class
 
-A new file `src/double_q_agent.py` containing `DoubleQAgent(BaseAgent)`:
+A new file `src/dronerl/double_q_agent.py` containing `DoubleQAgent(BaseAgent)`:
 
 #### Initialization
 
@@ -135,7 +135,7 @@ self.alpha = max(self.alpha_end, self.alpha * self.alpha_decay)
 
 ### 3.2 Comparison System
 
-A new file `src/comparison.py`:
+A new file `src/dronerl/comparison.py`:
 
 #### ComparisonStore Class
 
@@ -179,7 +179,7 @@ def generate_comparison_chart(store: ComparisonStore, output_path: str, config: 
 # Comparison settings
 comparison:
   max_episodes: 5000
-  output_dir: data/comparison
+  output_dir: results/comparison
   smoothing_window: 50
 
 # Algorithm curve colors
@@ -191,7 +191,7 @@ colors:
 
 ### 3.3 SDK Extensions
 
-Modifications to `src/sdk.py`:
+Modifications to `src/dronerl/sdk.py`:
 
 | Method | Description |
 |--------|-------------|
@@ -224,7 +224,7 @@ Three toggle buttons: **Bellman** / **Q-Learning** / **Double Q**
 - Trains all 3 algorithms for `comparison.max_episodes` episodes each
 - Shows progress in dashboard
 - On completion, opens matplotlib comparison chart
-- Saves chart to `data/comparison/comparison.png`
+- Saves chart to `results/comparison/comparison.png`
 
 ### 3.5 Dashboard Extensions
 
@@ -261,7 +261,7 @@ Three toggle buttons: **Bellman** / **Q-Learning** / **Double Q**
 - Alpha decay parameters are shared between Q-Learning and Double Q-Learning (from `q_learning` and `double_q` config sections respectively)
 - Comparison trains algorithms sequentially (not in parallel) to avoid memory/performance issues
 - The comparison chart uses matplotlib (already a project dependency)
-- The chart is saved to `data/comparison/` directory
+- The chart is saved to `results/comparison/` directory
 
 ---
 
@@ -283,7 +283,7 @@ Three toggle buttons: **Bellman** / **Q-Learning** / **Double Q**
 - [ ] Comparison chart clearly shows convergence differences
 - [ ] **Scenario 1 (Medium)**: difficulty=0.5 — Bellman struggles, Q converges, Double Q fastest
 - [ ] **Scenario 2 (Hard)**: difficulty=0.9 — Bellman fails, Q fails, Double Q converges
-- [ ] Both scenario charts saved as PNG in `data/comparison/`
+- [ ] Both scenario charts saved as PNG in `results/comparison/`
 - [ ] CLAUDE.md exists in project root with global constraints
 - [ ] All work in same repository as assignment 1 (branch `assignment-2`)
 - [ ] All files ≤ 150 lines
@@ -300,12 +300,12 @@ Three toggle buttons: **Bellman** / **Q-Learning** / **Double Q**
 ### Scenario 1: Medium Difficulty — Bellman Fails, Q and Double Q Succeed
 - **Config**: difficulty=0.5, obstacle_density=0.2, noise_level=0.5, max_episodes=5000
 - **Expected**: Bellman fails (oscillates/low reward), Q-Learning converges, Double Q converges fastest
-- **Output**: `data/comparison/scenario1_medium.png`
+- **Output**: `results/comparison/scenario1_medium.png`
 
 ### Scenario 2: High Difficulty — Only Double Q Succeeds
 - **Config**: difficulty=0.9, obstacle_density=0.35, noise_level=0.8, max_episodes=10000
 - **Expected**: Bellman fails (diverges), Q-Learning fails (oscillates), Double Q converges reliably
-- **Output**: `data/comparison/scenario2_hard.png`
+- **Output**: `results/comparison/scenario2_hard.png`
 
 Both charts must use:
 - Consistent axis scales, moving average smoothing (50 episodes)
@@ -332,11 +332,11 @@ The README must include:
 
 | Phase | Deliverable |
 |-------|------------|
-| 1 | Create `src/double_q_agent.py` with two Q-tables and cross-table update |
+| 1 | Create `src/dronerl/double_q_agent.py` with two Q-tables and cross-table update |
 | 2 | Add `double_q` section to config.yaml |
 | 3 | Register in agent factory |
 | 4 | Write comprehensive tests |
-| 5 | Create `src/comparison.py` with store + chart generation |
+| 5 | Create `src/dronerl/comparison.py` with store + chart generation |
 | 6 | Extend SDK with comparison and algorithm switching |
 | 7 | Add algorithm selector buttons and keyboard shortcuts to GUI |
 | 8 | Generate comparison scenarios and tune parameters |

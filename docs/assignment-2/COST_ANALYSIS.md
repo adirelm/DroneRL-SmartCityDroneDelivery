@@ -11,7 +11,7 @@ All numbers are reproducible on the maintainer's machine via:
 uv run python -m analysis.cost_profile
 ```
 
-The script writes the raw figures to `data/analysis/cost_profile.json`; the
+The script writes the raw figures to `results/analysis/cost_profile.json`; the
 tables below were copied verbatim from one such run on a 2023 MacBook Pro
 (Apple M-series, Python 3.13).
 
@@ -38,7 +38,7 @@ the same ballpark on a warm interpreter.
 **Reading the table.** Q-Learning is the cheapest per episode. Bellman is
 slightly more expensive only because of an artefact in `decay_epsilon()`
 allocations (it gets called every episode but the agent ignores its
-own decay since α is constant — see `src/agent.py`). Double-Q pays a real
+own decay since α is constant — see `src/dronerl/agent.py`). Double-Q pays a real
 ~15% time premium for keeping two Q-tables in sync, which is consistent
 with its design.
 

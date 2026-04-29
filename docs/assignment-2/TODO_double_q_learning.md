@@ -13,19 +13,19 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 | `DoubleQAgent` | two tables QA / QB; coin-flip update uses argmax from one table and value from the other; `q_table` property returns `QA + QB` |
 | Factory registration | `create_agent(config)` with `algorithm.name = "double_q"` returns a `DoubleQAgent` |
 | Comparison runner | `SDK.run_comparison()` trains all three algorithms on the same board snapshot |
-| Chart generation | `data/comparison/scenario2_hard.png` shows Double-Q's σ on the last 200 episodes is the smallest of the three |
+| Chart generation | `results/comparison/scenario2_hard.png` shows Double-Q's σ on the last 200 episodes is the smallest of the three |
 | GUI integration | algorithm selector buttons + keyboard shortcuts switch agents without resetting the board |
 | Tests | `tests/test_double_q_agent.py` asserts the cross-table evaluation and coin-flip mechanics |
 
 ---
 
 ## DoubleQAgent file setup
-- [x] Task 1: Create src/double_q_agent.py file
+- [x] Task 1: Create src/dronerl/double_q_agent.py file
 - [x] Task 2: Add module-level docstring describing DoubleQAgent
 - [x] Task 3: Import numpy as np
 - [x] Task 4: Import random module for 50/50 selection
-- [x] Task 5: Import BaseAgent from src.base_agent
-- [x] Task 6: Import load_config helper from src.config
+- [x] Task 5: Import BaseAgent from dronerl.base_agent
+- [x] Task 6: Import load_config helper from dronerl.config
 - [x] Task 7: Add type hints import from typing
 - [x] Task 8: Add Tuple and Optional type imports
 - [x] Task 9: Keep file under 150 line limit
@@ -249,7 +249,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 205: Confirm load does not reset decay state
 
 ## Factory registration of double_q
-- [x] Task 206: Open src/algorithms.py
+- [x] Task 206: Open src/dronerl/algorithms.py
 - [x] Task 207: Import DoubleQAgent
 - [x] Task 208: Append AlgorithmSpec("double_q", "Double Q-Learning", color, DoubleQAgent) to ALGORITHM_REGISTRY
 - [x] Task 209: Confirm AGENT_CLASSES["double_q"] resolves to DoubleQAgent
@@ -283,7 +283,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 235: Document tuning guidance in PRD
 
 ## ComparisonStore class
-- [x] Task 236: Create or open src/comparison.py
+- [x] Task 236: Create or open src/dronerl/comparison.py
 - [x] Task 237: Define class ComparisonStore
 - [x] Task 238: Add docstring describing role
 - [x] Task 239: Define __init__ storing runs dict
@@ -395,7 +395,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 335: Ensure constants are immutable by convention
 
 ## SDK switch_algorithm
-- [x] Task 336: Open src/sdk.py
+- [x] Task 336: Open src/dronerl/sdk.py
 - [x] Task 337: Add switch_algorithm(name) method to SDK class
 - [x] Task 338: Validate name is a known algorithm key
 - [x] Task 339: Update config.algorithm to name
@@ -454,7 +454,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 386: Add comparison section to config.yaml
 - [x] Task 387: Add max_episodes: 5000
 - [x] Task 388: Add smoothing_window: 50
-- [x] Task 389: Add output_dir: data/comparison
+- [x] Task 389: Add output_dir: results/comparison
 - [x] Task 390: Document each key with comment
 - [x] Task 391: Ensure config loader exposes section
 - [x] Task 392: Add default fallback if section missing
@@ -468,7 +468,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 400: Document tuning guidance for smoothing_window
 
 ## GUI keyboard 1/2/3 algorithm switching
-- [x] Task 401: Open src/gui.py
+- [x] Task 401: Open src/dronerl/gui.py
 - [x] Task 402: Handle pygame KEYDOWN event
 - [x] Task 403: Map key 1 to switch_algorithm bellman
 - [x] Task 404: Map key 2 to switch_algorithm q_learning
@@ -502,7 +502,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 430: Document keyboard shortcuts in README
 
 ## Actions use_bellman/q_learning/double_q
-- [x] Task 431: Open src/actions.py
+- [x] Task 431: Open src/dronerl/actions.py
 - [x] Task 432: Define use_bellman action function
 - [x] Task 433: Define use_q_learning action function
 - [x] Task 434: Define use_double_q action function
@@ -553,7 +553,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 475: Render segment each frame
 
 ## Dashboard alpha display
-- [x] Task 476: Open src/dashboard.py
+- [x] Task 476: Open src/dronerl/dashboard.py
 - [x] Task 477: Detect if agent has alpha attribute
 - [x] Task 478: Add Alpha: value line to dashboard
 - [x] Task 479: Format alpha with configured decimals
@@ -603,7 +603,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 519: Run all three algorithms per scenario
 - [x] Task 520: Store histories in ComparisonStore per scenario
 - [x] Task 521: Generate chart per scenario
-- [x] Task 522: Write chart under data/comparison
+- [x] Task 522: Write chart under results/comparison
 - [x] Task 523: Commit generated PNGs to repo
 - [x] Task 524: Verify medium shows Bellman converging slower
 - [x] Task 525: Verify hard shows Bellman failing

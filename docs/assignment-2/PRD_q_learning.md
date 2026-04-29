@@ -10,7 +10,7 @@ This PRD introduces the **Q-Learning algorithm** as the second RL agent in the D
 
 ### Context
 
-The existing `Agent` class in `src/agent.py` implements a Q-value update using a **constant learning rate** (`lr = 0.1`):
+The existing `Agent` class in `src/dronerl/agent.py` implements a Q-value update using a **constant learning rate** (`lr = 0.1`):
 
 ```
 Q(s,a) = Q(s,a) + lr * [r + γ * max(Q(s',a')) - Q(s,a)]
@@ -27,9 +27,9 @@ Q(s,a) = Q(s,a) + α_t * [r + γ * max(Q(s',a')) - Q(s,a)]
 
 ### Existing Codebase Reference
 
-- `src/agent.py` — Current `Agent` class (72 lines), to be refactored into `BellmanAgent(BaseAgent)`
-- `src/trainer.py` — Training loop that calls `agent.update()` and `agent.decay_epsilon()`
-- `src/sdk.py` — SDK orchestrator that creates Agent instance
+- `src/dronerl/agent.py` — Current `Agent` class (72 lines), to be refactored into `BellmanAgent(BaseAgent)`
+- `src/dronerl/trainer.py` — Training loop that calls `agent.update()` and `agent.decay_epsilon()`
+- `src/dronerl/sdk.py` — SDK orchestrator that creates Agent instance
 - `config/config.yaml` — Agent hyperparameters section
 - `docs/assignment-1/PRD_q_learning.md` — Assignment 1 Q-Learning PRD (algorithm description)
 
@@ -69,7 +69,7 @@ Q(s,a) = Q(s,a) + α_t * [r + γ * max(Q(s',a')) - Q(s,a)]
 
 ### 3.1 BaseAgent Abstract Class
 
-A new file `src/base_agent.py` containing the abstract base class:
+A new file `src/dronerl/base_agent.py` containing the abstract base class:
 
 #### Shared Interface (inherited by all agents)
 
@@ -93,7 +93,7 @@ A new file `src/base_agent.py` containing the abstract base class:
 
 ### 3.2 BellmanAgent (Refactored from existing Agent)
 
-Modifications to `src/agent.py`:
+Modifications to `src/dronerl/agent.py`:
 
 - Rename `Agent` to `BellmanAgent`, inheriting from `BaseAgent`
 - Move shared methods to `BaseAgent`
@@ -112,7 +112,7 @@ def update(self, state, action, reward, next_state, done):
 
 ### 3.3 QLearningAgent
 
-A new file `src/q_agent.py` containing `QLearningAgent(BaseAgent)`:
+A new file `src/dronerl/q_agent.py` containing `QLearningAgent(BaseAgent)`:
 
 #### Alpha Decay Mechanism
 
@@ -151,14 +151,14 @@ def decay_epsilon(self):
 
 ### 3.4 Agent Factory and Registry
 
-The factory in `src/agent_factory.py` is a thin validating wrapper around an
-algorithm registry in `src/algorithms.py`. The registry is the single source
+The factory in `src/dronerl/agent_factory.py` is a thin validating wrapper around an
+algorithm registry in `src/dronerl/algorithms.py`. The registry is the single source
 of truth for "which algorithms exist" — every consumer (factory, GUI,
 comparison runner, charts, analysis scripts, parametrised tests) reads from
 it, so adding a new algorithm means adding one `AlgorithmSpec` line.
 
 ```python
-# src/algorithms.py
+# src/dronerl/algorithms.py
 @dataclass(frozen=True)
 class AlgorithmSpec:
     name: str
@@ -173,7 +173,7 @@ ALGORITHM_REGISTRY = (
 )
 AGENT_CLASSES = {spec.name: spec.agent_class for spec in ALGORITHM_REGISTRY}
 
-# src/agent_factory.py
+# src/dronerl/agent_factory.py
 def create_agent(config: Config) -> BaseAgent:
     name = config.algorithm.name
     if name not in AGENT_CLASSES:
@@ -181,7 +181,7 @@ def create_agent(config: Config) -> BaseAgent:
     return AGENT_CLASSES[name](config)
 ```
 
-The factory is used by `DroneRLSDK` in `src/sdk.py` to create the agent based
+The factory is used by `DroneRLSDK` in `src/dronerl/sdk.py` to create the agent based
 on the `algorithm.name` config value.
 
 ### 3.5 Configuration (config.yaml additions)
@@ -202,7 +202,7 @@ q_learning:
 
 ## 4. Non-Functional Requirements
 
-- **Backward Compatibility**: `from src.agent import Agent` must still work (alias to BellmanAgent)
+- **Backward Compatibility**: `from dronerl.agent import Agent` must still work (alias to BellmanAgent)
 - **All existing tests must pass** without modification (or with minimal import updates)
 - **OOP Inheritance**: Clean single-inheritance hierarchy: `BaseAgent` → `BellmanAgent` / `QLearningAgent`
 - **No Code Duplication**: Shared logic lives in `BaseAgent`, not duplicated across subclasses
@@ -255,11 +255,11 @@ q_learning:
 
 | Phase | Deliverable |
 |-------|------------|
-| 1 | Create `src/base_agent.py` with shared interface |
-| 2 | Refactor `src/agent.py` to `BellmanAgent(BaseAgent)` |
-| 3 | Create `src/agent_factory.py` |
+| 1 | Create `src/dronerl/base_agent.py` with shared interface |
+| 2 | Refactor `src/dronerl/agent.py` to `BellmanAgent(BaseAgent)` |
+| 3 | Create `src/dronerl/agent_factory.py` |
 | 4 | Verify all existing tests pass |
-| 5 | Create `src/q_agent.py` with decaying alpha |
+| 5 | Create `src/dronerl/q_agent.py` with decaying alpha |
 | 6 | Add `algorithm` and `q_learning` sections to config.yaml |
 | 7 | Write tests for BaseAgent, QLearningAgent, factory |
 | 8 | Integrate factory into SDK |
@@ -279,4 +279,4 @@ alternatives. Each was rejected for specific reasons documented here.
 | **Constant α with a longer training budget** | Watkins (1989) requires Σα_t = ∞ AND Σα_t² < ∞ for convergence; constant α fails the second. The lecture transcript also explicitly says: *"אסור ל-Alpha להיות קבוע. אם ה-Alpha שלכם יישאר קבוע, יש סיכוי שהעסק יתבדר לכם, או לא יתכנס."* |
 | **Exponential decay vs. inverse-step `1/t` decay** | Exponential decay (`α ← max(α_min, α · decay)`) gives a tunable floor and bounded variance; `1/t` is theoretically convergent but slower in practice for small grids and exposes an unbounded number-of-steps coupling. We picked exponential with `α_end` floor. |
 | **Function approximation (small MLP) instead of tabular** | Out-of-scope for the assignment's "Tabular Q-Learning" framing. The state space (12×12 = 144 states) fits in memory; tabular is appropriate. Function approximation becomes the right call only at ~10⁴ states (see [COST_ANALYSIS.md](COST_ANALYSIS.md) §3). |
-| **Separate factory file vs. registry module** | The original plan put `_AGENTS` in `agent_factory.py`. After Assignment 2's Pass 1 review, the registry was extracted into `src/algorithms.py` because the same algorithm tuple was duplicated in 13 places across 9 files. The current design — `algorithms.py` registry + thin `agent_factory.py` wrapper — is the result of that refactor. |
+| **Separate factory file vs. registry module** | The original plan put `_AGENTS` in `agent_factory.py`. After Assignment 2's Pass 1 review, the registry was extracted into `src/dronerl/algorithms.py` because the same algorithm tuple was duplicated in 13 places across 9 files. The current design — `algorithms.py` registry + thin `agent_factory.py` wrapper — is the result of that refactor. |

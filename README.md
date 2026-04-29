@@ -25,9 +25,9 @@ An educational reinforcement learning lab that compares **three tabular RL algor
 
 | Layer | Modules |
 |-------|---------|
-| **Agents** (Strategy pattern) | [`base_agent.py`](src/base_agent.py), [`agent.py`](src/agent.py) (Bellman), [`q_agent.py`](src/q_agent.py), [`double_q_agent.py`](src/double_q_agent.py), [`agent_factory.py`](src/agent_factory.py) |
-| **Dynamic board** | [`environment.py`](src/environment.py) (added `CellType.PIT`), [`hazard_generator.py`](src/hazard_generator.py), [`sliders.py`](src/sliders.py) |
-| **Comparison system** | [`comparison.py`](src/comparison.py) (matplotlib charts), `SDK.run_comparison()`, [`scripts/generate_comparison_charts.py`](scripts/generate_comparison_charts.py) |
+| **Agents** (Strategy pattern) | [`base_agent.py`](src/dronerl/base_agent.py), [`agent.py`](src/dronerl/agent.py) (Bellman), [`q_agent.py`](src/dronerl/q_agent.py), [`double_q_agent.py`](src/dronerl/double_q_agent.py), [`agent_factory.py`](src/dronerl/agent_factory.py) |
+| **Dynamic board** | [`environment.py`](src/dronerl/environment.py) (added `CellType.PIT`), [`hazard_generator.py`](src/dronerl/hazard_generator.py), [`sliders.py`](src/dronerl/sliders.py) |
+| **Comparison system** | [`comparison.py`](src/dronerl/comparison.py) (matplotlib charts), `SDK.run_comparison()`, [`scripts/generate_comparison_charts.py`](scripts/generate_comparison_charts.py) |
 | **GUI integration** | Algorithm switching via keys 1/2/3, hazard regeneration via G, live status bar |
 
 ---
@@ -101,7 +101,7 @@ uv run python scripts/generate_comparison_charts.py
 
 ### Scenario 1 — Medium difficulty (noisy environment)
 
-![Scenario 1](data/comparison/scenario1_medium.png)
+![Scenario 1](results/comparison/scenario1_medium.png)
 
 **Setup**: 12×12 grid, noise=0.5, density=0.12, difficulty=0.3, 3,500 episodes, seed=11. Bellman lr=0.7 (amplifies instability to make the effect visible).
 
@@ -115,7 +115,7 @@ uv run python scripts/generate_comparison_charts.py
 
 ### Scenario 2 — High difficulty (very noisy environment)
 
-![Scenario 2](data/comparison/scenario2_hard.png)
+![Scenario 2](results/comparison/scenario2_hard.png)
 
 **Setup**: 12×12 grid, noise=0.95, density=0.10, difficulty=0.55, 6,000 episodes, seed=7. Bellman lr=0.7 (constant); Q-Learning α stays nearly constant (α_end=0.35, α_decay=0.9999) so its decay never fully kicks in; Double-Q α_start=0.3 → α_end=0.08 with α_decay=0.9995 decays fully.
 
@@ -255,7 +255,7 @@ lives in [docs/assignment-2/EXPERIMENTS.md](docs/assignment-2/EXPERIMENTS.md).
 
 5 seeds, medium board (noise=0.5, density=0.12, difficulty=0.3), 1500 episodes.
 
-![Multi-seed robustness](data/analysis/multi_seed_robustness.png)
+![Multi-seed robustness](results/analysis/multi_seed_robustness.png)
 
 Per-seed last-200-episode means (mean reward over the last 200 episodes of
 each run):
@@ -284,7 +284,7 @@ training budget can flip the qualitative story.
 6 decay values × 3 seeds × {Q-Learning, Double-Q}, same medium board, 1500
 episodes. Bellman shown as a horizontal reference (no decay).
 
-![Alpha-decay sweep](data/analysis/alpha_decay_sweep.png)
+![Alpha-decay sweep](results/analysis/alpha_decay_sweep.png)
 
 | `alpha_decay` | Q-Learning (mean ± SEM) | Double-Q (mean ± SEM) |
 |---------------|-------------------------|-----------------------|
@@ -433,10 +433,10 @@ architecture has one clean extension point and a few that aren't (yet).
 This is the case the project is most explicitly designed for. Every consumer
 of "the list of algorithms" — the factory, the GUI keybindings, the
 comparison runner, the chart code, the analysis scripts, the parametrised
-tests — pulls from `src/algorithms.py`:
+tests — pulls from `src/dronerl/algorithms.py`:
 
 ```python
-# src/algorithms.py
+# src/dronerl/algorithms.py
 ALGORITHM_REGISTRY: tuple[AlgorithmSpec, ...] = (
     AlgorithmSpec("bellman", "Bellman (constant α)", "#d35400", BellmanAgent),
     AlgorithmSpec("q_learning", "Q-Learning (decaying α)", "#2980b9", QLearningAgent),
@@ -462,12 +462,12 @@ Hazards aren't behind a single registry yet, because each one has
 genuinely different rendering, reward, and movement logic. Adding a new
 cell type ("ICE" that randomly redirects movement, say) currently touches:
 
-- `src/environment.py` — add to `CellType`, add the per-cell movement / reward branch in `step()`.
+- `src/dronerl/environment.py` — add to `CellType`, add the per-cell movement / reward branch in `step()`.
 - `config/config.yaml` — add the reward/penalty value.
-- `src/editor.py` — add to `EDITABLE_TYPES`, name, and color.
-- `src/hazard_generator.py` — add to `HAZARD_TYPES` and `ratios`.
-- `src/renderer.py` — add a `_draw_ice` method and entry in the dispatch dict.
-- `src/overlays.py` — decide if the heatmap should skip it.
+- `src/dronerl/editor.py` — add to `EDITABLE_TYPES`, name, and color.
+- `src/dronerl/hazard_generator.py` — add to `HAZARD_TYPES` and `ratios`.
+- `src/dronerl/renderer.py` — add a `_draw_ice` method and entry in the dispatch dict.
+- `src/dronerl/overlays.py` — decide if the heatmap should skip it.
 - A test in `tests/test_environment_cells.py` for the movement / reward.
 
 This is honestly more places than I'd like. A `CellTypeSpec` registry like
@@ -590,9 +590,11 @@ process is at least as much of the assignment as the final code is.
 │   ├── capture_assignment2_screenshots.py
 │   └── check_file_sizes.sh
 ├── config/config.yaml      # All parameters
-├── data/
+├── data/                   # Input data (placeholder; project generates in-memory)
+├── results/                # Experiment outputs
 │   ├── comparison/         # Required Scenario 1 / Scenario 2 PNGs
 │   └── analysis/           # Multi-seed CI band, decay sweep, cost JSON
+├── notebooks/              # Reproducible analysis notebooks
 ├── docs/
 │   ├── assignment-1/       # PRD, PLAN, TODO from Assignment 1
 │   ├── assignment-2/       # 3× PRD/PLAN/TODO + EXPERIMENTS.md + COST_ANALYSIS.md

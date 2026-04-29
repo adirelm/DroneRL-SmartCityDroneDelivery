@@ -10,23 +10,23 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 | Phase gate | Definition-of-Done |
 |------------|--------------------|
-| BaseAgent extraction | `src/agent.py` 104 existing tests still pass; new `src/base_agent.py` ≤ 150 lines |
+| BaseAgent extraction | `src/dronerl/agent.py` 104 existing tests still pass; new `src/dronerl/base_agent.py` ≤ 150 lines |
 | QLearningAgent | `tests/test_q_agent.py` passes; alpha decays by `alpha_decay` per episode and is floored at `alpha_end` |
 | Agent factory + registry | `create_agent(config)` returns the right class for each `algorithm.name`; unknown names raise `ValueError` |
 | SDK integration | `SDK.switch_algorithm("q_learning")` returns a clean state without resetting the board |
-| Convergence comparison | `data/comparison/scenario1_medium.png` exists and shows Q-Learning's σ smaller than Bellman's at noise=0.5 |
+| Convergence comparison | `results/comparison/scenario1_medium.png` exists and shows Q-Learning's σ smaller than Bellman's at noise=0.5 |
 
 ---
 
 ## BaseAgent File Setup
 
-- [x] Task 1: Create src/base_agent.py module file
+- [x] Task 1: Create src/dronerl/base_agent.py module file
 - [x] Task 2: Add module docstring describing BaseAgent purpose
 - [x] Task 3: Import numpy as np in base_agent.py
 - [x] Task 4: Import Path from pathlib for save/load
 - [x] Task 5: Import Tuple type hint for coordinates
 - [x] Task 6: Import Optional type hint for config
-- [x] Task 7: Import config loader from src.config_loader
+- [x] Task 7: Import config loader from dronerl.config_loader
 - [x] Task 8: Add UTF-8 encoding comment if needed
 - [x] Task 9: Ensure file stays under 150 lines
 - [x] Task 10: Add ruff-compatible imports ordering
@@ -34,7 +34,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 12: Add __all__ export list with BaseAgent
 - [x] Task 13: Verify no circular imports with config_loader
 - [x] Task 14: Ensure base_agent.py is discoverable by src package
-- [x] Task 15: Add base_agent.py to src/__init__.py if needed
+- [x] Task 15: Add base_agent.py to src/dronerl/__init__.py if needed
 
 ## BaseAgent Class Definition
 
@@ -50,7 +50,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 25: Document design choice to avoid ABC
 - [x] Task 26: Keep class attribute naming consistent
 - [x] Task 27: Expose NUM_ACTIONS as public constant
-- [x] Task 28: Ensure class is importable from src.base_agent
+- [x] Task 28: Ensure class is importable from dronerl.base_agent
 - [x] Task 29: Add type hints on all class attributes
 - [x] Task 30: Confirm algorithm_name appears in __repr__
 
@@ -190,7 +190,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## BellmanAgent Refactor From Original Agent
 
-- [x] Task 141: Move Agent class from src/agent.py to src/agent.py
+- [x] Task 141: Move Agent class from src/dronerl/agent.py to src/dronerl/agent.py
 - [x] Task 142: Rename Agent class to BellmanAgent
 - [x] Task 143: Inherit BellmanAgent from BaseAgent
 - [x] Task 144: Remove Q-table init from BellmanAgent __init__
@@ -203,8 +203,8 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 151: Remove duplicated save from BellmanAgent
 - [x] Task 152: Remove duplicated load from BellmanAgent
 - [x] Task 153: Ensure BellmanAgent file remains under 150 lines
-- [x] Task 154: Reorganize imports in src/agent.py
-- [x] Task 155: Remove now-unused imports in src/agent.py
+- [x] Task 154: Reorganize imports in src/dronerl/agent.py
+- [x] Task 155: Remove now-unused imports in src/dronerl/agent.py
 
 ## BellmanAgent Constant Learning Rate
 
@@ -246,16 +246,16 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 185: Verify Agent import still works in main.py
 - [x] Task 186: Verify Agent import still works in sdk.py
 - [x] Task 187: Verify Agent import still works in tests
-- [x] Task 188: Ensure from src.agent import Agent passes
-- [x] Task 189: Ensure from src.agent import BellmanAgent passes
+- [x] Task 188: Ensure from dronerl.agent import Agent passes
+- [x] Task 189: Ensure from dronerl.agent import BellmanAgent passes
 - [x] Task 190: Keep alias close to class for discoverability
 
 ## QLearningAgent File Setup
 
-- [x] Task 191: Create src/q_agent.py module file
+- [x] Task 191: Create src/dronerl/q_agent.py module file
 - [x] Task 192: Add module docstring explaining Q-Learning
 - [x] Task 193: Import numpy as np in q_agent.py
-- [x] Task 194: Import BaseAgent from src.base_agent
+- [x] Task 194: Import BaseAgent from dronerl.base_agent
 - [x] Task 195: Import Optional for config type hint
 - [x] Task 196: Import Tuple for state type hint
 - [x] Task 197: Add __all__ list containing QLearningAgent
@@ -340,10 +340,10 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Agent Factory Creation
 
-- [x] Task 261: Create src/agent_factory.py module
+- [x] Task 261: Create src/dronerl/agent_factory.py module
 - [x] Task 262: Add module docstring explaining factory
-- [x] Task 263: Import BellmanAgent from src.agent
-- [x] Task 264: Import QLearningAgent from src.q_agent
+- [x] Task 263: Import BellmanAgent from dronerl.agent
+- [x] Task 264: Import QLearningAgent from dronerl.q_agent
 - [x] Task 265: Import BaseAgent for return type hint
 - [x] Task 266: Define create_agent(config) function
 - [x] Task 267: Read config.algorithm.name from config
@@ -358,7 +358,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Factory Dict-Based Algorithm Registry
 
-- [x] Task 276: Define ALGORITHM_REGISTRY (tuple of AlgorithmSpec) in src/algorithms.py
+- [x] Task 276: Define ALGORITHM_REGISTRY (tuple of AlgorithmSpec) in src/dronerl/algorithms.py
 - [x] Task 277: Map key bellman to BellmanAgent class
 - [x] Task 278: Map key q_learning to QLearningAgent class
 - [x] Task 279: Map key double_q to DoubleQAgent class
@@ -433,7 +433,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## SDK Uses create_agent
 
-- [x] Task 336: Import create_agent in src/sdk.py
+- [x] Task 336: Import create_agent in src/dronerl/sdk.py
 - [x] Task 337: Replace Agent() instantiation with create_agent(config)
 - [x] Task 338: Store agent as self.agent on SDK init
 - [x] Task 339: Type-annotate self.agent as BaseAgent
@@ -469,7 +469,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## Trainer Uses BaseAgent Type Annotation
 
-- [x] Task 366: Import BaseAgent in src/trainer.py
+- [x] Task 366: Import BaseAgent in src/dronerl/trainer.py
 - [x] Task 367: Annotate trainer.agent as BaseAgent
 - [x] Task 368: Replace Agent type hint with BaseAgent
 - [x] Task 369: Ensure Trainer accepts any BaseAgent subclass
@@ -487,7 +487,7 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 
 ## GameLogic Uses BaseAgent Type Annotation
 
-- [x] Task 381: Import BaseAgent in src/game_logic.py
+- [x] Task 381: Import BaseAgent in src/dronerl/game_logic.py
 - [x] Task 382: Annotate agent parameter as BaseAgent
 - [x] Task 383: Replace Agent type hint with BaseAgent
 - [x] Task 384: Ensure GameLogic accepts subclass instances
@@ -556,8 +556,8 @@ later ones. **Responsibility.** Single-author (Adir Elmakais).
 - [x] Task 441: Test BellmanAgent update matches Bellman eq
 - [x] Task 442: Test BellmanAgent does NOT decay alpha
 - [x] Task 443: Test Agent alias equals BellmanAgent
-- [x] Task 444: Test from src.agent import Agent works
-- [x] Task 445: Test from src.agent import BellmanAgent works
+- [x] Task 444: Test from dronerl.agent import Agent works
+- [x] Task 445: Test from dronerl.agent import BellmanAgent works
 - [x] Task 446: Test BellmanAgent inherits choose_action from base
 - [x] Task 447: Test BellmanAgent inherits decay_epsilon from base
 - [x] Task 448: Test BellmanAgent save/load works

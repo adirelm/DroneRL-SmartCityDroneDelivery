@@ -143,8 +143,8 @@ three parallel feature tracks: **dynamic_board**, **q_learning**, and
 > `update()`. Move the existing constant-lr logic into `BellmanAgent`.
 > Keep an `Agent = BellmanAgent` alias so old imports still work."
 
-This single prompt produced `src/base_agent.py` (69 lines) and converted
-`src/agent.py` to a thin `BellmanAgent(BaseAgent)` wrapper. All 104
+This single prompt produced `src/dronerl/base_agent.py` (69 lines) and converted
+`src/dronerl/agent.py` to a thin `BellmanAgent(BaseAgent)` wrapper. All 104
 existing Assignment 1 tests continued to pass afterwards.
 
 ### Q-Learning with Decaying Alpha
@@ -278,7 +278,7 @@ coverage gate was moved into `pyproject.toml`'s `addopts` so any plain
 
 `grep` found 13 hardcoded `("bellman", "q_learning", "double_q")`
 tuples across 9 files. **The README claim was false.** Fixing it
-produced [src/algorithms.py](../../src/algorithms.py) with an
+produced [src/dronerl/algorithms.py](../../src/dronerl/algorithms.py) with an
 `AlgorithmSpec` dataclass and `ALGORITHM_REGISTRY` tuple as the single
 source of truth, and refactored every consumer — factory, comparison
 module, SDK, scripts, analysis runner, parametrised tests — to read from

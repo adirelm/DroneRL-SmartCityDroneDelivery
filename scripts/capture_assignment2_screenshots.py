@@ -9,10 +9,10 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
 import pygame  # noqa: E402
 
-from src.agent_factory import create_agent  # noqa: E402
-from src.config_loader import Config, load_config  # noqa: E402
-from src.environment import CellType  # noqa: E402
-from src.gui import GUI  # noqa: E402
+from dronerl.agent_factory import create_agent  # noqa: E402
+from dronerl.config_loader import Config, load_config  # noqa: E402
+from dronerl.environment import CellType  # noqa: E402
+from dronerl.gui import GUI  # noqa: E402
 
 OUT = Path("assets/assignment-2")
 OUT.mkdir(parents=True, exist_ok=True)

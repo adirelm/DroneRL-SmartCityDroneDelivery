@@ -7,10 +7,10 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 import pygame
 import pytest
 
-from src.agent import Agent
-from src.config_loader import Config, load_config
-from src.environment import Environment
-from src.game_logic import GameLogic
+from dronerl.agent import Agent
+from dronerl.config_loader import Config, load_config
+from dronerl.environment import Environment
+from dronerl.game_logic import GameLogic
 
 CONFIG_PATH = "config/config.yaml"
 

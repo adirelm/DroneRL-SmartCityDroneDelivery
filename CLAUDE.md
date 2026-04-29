@@ -72,7 +72,7 @@ Generate TWO comparison scenarios:
 1. Medium difficulty: Bellman struggles most, Q-Learning and Double Q converge.
 2. High difficulty: All three eventually solve; Double Q is the most consistent.
 
-Save charts as PNG in `data/comparison/`.
+Save charts as PNG in `results/comparison/`.
 
 ## Version Control
 

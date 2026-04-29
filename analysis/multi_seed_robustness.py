@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 from analysis._runner import ALGORITHMS, base_raw_config, train_run, with_overrides
-from src.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS, smooth
+from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS, smooth
 
 SEEDS = (3, 7, 11, 17, 23)
 EPISODES = 1500
@@ -92,7 +92,7 @@ def plot(stacks: dict[str, np.ndarray], out_path: Path) -> str:
 def main():
     print(f"\n=== Multi-seed robustness ({len(SEEDS)} seeds × {EPISODES} ep × 3 algos) ===")
     stacks = run()
-    out = Path("data/analysis/multi_seed_robustness.png")
+    out = Path("results/analysis/multi_seed_robustness.png")
     print(f"  -> saved: {plot(stacks, out)}")
 
 
