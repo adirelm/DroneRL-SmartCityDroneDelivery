@@ -544,6 +544,12 @@ The CI workflow lives in [.github/workflows/ci.yml](.github/workflows/ci.yml);
 pre-commit hooks in [.pre-commit-config.yaml](.pre-commit-config.yaml);
 Dependabot config in [.github/dependabot.yml](.github/dependabot.yml).
 
+For an explicit map of how this project maps onto each of the
+**ISO/IEC 25010** quality characteristics (Functional Suitability,
+Performance Efficiency, Compatibility, Usability, Reliability,
+Security, Maintainability, Portability), see
+[docs/shared/QUALITY_STANDARDS.md](docs/shared/QUALITY_STANDARDS.md).
+
 Every reward, color, grid size, and algorithm hyperparameter lives in
 `config/config.yaml`; the source code holds no magic numbers. The 150-line
 limit makes some files (`gui.py`, `dashboard.py`) sit right at the cap, which

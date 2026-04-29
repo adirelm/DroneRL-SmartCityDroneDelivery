@@ -50,6 +50,7 @@ docs/
 │   └── submission_guidelines_audit.md (gitignored)
 └── shared/
     ├── ARCHITECTURE.md        ← navigation index + ADRs
+    ├── QUALITY_STANDARDS.md   ← ISO/IEC 25010 quality-characteristics map
     └── PROMPTS.md             ← prompt log + post-feedback iteration
 ```
 
@@ -68,3 +69,7 @@ docs/
 5. **For "how the project was built"**, see
    [`shared/PROMPTS.md`](shared/PROMPTS.md), which logs the prompts and
    the post-feedback iteration phase.
+6. **For ISO/IEC 25010 quality-characteristic mapping**, see
+   [`shared/QUALITY_STANDARDS.md`](shared/QUALITY_STANDARDS.md). It maps
+   each of the eight 25010 characteristics to the artefact, file, or
+   gate in this repo that satisfies it.

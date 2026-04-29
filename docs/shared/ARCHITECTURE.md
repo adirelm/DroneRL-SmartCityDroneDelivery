@@ -17,6 +17,7 @@ points to the file that backs it up.
 | **Quality automation (CI, pre-commit, Dependabot)** | [.github/workflows/ci.yml](../../.github/workflows/ci.yml), [.pre-commit-config.yaml](../../.pre-commit-config.yaml), [.github/dependabot.yml](../../.github/dependabot.yml), [scripts/check_file_sizes.sh](../../scripts/check_file_sizes.sh) |
 | **Project planning trail (PRD → PLAN → TODO)** | [docs/assignment-1/](../assignment-1/) (PRD/PLAN/TODO), [docs/assignment-2/PRD_*.md](../assignment-2/), [docs/assignment-2/PLAN_*.md](../assignment-2/), [docs/assignment-2/TODO_*.md](../assignment-2/) |
 | **AI-assisted development workflow** | [docs/shared/PROMPTS.md](PROMPTS.md) — original development + post-feedback iteration log |
+| **ISO/IEC 25010 quality-characteristics map** | [docs/shared/QUALITY_STANDARDS.md](QUALITY_STANDARDS.md) — maps each of the 8 25010 characteristics to the concrete file, gate, or doc that satisfies it |
 | **Coding standards (the rules this project enforces)** | [CLAUDE.md](../../CLAUDE.md) — 150-line file limit, ≥85% coverage, no magic numbers, ruff zero violations, UV-only |
 | **How to run / install** | [README.md](../../README.md) §Installation, §Running |
 | **License** | [LICENSE](../../LICENSE) — MIT |
