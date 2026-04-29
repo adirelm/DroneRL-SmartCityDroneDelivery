@@ -104,7 +104,7 @@ These ratios are configurable via config.yaml under `dynamic_board.hazard_ratios
 
 Modifications to `src/environment.py`:
 
-- **`_editor_cells: set[tuple[int, int]]`** — Tracks cells placed by the editor. When `set_cell()` is called through the editor path, the cell coordinates are added to this set. Dynamic hazards never overwrite editor cells.
+- **Editor-cell tracking** — Environment maintains an internal set of editor-placed `(row, col)` coordinates updated by `set_cell(..., editor=True)`. The public surface is the `editor_cells` frozenset property (read-only snapshot) and `restore_editor_cells(iterable)` method (used by the SDK's compare-on-same-board flow). Dynamic hazards never overwrite editor cells.
 - **`set_wind_drift(probability: float)`** — Allows runtime modification of the wind drift probability, called by the hazard generator when noise_level changes.
 - **`clear_dynamic_cells(editor_cells: set)`** — Clears all cells NOT in the editor_cells set back to EMPTY.
 - **PIT handling in `step()`** — Added alongside TRAP handling: if cell is PIT, return `(state, pit_penalty, True, {"event": "pit"})`.

@@ -419,7 +419,8 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 | `src/actions.py` | ~58 (post PRD 2) | ~80 | OK |
 | `src/buttons.py` | 135 | ~150 | At limit |
 | `src/dashboard.py` | ~150 (post PRD 2) | ~150 | At limit |
-| `src/agent_factory.py` | ~30 (from PRD 2) | ~30 | OK (no changes) |
+| `src/algorithms.py` | ~42 (from PRD 2) | ~42 | OK (one new AlgorithmSpec line for double_q) |
+| `src/agent_factory.py` | ~18 (from PRD 2) | ~18 | OK (no changes) |
 | `tests/test_double_q_agent.py` | 0 (new) | ~130 | OK |
 | `tests/test_comparison.py` | 0 (new) | ~100 | OK |
 

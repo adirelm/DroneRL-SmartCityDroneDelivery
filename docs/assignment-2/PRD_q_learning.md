@@ -149,23 +149,40 @@ def decay_epsilon(self):
 - `algorithm_name` returns `"Q-Learning"`
 - `q_table` same as Bellman (single 3D array)
 
-### 3.4 Agent Factory
+### 3.4 Agent Factory and Registry
 
-A new file `src/agent_factory.py`:
+The factory in `src/agent_factory.py` is a thin validating wrapper around an
+algorithm registry in `src/algorithms.py`. The registry is the single source
+of truth for "which algorithms exist" — every consumer (factory, GUI,
+comparison runner, charts, analysis scripts, parametrised tests) reads from
+it, so adding a new algorithm means adding one `AlgorithmSpec` line.
 
 ```python
+# src/algorithms.py
+@dataclass(frozen=True)
+class AlgorithmSpec:
+    name: str
+    label: str
+    color: str
+    agent_class: type[BaseAgent]
+
+ALGORITHM_REGISTRY = (
+    AlgorithmSpec("bellman", "Bellman (constant α)", "#d35400", BellmanAgent),
+    AlgorithmSpec("q_learning", "Q-Learning (decaying α)", "#2980b9", QLearningAgent),
+    AlgorithmSpec("double_q", "Double Q-Learning", "#27ae60", DoubleQAgent),
+)
+AGENT_CLASSES = {spec.name: spec.agent_class for spec in ALGORITHM_REGISTRY}
+
+# src/agent_factory.py
 def create_agent(config: Config) -> BaseAgent:
     name = config.algorithm.name
-    if name == "bellman":
-        return BellmanAgent(config)
-    elif name == "q_learning":
-        return QLearningAgent(config)
-    elif name == "double_q":
-        return DoubleQAgent(config)
-    raise ValueError(f"Unknown algorithm: {name}")
+    if name not in AGENT_CLASSES:
+        raise ValueError(f"Unknown algorithm: '{name}'. Valid: {sorted(ALGORITHMS)}")
+    return AGENT_CLASSES[name](config)
 ```
 
-The factory is used by `DroneRLSDK` in `src/sdk.py` to create the agent based on the `algorithm.name` config value.
+The factory is used by `DroneRLSDK` in `src/sdk.py` to create the agent based
+on the `algorithm.name` config value.
 
 ### 3.5 Configuration (config.yaml additions)
 

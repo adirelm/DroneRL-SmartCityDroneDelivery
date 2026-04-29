@@ -205,31 +205,53 @@ q_learning:
 
 ---
 
-## Phase 3: Agent Factory
+## Phase 3: Agent Factory and Algorithm Registry
 
-### 3.1 Factory Function
+### 3.1 Algorithm Registry (`src/algorithms.py`)
 
-**File**: `src/agent_factory.py` (~30 lines, new file)
+The mapping from algorithm name to agent class lives in a single registry,
+which is the source of truth for the project's "list of algorithms":
 
+```python
+@dataclass(frozen=True)
+class AlgorithmSpec:
+    name: str
+    label: str
+    color: str
+    agent_class: type[BaseAgent]
+
+ALGORITHM_REGISTRY = (
+    AlgorithmSpec("bellman", "Bellman (constant α)", "#d35400", BellmanAgent),
+    AlgorithmSpec("q_learning", "Q-Learning (decaying α)", "#2980b9", QLearningAgent),
+    AlgorithmSpec("double_q", "Double Q-Learning", "#27ae60", DoubleQAgent),
+)
+ALGORITHMS = tuple(s.name for s in ALGORITHM_REGISTRY)
+ALGORITHM_LABELS = {s.name: s.label for s in ALGORITHM_REGISTRY}
+ALGORITHM_COLORS = {s.name: s.color for s in ALGORITHM_REGISTRY}
+AGENT_CLASSES = {s.name: s.agent_class for s in ALGORITHM_REGISTRY}
 ```
+
+### 3.2 Factory Function (`src/agent_factory.py`)
+
+A thin validating wrapper over `AGENT_CLASSES`:
+
+```python
+from src.algorithms import AGENT_CLASSES, ALGORITHMS
 from src.base_agent import BaseAgent
 from src.config_loader import Config
 
 def create_agent(config: Config) -> BaseAgent:
     name = config.algorithm.name
-    if name == "bellman":
-        from src.agent import BellmanAgent
-        return BellmanAgent(config)
-    elif name == "q_learning":
-        from src.q_agent import QLearningAgent
-        return QLearningAgent(config)
-    elif name == "double_q":
-        from src.double_q_agent import DoubleQAgent
-        return DoubleQAgent(config)
-    raise ValueError(f"Unknown algorithm: {name}")
+    if name not in AGENT_CLASSES:
+        valid = ", ".join(sorted(ALGORITHMS))
+        raise ValueError(f"Unknown algorithm: '{name}'. Valid: {valid}")
+    return AGENT_CLASSES[name](config)
 ```
 
-Lazy imports inside the function avoid circular dependencies and keep the file minimal. The `double_q` branch is included for forward compatibility with PRD 3.
+Splitting the registry from the factory means every consumer that needs the
+algorithm enumeration (factory, comparison runner, charts, analysis scripts,
+parametrised tests) imports `ALGORITHMS` from one place. Adding a new
+algorithm is one new agent file plus one new line in `ALGORITHM_REGISTRY`.
 
 ### 3.2 Tests — Agent Factory
 
@@ -330,7 +352,8 @@ Every `.py` file must stay under **150 lines**. Estimated final line counts:
 | `src/base_agent.py` | 0 (new) | ~80 | OK |
 | `src/agent.py` | 72 | ~35 | OK (smaller after extraction) |
 | `src/q_agent.py` | 0 (new) | ~55 | OK |
-| `src/agent_factory.py` | 0 (new) | ~30 | OK |
+| `src/algorithms.py` | 0 (new) | ~42 | OK (registry: AlgorithmSpec + 4 derived dicts) |
+| `src/agent_factory.py` | 0 (new) | ~18 | OK (thin wrapper over registry) |
 | `src/sdk.py` | 90 | ~100 | OK |
 | `src/gui.py` | 129 | ~132 | OK |
 | `src/actions.py` | 56 | ~58 | OK |

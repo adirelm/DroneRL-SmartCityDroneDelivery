@@ -8,7 +8,7 @@
 
 The dynamic board system introduces a **runtime-configurable hazard layer** on top of the existing static grid. The key architectural decisions are:
 
-1. **HazardGenerator as a standalone service** — A new `src/hazard_generator.py` class that operates on the Environment without subclassing it. The generator reads density/noise/difficulty parameters and places hazards on eligible empty cells, preserving editor-placed obstacles via an `_editor_cells` tracking set inside Environment.
+1. **HazardGenerator as a standalone service** — A new `src/hazard_generator.py` class that operates on the Environment without subclassing it. The generator reads density/noise/difficulty parameters and places hazards on eligible empty cells, preserving editor-placed obstacles via Environment's public `editor_cells` snapshot and `restore_editor_cells()` API.
 
 2. **PIT as a new CellType** — `CellType.PIT = 5` extends the existing IntEnum. The PIT integrates into the same step/render/overlay pipeline as TRAP (terminal, negative reward, skipped in heatmap).
 
@@ -26,7 +26,7 @@ SliderPanel (src/sliders.py)
 HazardGenerator.set_params() + .apply()
       |
       v
-Environment (grid mutation, _editor_cells preservation)
+Environment (grid mutation, editor-cell preservation)
       |
       v
 Renderer (PIT visual) + Overlays (skip PIT in heatmap)
@@ -52,7 +52,7 @@ Add the new PIT cell type to all existing modules that handle cell types.
 **File**: `src/environment.py` (currently 110 lines -> ~125 lines)
 
 - Add `PIT = 5` to `CellType` IntEnum
-- Add `_editor_cells: set[tuple[int, int]]` initialized to empty set in `__init__`
+- Add an internal editor-cell store (initialized empty) plus a public `editor_cells` frozenset property and `restore_editor_cells(iterable)` method for the SDK comparison snapshot/restore path
 - Add PIT handling in `step()`: if cell is PIT, return `(state, pit_penalty, True, {"event": "pit"})`
 - Add `set_wind_drift(probability: float)` method for runtime drift override
 - Add `clear_dynamic_cells(editor_cells: set)` method to reset non-editor cells to EMPTY
@@ -121,7 +121,7 @@ class HazardGenerator:
 ```
 
 Key implementation details:
-- `apply()` calls `env.clear_dynamic_cells(env._editor_cells)` first, then places hazards
+- `apply()` reads `env.editor_cells` to skip protected positions, then `clear_dynamic_cells()` and places new hazards
 - Target hazard count = `int(density * difficulty * eligible_cell_count)`
 - After placing hazards, calls `env.set_wind_drift(noise_level * difficulty)` to adjust wind drift
 - Uses `random.sample()` on eligible cells for placement (no duplicates)
