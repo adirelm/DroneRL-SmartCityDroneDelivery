@@ -2,11 +2,13 @@
 
 import os
 import tempfile
+import warnings
 
 import pytest
 import yaml
 
-from dronerl.config_loader import Config, load_config
+from dronerl import __version__ as _project_version
+from dronerl.config_loader import Config, _major_minor, _validate_version, load_config
 
 CONFIG_PATH = "config/config.yaml"
 
@@ -86,3 +88,47 @@ class TestConfig:
     def test_config_nested_to_dict(self):
         cfg = Config({"outer": {"inner": 42}})
         assert cfg.to_dict() == {"outer": {"inner": 42}}
+
+
+class TestVersionValidation:
+    """§8.1 — application validates config-version compatibility at startup."""
+
+    def test_major_minor_extracts_first_two_components(self):
+        assert _major_minor("1.1.1") == (1, 1)
+        assert _major_minor("2.0") == (2, 0)
+        assert _major_minor("3") == (3, 0)
+
+    def test_load_with_matching_version_no_warning(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            data = load_config(CONFIG_PATH)
+            assert data["version"] == _project_version
+
+    def test_validate_version_warns_on_major_minor_mismatch(self):
+        # Project is 1.1.x; "2.0.0" differs on major/minor → warn.
+        with pytest.warns(UserWarning, match="differs from project"):
+            _validate_version("2.0.0")
+
+    def test_validate_version_no_warn_on_patch_only_mismatch(self):
+        # Project is 1.1.1; "1.1.0" differs on patch only → tolerated.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            _validate_version(f"{_major_minor(_project_version)[0]}."
+                              f"{_major_minor(_project_version)[1]}.999")
+
+    def test_validate_version_warns_when_missing(self):
+        with pytest.warns(UserWarning, match="no 'version' key"):
+            _validate_version("")
+
+    def test_load_config_without_version_warns(self):
+        # Build a temporary config file with no 'version' key.
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as f:
+            yaml.dump({"environment": {"grid_rows": 3, "grid_cols": 3}}, f)
+            path = f.name
+        try:
+            with pytest.warns(UserWarning, match="no 'version' key"):
+                load_config(path)
+        finally:
+            os.unlink(path)

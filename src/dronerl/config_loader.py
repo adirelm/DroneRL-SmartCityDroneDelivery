@@ -1,6 +1,10 @@
 """Configuration loader for DroneRL project."""
 
+import warnings
+
 import yaml
+
+from dronerl import __version__ as _project_version
 
 
 class Config:
@@ -32,8 +36,44 @@ class Config:
         return result
 
 
+def _major_minor(version: str) -> tuple[int, int]:
+    """Return ``(major, minor)`` from a ``"major.minor.patch"`` string."""
+    major, minor, *_ = version.split(".") + ["0", "0"]
+    return int(major), int(minor)
+
+
+def _validate_version(config_version: str) -> None:
+    """Validate that the config file's version is compatible with the project.
+
+    Per the course-wide submission guidelines (§8.1), the application
+    must validate config-version compatibility at startup. Mismatch on
+    *patch* level is tolerated silently (config files don't need to bump
+    on every patch release); mismatch on *major* or *minor* triggers a
+    ``UserWarning`` so a stale config doesn't silently produce wrong
+    results.
+    """
+    if not config_version:
+        warnings.warn(
+            f"config has no 'version' key; expected {_project_version}",
+            UserWarning,
+            stacklevel=3,
+        )
+        return
+    cfg_mm = _major_minor(config_version)
+    proj_mm = _major_minor(_project_version)
+    if cfg_mm != proj_mm:
+        warnings.warn(
+            f"config version {config_version!r} differs from project "
+            f"version {_project_version!r} on major/minor level — config "
+            "may be stale",
+            UserWarning,
+            stacklevel=3,
+        )
+
+
 def load_config(path: str = "config/config.yaml") -> dict:
-    """Load YAML config file and return as a dictionary."""
+    """Load YAML config file, validate its version, and return as a dict."""
     with open(path) as f:
         data = yaml.safe_load(f)
+    _validate_version(data.get("version", ""))
     return data
