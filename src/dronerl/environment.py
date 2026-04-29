@@ -6,6 +6,7 @@ from enum import IntEnum
 import numpy as np
 
 from dronerl.config_loader import Config
+from dronerl.constants import ACTION_DELTAS
 
 
 class CellType(IntEnum):
@@ -19,8 +20,7 @@ class CellType(IntEnum):
     PIT = 5
 
 
-# Action definitions: UP=0, DOWN=1, LEFT=2, RIGHT=3
-ACTION_DELTAS = {0: (-1, 0), 1: (1, 0), 2: (0, -1), 3: (0, 1)}
+__all__ = ["ACTION_DELTAS", "CellType", "Environment"]
 
 
 class Environment:

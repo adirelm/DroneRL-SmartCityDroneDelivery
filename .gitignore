@@ -44,8 +44,15 @@ coverage.xml
 # Saved RL agents (user-specific, not submission data)
 *.npy
 
-# Environment
+# Secrets and credentials (per submission_guidelines §7.4)
 .env
+*.pem
+*.key
+credentials.json
+*.crt
+*.p12
+*.pfx
+secrets.json
 
 # Codex agent definitions (mirror of CLAUDE.md, kept local)
 AGENTS.md

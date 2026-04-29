@@ -6,13 +6,15 @@ from pathlib import Path
 import numpy as np
 
 from dronerl.config_loader import Config
+from dronerl.constants import NUM_ACTIONS
 
 
 class BaseAgent:
     """Abstract base for RL agents. Subclasses must override `update`."""
 
-    # Actions: UP=0, DOWN=1, LEFT=2, RIGHT=3
-    NUM_ACTIONS = 4
+    #: Class-level alias of :data:`dronerl.constants.NUM_ACTIONS` so existing
+    #: subclass code that reads ``self.NUM_ACTIONS`` continues to work.
+    NUM_ACTIONS = NUM_ACTIONS
     algorithm_name: str = "Base"
 
     def __init__(self, config: Config):

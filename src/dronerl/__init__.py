@@ -10,6 +10,7 @@ __all__ = [
     "base_agent",
     "comparison",
     "config_loader",
+    "constants",
     "double_q_agent",
     "environment",
     "hazard_generator",
