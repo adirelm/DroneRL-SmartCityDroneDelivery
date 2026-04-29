@@ -8,25 +8,16 @@ scripts compose this into multi-seed sweeps and parameter sweeps.
 from __future__ import annotations
 
 import random
-import sys
 from copy import deepcopy
-from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from dronerl.agent_factory import create_agent  # noqa: E402
-from dronerl.algorithms import ALGORITHMS  # noqa: E402, F401
-from dronerl.config_loader import Config, load_config  # noqa: E402
-from dronerl.environment import Environment  # noqa: E402
-from dronerl.hazard_generator import HazardGenerator  # noqa: E402
-from dronerl.trainer import Trainer  # noqa: E402
+from dronerl.agent_factory import create_agent
+from dronerl.algorithms import ALGORITHMS  # noqa: F401
+from dronerl.config_loader import Config, load_config
+from dronerl.environment import Environment
+from dronerl.hazard_generator import HazardGenerator
+from dronerl.trainer import Trainer
 
 
 def base_raw_config() -> dict:

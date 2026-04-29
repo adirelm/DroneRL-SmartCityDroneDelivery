@@ -6,20 +6,15 @@ Run: uv run python scripts/generate_comparison_charts.py
 from __future__ import annotations
 
 import random
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT))
+import numpy as np
 
-import numpy as np  # noqa: E402
-
-from dronerl.algorithms import ALGORITHMS  # noqa: E402
-from dronerl.comparison import ComparisonStore, generate_comparison_chart  # noqa: E402
-from dronerl.config_loader import Config, load_config  # noqa: E402
-from dronerl.environment import Environment  # noqa: E402
-from dronerl.hazard_generator import HazardGenerator  # noqa: E402
+from dronerl.algorithms import ALGORITHMS
+from dronerl.comparison import ComparisonStore, generate_comparison_chart
+from dronerl.config_loader import Config, load_config
+from dronerl.environment import Environment
+from dronerl.hazard_generator import HazardGenerator
 
 
 def _train_one(cfg: Config, episodes: int, seed: int) -> tuple[list[float], list[int]]:
