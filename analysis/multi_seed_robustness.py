@@ -65,24 +65,49 @@ def run() -> dict[str, np.ndarray]:
 
 
 def plot(stacks: dict[str, np.ndarray], out_path: Path) -> str:
-    """Render mean ± 95% CI band per algorithm."""
+    """Render mean ± 95% CI band (top) and per-seed box plot (bottom)."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(11, 6.5))
+    fig, (ax_line, ax_box) = plt.subplots(2, 1, figsize=(11, 8.5))
     for algo, mat in stacks.items():
         mean, low, high = _ci_band(mat)
         x = np.arange(len(mean))
         color = ALGORITHM_COLORS[algo]
-        ax.fill_between(x, low, high, color=color, alpha=0.20)
-        ax.plot(x, mean, label=ALGORITHM_LABELS[algo], color=color, linewidth=2)
-    ax.set_xlabel("Episode")
-    ax.set_ylabel(f"Total Reward (smoothed w={SMOOTHING}; mean ± 95% CI over {len(SEEDS)} seeds)")
-    ax.set_title(
+        ax_line.fill_between(x, low, high, color=color, alpha=0.20)
+        ax_line.plot(x, mean, label=ALGORITHM_LABELS[algo], color=color, linewidth=2)
+    ax_line.set_xlabel("Episode")
+    ax_line.set_ylabel(f"Total Reward (smoothed w={SMOOTHING}; mean ± 95% CI over {len(SEEDS)} seeds)")
+    ax_line.set_title(
         f"Multi-Seed Robustness ({len(SEEDS)} seeds): "
         "narrower band = result less seed-dependent",
         fontsize=11, fontweight="bold",
     )
-    ax.grid(True, alpha=0.3)
-    ax.legend(loc="lower right", framealpha=0.92)
+    ax_line.grid(True, alpha=0.3)
+    ax_line.legend(loc="lower right", framealpha=0.92)
+
+    # Bottom: per-seed last-200 means as a box plot. Reveals the bimodal
+    # Double-Q distribution that the line chart hides under its mean curve.
+    last_200 = [stacks[algo][:, -200:].mean(axis=1) for algo in stacks]
+    labels = [ALGORITHM_LABELS[algo] for algo in stacks]
+    colors = [ALGORITHM_COLORS[algo] for algo in stacks]
+    bp = ax_box.boxplot(last_200, tick_labels=labels, patch_artist=True, widths=0.5)
+    for patch, color in zip(bp["boxes"], colors, strict=True):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.4)
+    for whisker in bp["whiskers"]:
+        whisker.set_color("#444")
+    ax_box.scatter(
+        [i + 1 for i, runs in enumerate(last_200) for _ in runs],
+        [v for runs in last_200 for v in runs],
+        s=18, c="#222", zorder=3,
+    )
+    ax_box.set_ylabel(f"Last-{200}-episode mean reward")
+    ax_box.set_title(
+        "Per-seed final-mean distribution (each dot = one seed). "
+        "Tight box = robust; wide box = seed-dependent.",
+        fontsize=10, fontweight="bold",
+    )
+    ax_box.grid(True, alpha=0.3, axis="y")
+
     fig.tight_layout()
     fig.savefig(out_path, dpi=120)
     plt.close(fig)

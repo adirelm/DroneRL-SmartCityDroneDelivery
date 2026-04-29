@@ -67,6 +67,13 @@ noise. Inspecting the seed=3 and seed=7 runs for Double-Q shows the surprise
 is not on Bellman's side at all — it's that **Double-Q is the one with the
 huge variance**, not Bellman.
 
+The bottom panel of `results/analysis/multi_seed_robustness.png` is a
+box plot of the per-seed final means with the individual seeds shown
+as scatter dots. It makes the bimodality of Double-Q immediately
+visible: 3 seeds cluster around +75, 2 seeds collapse to about −190.
+Bellman and Q-Learning's boxes are essentially flat lines at this
+scale — the spread is real but tiny next to Double-Q's failure mode.
+
 **What this means for the README.** The original "Bellman struggles" framing
 in the README's Scenario 1 section is *only* true at higher noise/difficulty
 (Scenario 2: noise=0.95, difficulty=0.55). At the medium level, Bellman is
