@@ -230,12 +230,12 @@
 - [x] Task 205: Confirm load does not reset decay state
 
 ## Factory registration of double_q
-- [x] Task 206: Open src/agent_factory.py
+- [x] Task 206: Open src/algorithms.py
 - [x] Task 207: Import DoubleQAgent
-- [x] Task 208: Add "double_q" key to AGENT_REGISTRY
-- [x] Task 209: Map key to DoubleQAgent class
-- [x] Task 210: Ensure build_agent dispatches double_q
-- [x] Task 211: Raise KeyError with clear message on unknown algo
+- [x] Task 208: Append AlgorithmSpec("double_q", "Double Q-Learning", color, DoubleQAgent) to ALGORITHM_REGISTRY
+- [x] Task 209: Confirm AGENT_CLASSES["double_q"] resolves to DoubleQAgent
+- [x] Task 210: Ensure create_agent dispatches double_q via the registry
+- [x] Task 211: Raise ValueError with the valid-algorithm list when name is unknown
 - [x] Task 212: Write test that factory returns DoubleQAgent
 - [x] Task 213: Write test that double_q key is case-sensitive
 - [x] Task 214: Confirm factory supports bellman, q_learning, double_q

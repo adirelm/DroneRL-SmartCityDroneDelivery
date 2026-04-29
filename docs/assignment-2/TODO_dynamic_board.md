@@ -84,48 +84,48 @@
 - [x] Task 79: Ensure step() does not mutate grid on PIT entry
 - [x] Task 80: Confirm PIT reward is returned to SDK consumers
 
-## _editor_cells tracking set
+## editor_cells tracking set
 
-- [x] Task 81: Add _editor_cells set attribute to Environment
-- [x] Task 82: Initialize _editor_cells as empty set in __init__
-- [x] Task 83: Reset _editor_cells on environment reset when appropriate
-- [x] Task 84: Populate _editor_cells when set_cell called with editor=True
-- [x] Task 85: Remove entry from _editor_cells when cell cleared by editor
-- [x] Task 86: Keep _editor_cells untouched by hazard generator
-- [x] Task 87: Expose _editor_cells for internal consumers
-- [x] Task 88: Use tuples of (row, col) as _editor_cells entries
-- [x] Task 89: Treat _editor_cells as frozen during generation
-- [x] Task 90: Respect _editor_cells during hazard placement
-- [x] Task 91: Document _editor_cells purpose in docstring
-- [x] Task 92: Keep _editor_cells behind underscore prefix
-- [x] Task 93: Avoid exposing _editor_cells publicly in SDK
-- [x] Task 94: Add test verifying _editor_cells grows on editor edit
-- [x] Task 95: Add test verifying _editor_cells ignores generator edits
-- [x] Task 96: Add test verifying _editor_cells cleared by helper
-- [x] Task 97: Ensure _editor_cells is preserved across step calls
-- [x] Task 98: Ensure _editor_cells is preserved across reset calls
-- [x] Task 99: Ensure _editor_cells is cleared by clear_dynamic_cells only if desired
-- [x] Task 100: Add type hint set[tuple[int, int]] for _editor_cells
+- [x] Task 81: Add editor_cells set attribute to Environment
+- [x] Task 82: Initialize editor_cells as empty set in __init__
+- [x] Task 83: Reset editor_cells on environment reset when appropriate
+- [x] Task 84: Populate editor_cells when set_cell called with editor=True
+- [x] Task 85: Remove entry from editor_cells when cell cleared by editor
+- [x] Task 86: Keep editor_cells untouched by hazard generator
+- [x] Task 87: Expose editor_cells via a public frozenset property on Environment
+- [x] Task 88: Use tuples of (row, col) as editor_cells entries
+- [x] Task 89: Treat editor_cells as frozen during generation
+- [x] Task 90: Respect editor_cells during hazard placement
+- [x] Task 91: Document editor_cells purpose in docstring
+- [x] Task 92: Back editor_cells with an internal set; expose only via frozenset property
+- [x] Task 93: Provide restore_editor_cells(iterable) so the SDK can snapshot/restore safely
+- [x] Task 94: Add test verifying editor_cells grows on editor edit
+- [x] Task 95: Add test verifying editor_cells ignores generator edits
+- [x] Task 96: Add test verifying editor_cells cleared by helper
+- [x] Task 97: Ensure editor_cells is preserved across step calls
+- [x] Task 98: Ensure editor_cells is preserved across reset calls
+- [x] Task 99: Ensure editor_cells is cleared by clear_dynamic_cells only if desired
+- [x] Task 100: Add type hint set[tuple[int, int]] for editor_cells
 - [x] Task 101: Add helper to query if cell is editor-pinned
-- [x] Task 102: Use _editor_cells membership to protect pins in generator
+- [x] Task 102: Use editor_cells membership to protect pins in generator
 - [x] Task 103: Skip pinned cells in HazardGenerator._clear_hazards
 - [x] Task 104: Skip pinned cells in HazardGenerator._sample_types
 - [x] Task 105: Ensure pinned cells survive randomize_per_episode
 - [x] Task 106: Ensure pinned cells survive slider-driven regeneration
-- [x] Task 107: Cover _editor_cells with dedicated unit test module
+- [x] Task 107: Cover editor_cells with dedicated unit test module
 - [x] Task 108: Verify pinned cells stay after repeated regeneration
 - [x] Task 109: Verify pinned cells can be unpinned via editor
 - [x] Task 110: Verify pinned set handles duplicate inserts
 - [x] Task 111: Verify pinned set rejects out-of-bounds positions
 - [x] Task 112: Verify pinned set never contains start or goal
-- [x] Task 113: Verify _editor_cells persists across GUI frames
-- [x] Task 114: Avoid serializing _editor_cells to disk
-- [x] Task 115: Ensure _editor_cells is copied defensively when returned
-- [x] Task 116: Measure performance impact of _editor_cells lookups
-- [x] Task 117: Ensure O(1) membership test for _editor_cells
-- [x] Task 118: Document contract between editor and generator via _editor_cells
-- [x] Task 119: Preserve _editor_cells during set_wind_drift calls
-- [x] Task 120: Confirm _editor_cells untouched by regenerate_hazards
+- [x] Task 113: Verify editor_cells persists across GUI frames
+- [x] Task 114: Avoid serializing editor_cells to disk
+- [x] Task 115: Ensure editor_cells is copied defensively when returned
+- [x] Task 116: Measure performance impact of editor_cells lookups
+- [x] Task 117: Ensure O(1) membership test for editor_cells
+- [x] Task 118: Document contract between editor and generator via editor_cells
+- [x] Task 119: Preserve editor_cells during set_wind_drift calls
+- [x] Task 120: Confirm editor_cells untouched by regenerate_hazards
 
 ## set_cell with editor flag
 
@@ -135,9 +135,9 @@
 - [x] Task 124: Reject set_cell on start cell
 - [x] Task 125: Reject set_cell on goal cell
 - [x] Task 126: Write CellType value into grid on set_cell
-- [x] Task 127: Update _editor_cells when editor flag is True
-- [x] Task 128: Remove from _editor_cells when clearing via editor
-- [x] Task 129: Leave _editor_cells unchanged when editor flag is False
+- [x] Task 127: Update editor_cells when editor flag is True
+- [x] Task 128: Remove from editor_cells when clearing via editor
+- [x] Task 129: Leave editor_cells unchanged when editor flag is False
 - [x] Task 130: Use set_cell from HazardGenerator with editor=False
 - [x] Task 131: Use set_cell from GUI editor with editor=True
 - [x] Task 132: Avoid duplicate logic between editor and generator paths
@@ -208,7 +208,7 @@
 - [x] Task 194: Add regression test against wind drift reset semantics
 - [x] Task 195: Ensure no exception raised when drift equals effective_drift
 - [x] Task 196: Ensure set_wind_drift does not alter grid contents
-- [x] Task 197: Ensure set_wind_drift does not alter _editor_cells
+- [x] Task 197: Ensure set_wind_drift does not alter editor_cells
 - [x] Task 198: Ensure set_wind_drift does not alter _wind_drift when equal
 - [x] Task 199: Ensure set_wind_drift returns None
 - [x] Task 200: Ensure set_wind_drift is callable from GUI thread
@@ -217,7 +217,7 @@
 
 - [x] Task 201: Add clear_dynamic_cells method on Environment
 - [x] Task 202: Iterate entire grid to find non-pinned cells
-- [x] Task 203: Skip cells present in _editor_cells
+- [x] Task 203: Skip cells present in editor_cells
 - [x] Task 204: Skip start and goal positions during clearing
 - [x] Task 205: Reset matching cells to CellType.EMPTY
 - [x] Task 206: Leave BUILDING pinned cells untouched when pinned
@@ -280,7 +280,7 @@
 - [x] Task 260: Provide effective_drift() computed property
 - [x] Task 261: Provide _clear_hazards() private helper
 - [x] Task 262: Provide _sample_types() private helper
-- [x] Task 263: Respect _editor_cells during sampling
+- [x] Task 263: Respect editor_cells during sampling
 - [x] Task 264: Avoid mutating config dict
 - [x] Task 265: Keep module under 150 lines
 - [x] Task 266: Export HazardGenerator from module
@@ -308,7 +308,7 @@
 - [x] Task 285: Call env.set_wind_drift with computed drift
 - [x] Task 286: Determine target count from density and grid size
 - [x] Task 287: Sample positions uniformly without replacement
-- [x] Task 288: Filter out pinned _editor_cells positions
+- [x] Task 288: Filter out pinned editor_cells positions
 - [x] Task 289: Filter out start and goal positions
 - [x] Task 290: Determine cell type per position from ratios
 - [x] Task 291: Call env.set_cell with editor=False for each pick
@@ -430,7 +430,7 @@
 
 ## Respect editor cells during hazard placement
 
-- [x] Task 401: Query _editor_cells from env in HazardGenerator
+- [x] Task 401: Query editor_cells from env in HazardGenerator
 - [x] Task 402: Skip editor-pinned positions during sampling
 - [x] Task 403: Skip editor-pinned positions during clearing
 - [x] Task 404: Avoid iterating grid twice for editor pins
@@ -640,7 +640,7 @@
 - [x] Task 593: Cover PIT clearing via editor in tests
 - [x] Task 594: Cover PIT cycling via editor in tests
 - [x] Task 595: Cover PIT color rendering in editor
-- [x] Task 596: Cover editor respects _editor_cells for PIT
+- [x] Task 596: Cover editor respects editor_cells for PIT
 - [x] Task 597: Cover editor rejects PIT on start cell
 - [x] Task 598: Cover editor rejects PIT on goal cell
 - [x] Task 599: Cover editor allows removing PIT from any cell
@@ -804,7 +804,7 @@
 - [x] Task 733: Call hazard_generator.apply inside callback
 - [x] Task 734: Respect config randomize_per_episode flag
 - [x] Task 735: Skip callback when randomize_per_episode is False
-- [x] Task 736: Preserve _editor_cells during per-episode randomization
+- [x] Task 736: Preserve editor_cells during per-episode randomization
 - [x] Task 737: Preserve agent reset behavior during randomization
 - [x] Task 738: Ensure callback runs before next episode reset
 - [x] Task 739: Ensure callback runs after terminal state recorded
@@ -962,15 +962,15 @@
 
 ## Tests for editor_cells, set_wind_drift, clear_dynamic_cells
 
-- [x] Task 876: Test _editor_cells starts empty
-- [x] Task 877: Test set_cell editor=True adds to _editor_cells
-- [x] Task 878: Test set_cell editor=False leaves _editor_cells unchanged
-- [x] Task 879: Test set_cell editor=True to EMPTY removes from _editor_cells
-- [x] Task 880: Test _editor_cells survives step calls
-- [x] Task 881: Test _editor_cells survives reset calls
-- [x] Task 882: Test _editor_cells survives clear_dynamic_cells
-- [x] Task 883: Test _editor_cells survives set_wind_drift
-- [x] Task 884: Test _editor_cells survives HazardGenerator.apply
+- [x] Task 876: Test editor_cells starts empty
+- [x] Task 877: Test set_cell editor=True adds to editor_cells
+- [x] Task 878: Test set_cell editor=False leaves editor_cells unchanged
+- [x] Task 879: Test set_cell editor=True to EMPTY removes from editor_cells
+- [x] Task 880: Test editor_cells survives step calls
+- [x] Task 881: Test editor_cells survives reset calls
+- [x] Task 882: Test editor_cells survives clear_dynamic_cells
+- [x] Task 883: Test editor_cells survives set_wind_drift
+- [x] Task 884: Test editor_cells survives HazardGenerator.apply
 - [x] Task 885: Test set_wind_drift stores value
 - [x] Task 886: Test set_wind_drift clamps negative to zero
 - [x] Task 887: Test set_wind_drift clamps above one to one

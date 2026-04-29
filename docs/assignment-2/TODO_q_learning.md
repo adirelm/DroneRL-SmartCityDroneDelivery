@@ -338,7 +338,7 @@
 
 ## Factory Dict-Based Algorithm Registry
 
-- [x] Task 276: Define AGENT_REGISTRY dict in agent_factory.py
+- [x] Task 276: Define ALGORITHM_REGISTRY (tuple of AlgorithmSpec) in src/algorithms.py
 - [x] Task 277: Map key bellman to BellmanAgent class
 - [x] Task 278: Map key q_learning to QLearningAgent class
 - [x] Task 279: Map key double_q to DoubleQAgent class
@@ -346,7 +346,7 @@
 - [x] Task 281: Keep registry as module-level constant
 - [x] Task 282: Use lowercase keys only in registry
 - [x] Task 283: Document registry format in module docstring
-- [x] Task 284: Expose AGENT_REGISTRY for tests
+- [x] Task 284: Expose ALGORITHM_REGISTRY, ALGORITHMS, and AGENT_CLASSES for downstream consumers
 - [x] Task 285: Lookup class via registry[name] in factory
 - [x] Task 286: Instantiate class via cls(config)
 - [x] Task 287: Return instance from factory
@@ -597,9 +597,9 @@
 - [x] Task 496: Test create_agent handles uppercase name
 - [x] Task 497: Test create_agent handles mixed-case name
 - [x] Task 498: Test create_agent empty string raises ValueError
-- [x] Task 499: Test AGENT_REGISTRY exposes all keys
-- [x] Task 500: Test AGENT_REGISTRY is dict type
-- [x] Task 501: Test AGENT_REGISTRY keys are lowercase
+- [x] Task 499: Test ALGORITHMS exposes every registered algorithm name
+- [x] Task 500: Test ALGORITHM_REGISTRY is a tuple of AlgorithmSpec entries
+- [x] Task 501: Test ALGORITHM_REGISTRY entry names are lowercase identifiers
 - [x] Task 502: Test registry values are class references
 - [x] Task 503: Test registry values are BaseAgent subclasses
 - [x] Task 504: Test create_agent passes config to constructor
