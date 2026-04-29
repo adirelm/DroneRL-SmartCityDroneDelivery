@@ -20,7 +20,7 @@
 - [x] Task 17: Document config.yaml layout in README
 - [x] Task 18: Initialize pyproject.toml with project metadata
 - [x] Task 19: Set project name to `dronerl` in pyproject.toml
-- [x] Task 20: Set project version to 1.0.0 in pyproject.toml
+- [x] Task 20: Set project version stamp in pyproject.toml (currently 1.1.0)
 - [x] Task 21: Set description in pyproject.toml
 - [x] Task 22: Set requires-python to >=3.11,<3.14 in pyproject.toml
 - [x] Task 23: Add pygame>=2.5.0 dependency
@@ -59,7 +59,7 @@
 
 ## Configuration System
 - [x] Task 56: Create `config/config.yaml` root file
-- [x] Task 57: Add `version: "1.0.0"` stamp at top of config.yaml
+- [x] Task 57: Add `version` stamp at top of config.yaml (currently `"1.1.0"`)
 - [x] Task 58: Add `environment` section to config
 - [x] Task 59: Set `grid_rows: 12` under environment
 - [x] Task 60: Set `grid_cols: 12` under environment

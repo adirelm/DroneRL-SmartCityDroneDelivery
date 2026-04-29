@@ -23,8 +23,17 @@ No code duplication — shared logic in base classes.
 SDK is the single entry point for all business logic.
 
 ### 4. No Hardcoded Values
-ALL parameters, colors, rewards, thresholds from `config/config.yaml`.
-No magic numbers in source code. Use config loader for access.
+ALL **algorithm-relevant** parameters, colors, rewards, and thresholds
+live in `config/config.yaml` and are accessed via the config loader.
+This covers: RL hyperparameters, reward magnitudes, board dimensions,
+hazard ratios, training durations, seeds, and the colour palette.
+
+Local UI-styling literals (button pixel dimensions, dashboard line
+offsets, matplotlib `alpha` / `fontsize` / `dpi` values) stay in their
+rendering modules — they are part of the visual design, not tunable
+parameters. The test for "should this be in config" is: *"would I
+expect a grader, contributor, or future-me to ever want to change this
+without editing source?"* If yes → config. If no → keep it local.
 
 ### 5. No Code Duplication (DRY)
 Extract common logic into shared methods/classes.

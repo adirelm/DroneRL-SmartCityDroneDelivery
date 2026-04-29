@@ -661,4 +661,4 @@
 - [x] Task 557: Confirm TDD RED to GREEN to REFACTOR followed
 - [x] Task 558: Confirm uv is used for all dependency operations
 - [x] Task 559: Confirm assignment-2 branch holds the changes
-- [x] Task 560: Confirm version set to 1.0.0 in pyproject.toml
+- [x] Task 560: Confirm version stamp consistent in pyproject.toml (currently 1.1.0)
