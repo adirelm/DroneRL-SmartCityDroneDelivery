@@ -393,8 +393,9 @@ sanity checks against it, and the comparison runner / chart renderer pick up
 the new label and color.
 
 This was not always true: the same string tuple was previously duplicated
-across 13 sites in 9 files (see [git history](../../commits/assignment-2)).
-The refactor is the bulk of the Extensibility section's improvements.
+across 13 sites in 9 files. The refactor that introduced the registry is
+documented in [PROMPTS.md → Extensibility](docs/shared/PROMPTS.md) and is
+the bulk of the Extensibility section's improvements.
 
 ### Adding a new hazard type — multiple places, by design
 
@@ -433,7 +434,7 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 284 tests pass, ≥85% line coverage (current: 97.59%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **Pytest + coverage** | pre-push, CI | 284 tests pass, ≥85% line coverage (current: 97.62%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
 | **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 lines. |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
@@ -550,12 +551,14 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/ -v
-uv run pytest tests/ --cov=src --cov-report=term-missing
-uv run ruff check src/ tests/ main.py
+uv run pytest tests/                              # 284 tests, 97.62% coverage, gate enforced
+uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
+uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```
 
-Current state: **284 tests passing**, **98% coverage**, zero ruff violations.
+The pytest command auto-applies `--cov=src --cov-fail-under=85` from
+`pyproject.toml` — see the [Quality bar](#quality-bar) section for the full
+gate list and CI configuration.
 
 ---
 

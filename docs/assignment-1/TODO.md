@@ -196,11 +196,11 @@
 - [x] Task 187: Mark goal cell as `CellType.GOAL` on init
 - [x] Task 188: Load default obstacles list from config
 - [x] Task 189: Skip obstacle placement on start or goal cells
-- [x] Task 190: Track user-placed editor cells in `_editor_cells` set
+- [x] Task 190: Track user-placed editor cells (exposed publicly via `editor_cells` frozenset property and `restore_editor_cells(iterable)`)
 - [x] Task 191: Initialize `drone_pos` at start position
 - [x] Task 192: Implement `reset()` to move drone to start
 - [x] Task 193: Return initial state from `reset()`
-- [x] Task 194: Implement `_is_protected_cell(r, c)` helper
+- [x] Task 194: Implement public `is_protected_cell(r, c)` helper for start/goal protection
 - [x] Task 195: Implement `step(action)` method
 - [x] Task 196: Initialize info dict with `{"event": "move"}`
 - [x] Task 197: Apply wind drift override when on WIND cell
