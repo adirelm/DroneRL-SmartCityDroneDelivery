@@ -7,7 +7,14 @@ from dronerl.environment import Environment
 
 
 class Trainer:
-    """Manages training loop and tracks metrics."""
+    """Drives the training loop for one (agent, environment) pair and tracks metrics.
+
+    Input:  ``agent`` (BaseAgent), ``environment`` (Environment) at construction;
+            no per-call inputs to ``run_episode`` / ``run_step`` — the env owns the state.
+    Output: per-episode reward and step counts on ``reward_history`` / ``steps_history``;
+            ``get_metrics()`` returns a snapshot dict (mean reward, goal-rate, episode count).
+    Setup:  Config — uses ``training.max_steps_per_episode`` to cap each episode.
+    """
 
     def __init__(self, agent: BaseAgent, environment: Environment, config: Config):
         self.agent = agent

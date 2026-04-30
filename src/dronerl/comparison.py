@@ -20,7 +20,16 @@ __all__ = (
 
 
 class ComparisonStore:
-    """Collects per-algorithm reward + steps histories for plotting."""
+    """Aggregates per-algorithm training histories for chart rendering.
+
+    Input:  ``add_run(algorithm: str, reward_history: list[float],
+            steps_history: list[int] | None = None)``.
+            ``algorithm`` must be one of ``ALGORITHMS`` from the registry.
+    Output: ``runs: dict[str, list[float]]`` and ``steps: dict[str, list[int]]``
+            keyed by algorithm name, consumed by ``generate_comparison_chart``.
+    Setup:  No constructor parameters — defaults to empty dicts. The caller decides
+            which algorithms to populate; missing keys at chart time are skipped.
+    """
 
     def __init__(self):
         self.runs: dict[str, list[float]] = {}

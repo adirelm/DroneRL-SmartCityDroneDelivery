@@ -10,7 +10,14 @@ from dronerl.config_loader import Config
 
 
 class DoubleQAgent(BaseAgent):
-    """Double Q-Learning agent with QA and QB tables (Hasselt 2010)."""
+    """Double Q-Learning agent (Hasselt 2010) using two Q-tables to remove TD-bias.
+
+    Input/Output: inherits the ``BaseAgent`` contract. Note that ``q_table`` is exposed
+        as ``QA + QB`` for GUI / save / load compatibility; the internal storage is
+        the pair ``(q_table_a, q_table_b)``.
+    Setup: adds ``config.double_q.alpha_start`` / ``alpha_end`` / ``alpha_decay``,
+        same decay protocol as Q-Learning.
+    """
 
     algorithm_name = "Double Q-Learning"
 

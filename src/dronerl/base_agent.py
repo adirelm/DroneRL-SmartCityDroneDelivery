@@ -10,7 +10,18 @@ from dronerl.constants import NUM_ACTIONS
 
 
 class BaseAgent:
-    """Abstract base for RL agents. Subclasses must override `update`."""
+    """Abstract base for RL agents. Subclasses must override ``update``.
+
+    Input:  state (tuple[int, int]) — (row, col), 0 ≤ row < grid_rows, 0 ≤ col < grid_cols;
+            action (int 0..NUM_ACTIONS-1); reward (float); next_state (tuple[int, int]);
+            done (bool).
+    Output: ``choose_action(state) -> int`` (action 0..3);
+            ``update(...) -> None`` (mutates ``self.q_table`` in place);
+            ``save(path) -> None`` / ``load(path) -> None`` (writes/reads a ``.npy`` file).
+    Setup:  Config — uses ``environment.grid_rows`` / ``grid_cols`` and
+            ``agent.discount_factor``, ``agent.epsilon_start``, ``agent.epsilon_end``,
+            ``agent.epsilon_decay``. Subclasses add their own algorithm-specific keys.
+    """
 
     #: Class-level alias of :data:`dronerl.constants.NUM_ACTIONS` so existing
     #: subclass code that reads ``self.NUM_ACTIONS`` continues to work.

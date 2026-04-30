@@ -24,7 +24,18 @@ __all__ = ["ACTION_DELTAS", "CellType", "Environment"]
 
 
 class Environment:
-    """Grid world environment for the drone agent."""
+    """Smart City grid world the drone navigates — the RL environment side of the loop.
+
+    Input:  ``step(action: int)`` where action is 0..3 (UP/RIGHT/DOWN/LEFT, see
+            ``ACTION_DELTAS``). ``reset() -> tuple[int, int]`` returns the start cell.
+    Output: ``step()`` returns ``(next_state, reward, done)``. ``grid`` (NumPy array)
+            holds the current ``CellType`` per cell. Edge cases: hitting a wall is a
+            no-op move with the wall-collision reward; reaching the goal sets
+            ``done=True``; trap / pit cells terminate with their respective penalties.
+    Setup:  Config — uses ``environment.grid_rows`` / ``grid_cols`` /
+            ``start_position`` / ``goal_position``, all reward magnitudes from
+            ``rewards.*``, and ``wind.drift_probability`` for stochastic drift.
+    """
 
     def __init__(self, config: Config):
         env_cfg = config.environment

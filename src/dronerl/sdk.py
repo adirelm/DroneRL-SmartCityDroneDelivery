@@ -15,7 +15,19 @@ from dronerl.trainer import Trainer
 
 
 class DroneRLSDK:
-    """High-level interface for the DroneRL system."""
+    """High-level orchestration entry point — composes config, env, agent, trainer.
+
+    Input:  ``config_path: str`` (default ``"config/config.yaml"``) at construction;
+            ``train(episodes: int)``, ``run_step()``, ``save_brain(path)`` /
+            ``load_brain(path)``, ``compare_algorithms(...)`` post-construction.
+    Output: ``train()`` returns nothing — populates ``self.metrics`` / agent's Q-table.
+            ``run_step()`` returns one ``(state, action, reward, next_state, done)`` tuple.
+            ``compare_algorithms()`` writes a PNG to ``results/comparison/`` and returns
+            its path.
+    Setup:  YAML at ``config_path`` — must contain the full schema validated by
+            ``config_loader._validate_version`` (algorithm choice, hyperparameters,
+            board dimensions, reward magnitudes).
+    """
 
     def __init__(self, config_path: str = "config/config.yaml"):
         raw_config = load_config(config_path)

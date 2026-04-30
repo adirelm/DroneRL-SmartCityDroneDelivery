@@ -9,7 +9,18 @@ HAZARD_TYPES = (CellType.BUILDING, CellType.TRAP, CellType.PIT, CellType.WIND)
 
 
 class HazardGenerator:
-    """Populates the grid with random hazards based on sliders + config."""
+    """Populates an ``Environment``'s grid with random hazards from sliders + config.
+
+    Input:  ``apply(env: Environment) -> None`` mutates the env's grid; setter methods
+            (``set_noise`` / ``set_density`` / ``set_difficulty``) accept floats in [0, 1].
+    Output: side effect — ``env.grid`` cells set to ``BUILDING`` / ``TRAP`` / ``PIT`` /
+            ``WIND`` per the ratio table; ``effective_drift()`` returns the noise-scaled
+            wind drift probability for the current settings.
+    Setup:  Config — reads ``dynamic_board.noise_level`` / ``hazard_density`` /
+            ``difficulty`` / per-type ratios (``building_ratio`` etc.), plus
+            ``dynamic_board.seed`` for reproducible boards and ``wind.drift_probability``
+            as the base drift.
+    """
 
     def __init__(self, config: Config):
         cfg = config.dynamic_board
