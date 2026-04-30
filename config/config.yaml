@@ -157,6 +157,12 @@ comparison:
   smoothing_window: 50
   output_dir: results/comparison
 
+# Analysis-sweep parallelism (§15 + §5.2). Caps the multiprocessing.Pool size
+# in analysis/_runner.py so the rate-limit policy lives in config, not in
+# os.cpu_count(). Default 4 is conservative for 4-8 core dev machines.
+analysis:
+  max_parallel_workers: 4
+
 # Paths
 paths:
   brain: results/brain.npy

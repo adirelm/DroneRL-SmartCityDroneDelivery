@@ -1,9 +1,12 @@
-"""Action dispatch for DroneRL GUI — maps action strings to state changes."""
+"""Action dispatch for DroneRL GUI — maps action strings to state changes.
+
+§4.1: lifecycle-changing actions (reset, switch_to algorithm) delegate to the
+``GUI.sdk`` instance instead of constructing ``Environment`` / ``create_agent``
+locally. Read-only and presentation-only actions (toggle_fast, save, load,
+open_editor) stay in this module.
+"""
 
 import os
-
-from dronerl.agent_factory import create_agent
-from dronerl.environment import Environment
 
 _ALGO_KEYS = {"use_bellman": "bellman",
               "use_q_learning": "q_learning",
@@ -53,36 +56,44 @@ def dispatch(gui, a):
     elif a == "load" and os.path.exists(gui.brain_path):
         gui.agent.load(gui.brain_path)
     elif a == "reset":
-        gui.env, gui.agent = Environment(gui.cfg), create_agent(gui.cfg)
-        gui.env.drift_probability = gui.hazards.effective_drift()
-        gui.logic.reset(gui.agent, gui.env)
+        gui.sdk.reset()
+        gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()
+        gui.logic.reset(gui.sdk.agent, gui.sdk.environment)
         gui.paused = gui.editor.active = True
         gui.fast_mode = gui.show_heatmap = gui.show_arrows = False
     elif a == "cycle_type":
         gui.editor.next_type()
     elif a in _ALGO_KEYS:
-        gui.cfg.algorithm.name = _ALGO_KEYS[a]
-        gui.agent = create_agent(gui.cfg)
-        gui.logic.reset(gui.agent, gui.env)
+        gui.sdk.switch_algorithm(_ALGO_KEYS[a])
+        gui.logic.reset(gui.sdk.agent, gui.sdk.environment)
         gui.paused = True
         gui.show_heatmap = gui.show_arrows = False
     elif a == "regenerate_hazards":
-        gui.hazards.apply(gui.env)
-        gui.env.set_wind_drift(gui.hazards.effective_drift())
+        gui.sdk.regenerate_hazards()
     elif a == "run_comparison":
         _run_comparison_scripts(gui)
 
 
+_comparison_proc = None  # module-level handle for double-spawn guard (§5.3)
+
+
 def _run_comparison_scripts(gui) -> None:
-    """Open the existing comparison chart; regenerate in the background if missing."""
+    """Open the existing comparison chart; regenerate in the background if missing.
+
+    §5.3 — guards against multiple rapid GUI clicks spawning duplicate
+    Python subprocesses. The module-level ``_comparison_proc`` reference is
+    consulted before each spawn; if a previous chart-generation process is
+    still running, we skip rather than stack a second one.
+    """
+    global _comparison_proc
     import subprocess
     import sys
     from pathlib import Path
     chart = Path(gui.cfg.comparison.output_dir) / "comparison.png"
     if chart.exists():
         _open_file(str(chart))
-    else:
-        subprocess.Popen(
+    elif _comparison_proc is None or _comparison_proc.poll() is not None:
+        _comparison_proc = subprocess.Popen(
             [sys.executable, "scripts/generate_comparison_charts.py"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )

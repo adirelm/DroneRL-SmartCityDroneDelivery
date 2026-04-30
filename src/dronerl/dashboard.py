@@ -85,7 +85,6 @@ class Dashboard:
             surface.blit(lt, (self.x + 20, y))
             surface.blit(vt, (rx - vt.get_width(), y))
             y += 24
-        # Goal rate progress bar
         rate = m.get("goal_rate", 0) / 100.0
         bar_y = y
         bw = self.width - 40
@@ -107,7 +106,6 @@ class Dashboard:
             data = history[-self.history_size:]
             mn, mx = min(data), max(data)
             rng = mx - mn if mx != mn else 1.0
-            # Zero line
             if mn < 0 < mx:
                 zy = y + gh - int((0 - mn) / rng * (gh - 6)) - 3
                 pygame.draw.line(surface, self.graph_zero, (gx + 2, zy), (gx + gw - 2, zy), 1)
@@ -117,7 +115,6 @@ class Dashboard:
                 py = y + gh - int((v - mn) / rng * (gh - 6)) - 3
                 pts.append((px, py))
             pygame.draw.lines(surface, self.goal_color, False, pts, 2)
-            # Min/max labels
             mn_t = self.small_font.render(f"{mn:.0f}", True, self.dim)
             mx_t = self.small_font.render(f"{mx:.0f}", True, self.dim)
             surface.blit(mx_t, (gx + 4, y + 2))

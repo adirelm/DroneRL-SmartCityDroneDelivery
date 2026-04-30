@@ -50,7 +50,8 @@ class Environment:
         self.grid = np.zeros((self.rows, self.cols), dtype=int)
         self.grid[self.goal[0], self.goal[1]] = CellType.GOAL
 
-        # Load default obstacles from config
+        # Config-defined obstacles are seeded first; the editor / hazard generator
+        # later overrides them, but start and goal cells are always preserved.
         obstacles = getattr(env_cfg, 'obstacles', None)
         if obstacles:
             for obs in obstacles:
@@ -87,7 +88,9 @@ class Environment:
         """
         info = {"event": "move"}
 
-        # Wind drift: random direction override
+        # Wind cells override the chosen action with a uniform-random one — this
+        # is the noise source the §13 / §15 stochasticity story rests on, and the
+        # reason α-decay matters in noisy regimes.
         current_cell = self.grid[self.drone_pos[0], self.drone_pos[1]]
         if current_cell == CellType.WIND and random.random() < self.drift_probability:
             action = random.randint(0, 3)
@@ -97,17 +100,16 @@ class Environment:
         new_row = self.drone_pos[0] + dr
         new_col = self.drone_pos[1] + dc
 
-        # Boundary check
+        # Out-of-bounds is a no-op move with the wall-collision penalty: this
+        # keeps the state space finite (no off-grid cells) without ever raising.
         if not (0 <= new_row < self.rows and 0 <= new_col < self.cols):
             info["event"] = "wall_collision"
             return self.drone_pos, self.rewards.wall_collision, False, info
 
-        # Building collision
         if self.grid[new_row, new_col] == CellType.BUILDING:
             info["event"] = "wall_collision"
             return self.drone_pos, self.rewards.wall_collision, False, info
 
-        # Move drone
         self.drone_pos = (new_row, new_col)
         cell = self.grid[new_row, new_col]
 

@@ -16,6 +16,31 @@ The drone must deliver packages from a **start point** to a **destination** whil
 
 The project demonstrates core RL concepts such as the **Bellman equation**, **Epsilon-Greedy exploration**, **reward shaping**, and **backwards ripple effect of value propagation**.
 
+### 1.1 Target Audience
+
+Primary: **Bar-Ilan University RL students** in the Vibe Coding Workshop and adjacent ML courses. Secondary: educators preparing tabular-RL teaching materials, and self-learners coming to RL from a software-engineering background who want a runnable reference implementation rather than just slides or papers.
+
+### 1.2 Market Analysis
+
+The classroom-RL space is dominated by three patterns, each with a gap DroneRL is sized to fill:
+
+- **OpenAI Gym / Gymnasium environments** (CartPole, FrozenLake, …) are the textbook default. They give a clean Python API but no visual training experience — the policy is invisible until you write your own renderer. DroneRL's GUI shows the Q-table heatmap and policy arrows updating live, which is exactly the part students need to *see*.
+- **Jupyter notebook tutorials** (Sutton & Barto, Hasselt's Double-Q paper reproductions). Excellent theory, but the code is fragmented across cells, has no tests, and degrades the moment a student tries to extend it. DroneRL ships a full project with 97 % test coverage, a build-system, and a clean extension recipe (one-line algorithm registry).
+- **Commercial RL libraries** (Stable-Baselines3, RLlib). Production-grade but optimised for deep RL and large compute — overkill for a tabular-Q teaching tool, and their abstractions hide the very Bellman / α-decay / dual-table mechanics the assignment is asking the student to internalise.
+
+DroneRL's differentiator is **playable, visual, professionally-tested tabular RL** with three deliberately-distinct algorithms (Bellman / Q-Learning / Double-Q) on the same 12×12 grid — the comparison surface is the lesson.
+
+### 1.3 Key Performance Indicators (KPIs)
+
+| KPI | Target | Verification |
+|---|---|---|
+| Learning convergence | Agent reaches goal in ≤ 3 000 episodes on the medium-difficulty board | `analysis/multi_seed_robustness.py` measured runs |
+| Test coverage | ≥ 85 % line coverage | `pytest --cov-fail-under=85` (current: 97.65 %) |
+| File-size discipline | All `.py` files ≤ 150 *code* lines | `scripts/check_file_sizes.sh` (pre-commit + CI gate) |
+| Lint cleanliness | 0 ruff violations | `uv run ruff check src/ tests/ analysis/ scripts/ main.py` |
+| GUI smoothness | 30 FPS sustained during training render | Pygame clock, exercised by manual screenshot capture |
+| Reproducibility | `uv sync --dev` + one shell command regenerates every chart in `results/` | Documented in `docs/shared/FINAL_CHECKLIST.md` |
+
 ---
 
 ## 2. Objectives & Success Metrics

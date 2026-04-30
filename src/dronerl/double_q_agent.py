@@ -5,18 +5,18 @@ from pathlib import Path
 
 import numpy as np
 
-from dronerl.base_agent import BaseAgent
+from dronerl.base_agent import DecayingAlphaAgent
 from dronerl.config_loader import Config
 
 
-class DoubleQAgent(BaseAgent):
+class DoubleQAgent(DecayingAlphaAgent):
     """Double Q-Learning agent (Hasselt 2010) using two Q-tables to remove TD-bias.
 
-    Input/Output: inherits the ``BaseAgent`` contract. Note that ``q_table`` is exposed
-        as ``QA + QB`` for GUI / save / load compatibility; the internal storage is
-        the pair ``(q_table_a, q_table_b)``.
+    Input/Output: inherits the ``BaseAgent`` contract via ``DecayingAlphaAgent``.
+        Note that ``q_table`` is exposed as ``QA + QB`` for GUI / save / load
+        compatibility; the internal storage is the pair ``(q_table_a, q_table_b)``.
     Setup: adds ``config.double_q.alpha_start`` / ``alpha_end`` / ``alpha_decay``,
-        same decay protocol as Q-Learning.
+        same decay protocol as Q-Learning (shared via ``DecayingAlphaAgent``).
     """
 
     algorithm_name = "Double Q-Learning"
@@ -24,9 +24,7 @@ class DoubleQAgent(BaseAgent):
     def __init__(self, config: Config):
         super().__init__(config)
         d_cfg = config.double_q
-        self.alpha = d_cfg.alpha_start
-        self.alpha_end = d_cfg.alpha_end
-        self.alpha_decay = d_cfg.alpha_decay
+        self._init_decay(d_cfg.alpha_start, d_cfg.alpha_end, d_cfg.alpha_decay)
         self.update_a_probability = getattr(d_cfg, "update_a_probability", 0.5)
         self.q_table_a = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))
         self.q_table_b = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))
@@ -61,15 +59,6 @@ class DoubleQAgent(BaseAgent):
             next_val = 0.0 if done else float(self.q_table_a[nr, nc, best_a])
             target = reward + self.gamma * next_val
             self.q_table_b[r, c, action] += self.alpha * (target - self.q_table_b[r, c, action])
-
-    def decay_alpha(self) -> None:
-        """Decay alpha by the decay rate, clamped to alpha_end."""
-        self.alpha = max(self.alpha_end, self.alpha * self.alpha_decay)
-
-    def decay_epsilon(self) -> None:
-        """Decay both epsilon and alpha per episode."""
-        super().decay_epsilon()
-        self.decay_alpha()
 
     def save(self, path: str) -> None:
         """Save both Q-tables to .npy files (path_a.npy and path_b.npy)."""

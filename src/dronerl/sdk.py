@@ -29,9 +29,9 @@ class DroneRLSDK:
             board dimensions, reward magnitudes).
     """
 
-    def __init__(self, config_path: str = "config/config.yaml"):
-        raw_config = load_config(config_path)
-        self.config = Config(raw_config)
+    def __init__(self, config_path: str = "config/config.yaml", *, config: Config | None = None):
+        """Construct from a YAML path *or* a pre-loaded ``Config`` (GUI uses the latter so it shares one ``Config`` instance with the SDK)."""
+        self.config = config if config is not None else Config(load_config(config_path))
         self.logger = setup_logger("DroneRL", self.config.logging.level)
         self.agent = create_agent(self.config)
         self.environment = Environment(self.config)
@@ -57,10 +57,9 @@ class DroneRLSDK:
         return [self.train_step() for _ in range(n)]
 
     def reset(self) -> None:
-        """Reset agent, environment, and trainer to initial state."""
+        """Reset agent + environment + trainer; preserve hazard-generator slider state across resets."""
         self.agent = create_agent(self.config)
         self.environment = Environment(self.config)
-        self.hazards = HazardGenerator(self.config)
         self.trainer = self._new_trainer()
         self.logger.info("SDK reset complete")
 

@@ -1,14 +1,13 @@
 """Entry point for the DroneRL application."""
 
-from dronerl.config_loader import Config, load_config
 from dronerl.gui import GUI
+from dronerl.sdk import DroneRLSDK
 
 
 def main():
-    """Load configuration and launch the GUI."""
-    raw_config = load_config("config/config.yaml")
-    config = Config(raw_config)
-    gui = GUI(config)
+    """Construct the SDK from config, then launch the GUI on top of it (§4.1)."""
+    sdk = DroneRLSDK("config/config.yaml")
+    gui = GUI(sdk=sdk)
     gui.run()
 
 

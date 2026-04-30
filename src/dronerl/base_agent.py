@@ -80,3 +80,28 @@ class BaseAgent:
     def load(self, path: str) -> None:
         """Load Q-table from a numpy file."""
         self.q_table = np.load(path)
+
+
+class DecayingAlphaAgent(BaseAgent):
+    """``BaseAgent`` + geometric α decay. Shared base for Q-Learning + Double-Q.
+
+    Subclasses call :meth:`_init_decay` from their ``__init__`` after the
+    ``super().__init__(config)`` line, passing their algorithm-specific
+    ``alpha_start`` / ``alpha_end`` / ``alpha_decay`` triple from their own
+    config sub-block (``config.q_learning`` or ``config.double_q``).
+    """
+
+    def _init_decay(self, alpha_start: float, alpha_end: float, alpha_decay: float) -> None:
+        """Bind the per-algorithm α-decay schedule onto ``self``."""
+        self.alpha = alpha_start
+        self.alpha_end = alpha_end
+        self.alpha_decay = alpha_decay
+
+    def decay_alpha(self) -> None:
+        """Geometric decay of α each episode, clamped to ``alpha_end``."""
+        self.alpha = max(self.alpha_end, self.alpha * self.alpha_decay)
+
+    def decay_epsilon(self) -> None:
+        """Decay ε (via ``BaseAgent``) and α together per episode."""
+        super().decay_epsilon()
+        self.decay_alpha()

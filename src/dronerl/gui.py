@@ -3,24 +3,25 @@
 import pygame
 
 from dronerl.actions import dispatch
-from dronerl.agent_factory import create_agent
 from dronerl.config_loader import Config
 from dronerl.dashboard import Dashboard
 from dronerl.editor import Editor
-from dronerl.environment import CellType, Environment
+from dronerl.environment import CellType
 from dronerl.game_logic import GameLogic
-from dronerl.hazard_generator import HazardGenerator
 from dronerl.overlays import Overlays
 from dronerl.renderer import Renderer
+from dronerl.sdk import DroneRLSDK
 from dronerl.sliders import SliderPanel
 
 
 class GUI:
-    """Top-level orchestrator: event loop, rendering, and action dispatch."""
+    """Top-level orchestrator: \u00a74.1 \u2014 every business-logic call routes through ``self.sdk``; the GUI only owns presentation state and event wiring."""
 
-    def __init__(self, config: Config):
-        """Initialise window, components, and state from config."""
+    def __init__(self, config: Config | None = None, sdk: DroneRLSDK | None = None):
+        """Initialise from a ``Config`` *or* a pre-built ``DroneRLSDK``."""
         pygame.init()
+        self.sdk = sdk if sdk is not None else (DroneRLSDK(config=config) if config is not None else DroneRLSDK())
+        config = self.sdk.config
         self.cfg, gui = config, config.gui
         self.width, self.height = gui.window_width, gui.window_height
         self.brain_path = config.paths.brain
@@ -34,11 +35,9 @@ class GUI:
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("DroneRL \u2014 Smart City Drone Delivery")
         self.clock, self.fps = pygame.time.Clock(), gui.fps
-        self.env, self.agent = Environment(config), create_agent(config)
-        self.logic = GameLogic(self.agent, self.env, config)
+        self.logic = GameLogic(self.sdk.agent, self.sdk.environment, config)
         self.renderer, self.overlays = Renderer(config), Overlays(config)
         self.dashboard, self.editor = Dashboard(config), Editor(config)
-        self.hazards = HazardGenerator(config)
         sx, sy = gui.grid_area_width + 16, self.height - self.status_bar_height - 130
         self.sliders = SliderPanel(config, sx, sy, gui.dashboard_width - 32)
         self.paused, self.editor.active = True, True
@@ -46,9 +45,21 @@ class GUI:
         self.status_font = None
         if getattr(config.dynamic_board, "randomize_per_episode", False):
             self.logic.on_episode_end = lambda: (
-                self.hazards.apply(self.env),
-                self.env.set_wind_drift(self.hazards.effective_drift()),
+                self.sdk.hazards.apply(self.sdk.environment),
+                self.sdk.environment.set_wind_drift(self.sdk.hazards.effective_drift()),
             )
+
+    @property
+    def env(self):  # \u00a74.1 \u2014 single source of truth lives on the SDK
+        return self.sdk.environment
+
+    @property
+    def agent(self):
+        return self.sdk.agent
+
+    @property
+    def hazards(self):
+        return self.sdk.hazards
 
     def _state(self):
         return {"paused": self.paused, "fast_mode": self.fast_mode, "algo_name": self.agent.algorithm_name,

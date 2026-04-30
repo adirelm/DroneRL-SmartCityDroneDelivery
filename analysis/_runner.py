@@ -72,13 +72,29 @@ def _train_cell(args: CellArgs) -> CellResult:
     return algo, seed, rewards, steps
 
 
+def _config_max_workers() -> int:
+    """Read ``analysis.max_parallel_workers`` from config; fall back to cpu_count.
+
+    Keeps the rate-limit policy in ``config/config.yaml`` per §5.2 instead of
+    silently using ``os.cpu_count()`` as the implicit ceiling.
+    """
+    try:
+        raw = load_config()
+        return int(raw.get("analysis", {}).get("max_parallel_workers", os.cpu_count() or 1))
+    except (FileNotFoundError, KeyError, ValueError):
+        return os.cpu_count() or 1
+
+
 def resolve_workers(requested: int | None = None) -> int:
     """Resolve worker count from arg, ``DRONERL_PARALLEL`` env, or default 1.
 
-    Returns 1 (serial) unless explicitly opted in. Capped at ``os.cpu_count()``.
+    Returns 1 (serial) unless explicitly opted in. The hard ceiling is
+    ``min(config.analysis.max_parallel_workers, os.cpu_count())`` — the config
+    value lets §5.2 hold (rate limit lives in config, not hard-coded).
     """
     n = requested if requested is not None else int(os.environ.get("DRONERL_PARALLEL", "1") or "1")
-    return max(1, min(n, os.cpu_count() or 1))
+    ceiling = min(_config_max_workers(), os.cpu_count() or 1)
+    return max(1, min(n, ceiling))
 
 
 def train_cells(cells: list[CellArgs], n_workers: int = 1) -> list[CellResult]:
