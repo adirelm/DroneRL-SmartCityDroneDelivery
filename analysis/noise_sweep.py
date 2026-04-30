@@ -46,25 +46,22 @@ def run(n_workers: int | None = None) -> dict:
     raw["agent"]["learning_rate"] = 0.7
     raw["q_learning"].update({"alpha_start": 0.5, "alpha_decay": 0.9995})
 
-    cells = []
+    # Dispatch one batch per noise level. Within a single batch, (algo, seed)
+    # uniquely identifies a cell so we can re-key safely from
+    # ``train_cells``'s completion-order output. Batching across noise levels
+    # would break this invariant: the same (algo, seed) tuple appears in
+    # every batch, so a single all-cells dispatch would mis-key results
+    # under ``n_workers > 1`` (Pool.imap_unordered returns in completion
+    # order, not submission order).
+    workers = resolve_workers(n_workers)
+    total_cells = len(NOISE_LEVELS) * len(ALGOS) * len(SEEDS)
+    print(f"  noise sweep: {total_cells} cells, workers={workers}")
+    by_cell: dict[tuple[str, float, int], list[float]] = {}
     for noise in NOISE_LEVELS:
         board = {"noise_level": noise, "hazard_density": DENSITY, "difficulty": DIFFICULTY}
-        for algo in ALGOS:
-            for seed in SEEDS:
-                cells.append((raw, algo, seed, EPISODES, board))
-
-    workers = resolve_workers(n_workers)
-    print(f"  noise sweep: {len(cells)} cells, workers={workers}")
-    results = train_cells(cells, n_workers=workers)
-
-    by_cell: dict[tuple[str, float, int], list[float]] = {}
-    cell_idx = 0
-    for noise in NOISE_LEVELS:
-        for algo in ALGOS:
-            for seed in SEEDS:
-                _, _, rewards, _ = results[cell_idx]
-                by_cell[(algo, noise, seed)] = rewards
-                cell_idx += 1
+        cells = [(raw, algo, seed, EPISODES, board) for algo in ALGOS for seed in SEEDS]
+        for algo, seed, rewards, _ in train_cells(cells, n_workers=workers):
+            by_cell[(algo, noise, seed)] = rewards
 
     summary: dict[tuple[str, float], dict[str, float]] = {}
     for noise in NOISE_LEVELS:

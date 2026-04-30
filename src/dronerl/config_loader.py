@@ -99,9 +99,25 @@ def _validate_schema(data: dict, path: str) -> None:
 
 
 def load_config(path: str = "config/config.yaml") -> dict:
-    """Load YAML config file, validate its version + schema, and return as a dict."""
-    with open(path) as f:
-        data = yaml.safe_load(f)
+    """Load YAML config, validate version + schema, return as a dict.
+
+    Fault tolerance (§13 Reliability): malformed YAML and empty files raise
+    ``RuntimeError`` with a clear actionable message instead of bubbling
+    ``yaml.YAMLError`` or ``AttributeError`` from a downstream caller.
+    """
+    try:
+        with open(path) as f:
+            data = yaml.safe_load(f)
+    except yaml.YAMLError as exc:
+        raise RuntimeError(
+            f"config at {path!r} is not valid YAML: {exc}. "
+            "Restore from config/config.yaml in the repo if unsure."
+        ) from exc
+    if not isinstance(data, dict):
+        raise RuntimeError(
+            f"config at {path!r} parsed to {type(data).__name__}, expected dict. "
+            "File may be empty or malformed."
+        )
     _validate_schema(data, path)
     _validate_version(data.get("version", ""))
     return data

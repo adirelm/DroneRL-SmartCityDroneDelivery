@@ -77,6 +77,27 @@ def dispatch(gui, a):
 _comparison_proc = None  # module-level handle for double-spawn guard (§5.3)
 
 
+def _resolve_output_path(gui, filename: str):
+    """Resolve ``output_dir/filename`` and assert it stays inside the project root.
+
+    §13 Security / Integrity — ``comparison.output_dir`` flows from
+    ``config/config.yaml`` directly into ``Path()`` and then into the OS
+    file viewer (``_open_file``). A maliciously-crafted or accidentally-set
+    config (``output_dir: ../../../../etc``) could redirect the OS viewer
+    to a path outside the project. This helper resolves the candidate path
+    and refuses anything that escapes the project root.
+    """
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parents[2]
+    candidate = (project_root / gui.cfg.comparison.output_dir / filename).resolve()
+    if project_root not in candidate.parents and candidate != project_root:
+        raise ValueError(
+            f"comparison.output_dir resolves to {candidate!r}, outside project root "
+            f"{project_root!r} — refusing for §13 path-traversal safety."
+        )
+    return candidate
+
+
 def _run_comparison_scripts(gui) -> None:
     """Open the existing comparison chart; regenerate in the background if missing.
 
@@ -93,8 +114,7 @@ def _run_comparison_scripts(gui) -> None:
     global _comparison_proc
     import subprocess
     import sys
-    from pathlib import Path
-    chart = Path(gui.cfg.comparison.output_dir) / "comparison.png"
+    chart = _resolve_output_path(gui, "comparison.png")
     if chart.exists():
         _open_file(str(chart))
     elif _comparison_proc is None or _comparison_proc.poll() is not None:

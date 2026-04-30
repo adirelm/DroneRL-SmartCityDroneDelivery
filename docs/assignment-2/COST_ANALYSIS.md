@@ -212,14 +212,19 @@ providers.
 ### Per-model breakdown
 
 Estimated token usage by model and direction across the whole project
-(both assignments + the post-feedback iteration). These are
-**order-of-magnitude figures derived from typical session sizes**; the
-sessions were not instrumented for token counts. The authoritative
-numbers live on the Anthropic and OpenAI billing dashboards
-(`console.anthropic.com → Usage` and `platform.openai.com → Usage`).
-The reproducibility recipe is: export the billing CSV for the project
-period (Mar–Apr 2026) and replace the table below with the actual
-per-model totals.
+(both assignments + the post-feedback iteration + the Pass-2 / Pass-3
+audit campaigns). These are **order-of-magnitude figures derived from
+typical session sizes**; the sessions were not instrumented for token
+counts. The closest reproducible upper bound is the date-filtered
+**Anthropic Usage view** at `console.anthropic.com → Usage` (and
+`platform.openai.com → Usage` for Codex). Both dashboards show
+*organization-wide* aggregate spend per day — they do not currently
+expose per-project or per-session breakdowns, so the numbers below
+cannot be tied to this repo specifically without an external
+record-keeping pipeline (which the project does not have, and which
+would be over-engineering for a coursework deliverable). Treat the
+table as a *self-disclosed estimate* anchored to the project's session
+cadence rather than a verifiable count.
 
 | Model | Input (est.) | Output (est.) | List-price unit | List-price ceiling | Cache-adjusted (est.) |
 |-------|-------------:|--------------:|-----------------|--------------------:|----------------------:|

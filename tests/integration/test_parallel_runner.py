@@ -80,3 +80,29 @@ def test_different_seeds_produce_different_results():
         "Two different seeds produced identical reward sequences — the "
         "determinism test is not actually testing seed-dependence."
     )
+
+
+@pytest.mark.skipif(
+    (os.cpu_count() or 1) < 2, reason="needs ≥2 CPU cores for a parallel run"
+)
+def test_parallel_results_are_keyable_by_algo_seed():
+    """Regression: ``train_cells`` results MUST be re-keyable by (algo, seed).
+
+    `noise_sweep.py` and `multi_seed_robustness.py` both rely on this
+    invariant: within one ``train_cells`` batch, ``(algo, seed)`` is a
+    unique key, so re-keying via a dict comprehension over
+    ``(algo, seed, rewards, _)`` produces the right mapping regardless of
+    completion order. If two cells in the same batch shared the same
+    ``(algo, seed)`` tuple, the dict comprehension would silently overwrite
+    one — which is exactly the bug Pass-3 caught in noise_sweep.py before
+    the per-noise-level batching fix.
+    """
+    raw = base_raw_config()
+    raw["dynamic_board"]["enabled"] = True
+    board = {"noise_level": 0.5, "hazard_density": 0.1, "difficulty": 0.3}
+    cells = [(raw, algo, seed, 50, board) for algo in ("bellman", "q_learning") for seed in (1, 2, 3)]
+    results = train_cells(cells, n_workers=2)
+    assert len({(algo, seed) for algo, seed, _, _ in results}) == len(cells), (
+        "Result set has a duplicate (algo, seed) key — caller must batch by "
+        "any other dimension before dispatching to train_cells."
+    )

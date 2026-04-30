@@ -72,7 +72,16 @@ class BaseAgent:
         return float(np.max(self.q_table[state[0], state[1]]))
 
     def _td_update(self, q, state, action, reward, next_state, done, step) -> None:
-        """In-place Bellman TD update: ``q[s,a] += step · (r + γ·max q[s'] − q[s,a])``."""
+        """In-place Bellman TD update: ``q[s,a] += step · (r + γ·max q[s'] − q[s,a])``.
+
+        **Extension point.** Subclasses may override this to change the TD
+        target form. For example, an on-policy SARSA agent would use the
+        next *chosen* action's Q-value (``q[s', a']``) instead of the max,
+        and a Double-Q agent uses the cross-table value (already done
+        inline in ``DoubleQAgent.update`` rather than via override).
+        Overriding here keeps the per-step arithmetic shared and exposes
+        only the algorithm-specific bootstrap rule.
+        """
         r, c = state
         nr, nc = next_state
         next_max = 0.0 if done else float(np.max(q[nr, nc]))

@@ -562,11 +562,20 @@ ALGORITHM_REGISTRY: tuple[AlgorithmSpec, ...] = (
 )
 ```
 
-To add SARSA: write a `SarsaAgent` class subclassing `BaseAgent` (one new
-file), then add the one-line `AlgorithmSpec` above. The factory picks it up,
-the parametrised `TestFactoryAgentApi` fixtures automatically run their
-sanity checks against it, and the comparison runner / chart renderer pick up
-the new label and color.
+To add SARSA: write a `SarsaAgent` class subclassing `BaseAgent` (or
+`DecayingAlphaAgent` if it has decaying α), then add the one-line
+`AlgorithmSpec` above. The factory picks it up, the parametrised
+`TestFactoryAgentApi` fixtures automatically run their sanity checks
+against it, and the comparison runner / chart renderer pick up the new
+label and color.
+
+**If your update rule differs from the max-Q Bellman form** (e.g. SARSA
+is on-policy: target uses `Q(s', a')` from the *chosen* next action, not
+`max Q(s')`), override [`BaseAgent._td_update`](src/dronerl/base_agent.py)
+instead of duplicating the TD arithmetic in your `update()` body. The
+helper exists precisely so the per-step shared computation
+(`current_q`, scaling by `step`, in-place mutation) lives in one place
+and only the bootstrap rule changes.
 
 This was not always true: the same string tuple was previously duplicated
 across 13 sites in 9 files. The refactor that introduced the registry is
