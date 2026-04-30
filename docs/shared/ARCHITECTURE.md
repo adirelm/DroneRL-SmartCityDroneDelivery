@@ -19,6 +19,7 @@ points to the file that backs it up.
 | **AI-assisted development workflow** | [docs/shared/PROMPTS.md](PROMPTS.md) — original development + post-feedback iteration log |
 | **ISO/IEC 25010 quality-characteristics map** | [docs/shared/QUALITY_STANDARDS.md](QUALITY_STANDARDS.md) — maps each of the 8 25010 characteristics to the concrete file, gate, or doc that satisfies it |
 | **Concurrency, parallelism & thread safety** | [docs/shared/CONCURRENCY.md](CONCURRENCY.md) — what is/isn't parallel, why, the §15.3 checklist with auditable answers |
+| **Pre-submission final checklist (§17)** | [docs/shared/FINAL_CHECKLIST.md](FINAL_CHECKLIST.md) — every §17.1–§17.6 item mapped to its concrete artefact / gate |
 | **Coding standards (the rules this project enforces)** | [CLAUDE.md](../../CLAUDE.md) — 150-line file limit, ≥85% coverage, no magic numbers, ruff zero violations, UV-only |
 | **How to run / install** | [README.md](../../README.md) §Installation, §Running |
 | **License** | [LICENSE](../../LICENSE) — MIT |

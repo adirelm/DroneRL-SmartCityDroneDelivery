@@ -52,6 +52,7 @@ docs/
     ├── ARCHITECTURE.md        ← navigation index + ADRs
     ├── QUALITY_STANDARDS.md   ← ISO/IEC 25010 quality-characteristics map
     ├── CONCURRENCY.md         ← multiprocessing / threading / thread safety
+    ├── FINAL_CHECKLIST.md     ← pre-submission §17 sweep (every item mapped)
     └── PROMPTS.md             ← prompt log + post-feedback iteration
 ```
 
@@ -76,6 +77,10 @@ docs/
    gate in this repo that satisfies it.
 7. **For concurrency / parallelism trade-offs**, see
    [`shared/CONCURRENCY.md`](shared/CONCURRENCY.md). It classifies
-   each hot path as CPU- or I/O-bound, documents the two
-   `subprocess.Popen` surfaces that *are* in use, and explains the
-   cost-benefit of the parallel sweep we deliberately did not add.
+   each hot path as CPU- or I/O-bound, documents the
+   `subprocess.Popen` surfaces and the `multiprocessing.Pool`
+   sweep parallelism, and includes the §15.3 checklist.
+8. **For the pre-submission final-checklist sweep (§17)**, see
+   [`shared/FINAL_CHECKLIST.md`](shared/FINAL_CHECKLIST.md). It
+   walks every §17.1–§17.6 item and maps it to the concrete file,
+   gate, or doc that satisfies it.
