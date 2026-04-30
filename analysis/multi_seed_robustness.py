@@ -36,10 +36,30 @@ DIFFICULTY = 0.3
 
 
 def _ci_band(stack: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Return (mean, low, high) 95% CI from a (n_seeds, n_episodes) matrix."""
+    """Return (mean, low, high) 95% normal-theory CI from a (n_seeds, n_episodes) matrix."""
     mean = stack.mean(axis=0)
     se = stack.std(axis=0, ddof=1) / np.sqrt(stack.shape[0])
     return mean, mean - 1.96 * se, mean + 1.96 * se
+
+
+def bootstrap_ci(values: np.ndarray, n_resamples: int = 2000, alpha: float = 0.05,
+                 rng_seed: int = 42) -> tuple[float, float, float]:
+    """Return (mean, low, high) percentile bootstrap CI — robust to bimodal data.
+
+    The §H1 multi-seed result is bimodal for Double-Q (some seeds converge,
+    others collapse) so a normal-theory SEM ± 1.96·SE understates the
+    uncertainty. Percentile bootstrap CIs make no normality assumption and
+    correctly reflect the bimodal spread.
+    """
+    rng = np.random.default_rng(rng_seed)
+    arr = np.asarray(values, dtype=float)
+    n = len(arr)
+    if n == 0:
+        return 0.0, 0.0, 0.0
+    resampled = rng.choice(arr, size=(n_resamples, n), replace=True).mean(axis=1)
+    low = float(np.quantile(resampled, alpha / 2))
+    high = float(np.quantile(resampled, 1 - alpha / 2))
+    return float(arr.mean()), low, high
 
 
 def run(n_workers: int | None = None) -> dict[str, np.ndarray]:
@@ -69,9 +89,11 @@ def run(n_workers: int | None = None) -> dict[str, np.ndarray]:
     for algo in ALGORITHMS:
         stacks[algo] = np.vstack([by_algo[algo][s] for s in SEEDS])
         last_means = stacks[algo][:, -200:].mean(axis=1)
+        boot_mean, boot_low, boot_high = bootstrap_ci(last_means)
         print(f"  {algo:12s}: per-seed last-200 means = "
               f"{[f'{m:6.1f}' for m in last_means]}  "
-              f"(spread = {last_means.max() - last_means.min():5.1f})")
+              f"(spread = {last_means.max() - last_means.min():5.1f}; "
+              f"bootstrap 95 % CI = [{boot_low:6.1f}, {boot_high:6.1f}])")
     return stacks
 
 

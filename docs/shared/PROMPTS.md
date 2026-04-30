@@ -399,3 +399,108 @@ on this."* That sentence is in there deliberately.
    generated changes. Small modules + tight tests = cheap verification.
    Without those guardrails, the AI-rework tax compounds and the
    workflow stops being faster than hand-written code.
+
+---
+
+## Multi-Pass Submission Audit (Pass-2 + Pass-3)
+
+After the post-feedback iteration closed Pass-1, the project ran two
+additional multi-agent audit passes against the submission guidelines
+(§1–§20). The pattern: each pass dispatches **5 independent reviewer
+sub-agents per iteration × 4 iterations** to cover all 20 sections,
+with explicit "be skeptical, find what the previous pass rationalised"
+framing. Each agent operates in a clean context (no shared memory with
+the others), so findings are genuinely independent.
+
+### The orchestrating prompt (verbatim, one per agent)
+
+> *You are a Pass-N independent reviewer auditing the DroneRL project
+> against §X of the submission guidelines. … Be **skeptical** — find
+> what previous passes may have rationalised. The §15 Pass-1 doc-only
+> stance was reversed in Pass-2 — that's the calibration for what
+> counts as a real gap. Surface only **high-confidence Material
+> findings** (≥ 80 confidence), no nits. … Output: under ~250 words.
+> Confirm clean OR list 1–3 numbered findings with title / evidence
+> (path:line) / why §X cares / one-sentence fix.*
+
+That framing did three load-bearing things: (a) the **calibration
+sentence** ("§15 Pass-1 doc-only was reversed in Pass-2") gave each
+agent a concrete bar for "real gap" instead of inventing one, (b) the
+**confidence floor** suppressed nits, (c) the **output cap** prevented
+the agent from drifting into solutions instead of findings.
+
+### Pass-2 (4 iterations × 5 agents = 32 findings, all fixed)
+
+The headline reversal: §15. Pass-1 produced a `CONCURRENCY.md` doc
+arguing the project's CPU-bound sweep "didn't need" `multiprocessing`.
+The user pushed back: "we documented why we didn't" is weaker than
+"we did, here's the speedup." Pass-2 added real `multiprocessing.Pool`
+parallelism with bit-for-bit determinism testing (2.5× speed-up
+measured). That single reversal calibrated every subsequent pass.
+
+Other notable Pass-2 fixes:
+
+- **§14 (build system).** `pyproject.toml` had no `[build-system]`
+  table — `uv sync` *did not* install `dronerl` as a package. Two
+  scripts compensated with `sys.path.insert` hacks that violated
+  §14.3. Fix: hatchling backend; both hacks deleted.
+- **§9 critical** (the lecturer's grade-77 downgrade area). The
+  research notebook's display cells read from `data/analysis/` while
+  the analysis scripts wrote to `results/analysis/` — the notebook
+  would `FileNotFoundError` end-to-end. A grader running it would
+  see exactly the failure mode that lost the marks the first time.
+- **§4 (SDK bypass).** GUI's main path constructed `Environment`,
+  `create_agent`, and `HazardGenerator` directly, never touching
+  `DroneRLSDK` despite §4.1 saying "all business logic flows through
+  the SDK." Wiring the GUI through SDK was a multi-file refactor.
+
+### Pass-3 (4 iterations × 5 agents)
+
+Pass-3 surfaced lingering gaps Pass-2 missed:
+
+- **§1.4 Human ↔ AI contract.** Pass-2 dismissed §1 as
+  "philosophical scaffolding." Pass-3 noticed that §1.4 has a
+  testable deliverable: a doc that *names* what stays human-decided
+  vs AI-delegated *before* code is written. Added the contract
+  table to CLAUDE.md.
+- **§4 duplication.** Pass-2 extracted `DecayingAlphaAgent` for the
+  `decay_alpha` / `decay_epsilon` duplication. Pass-3 caught the
+  *next* layer: the 3-line TD-update pattern was still repeated
+  across `BellmanAgent.update` and `QLearningAgent.update`.
+  Extracted `BaseAgent._td_update`; both subclass `update` bodies
+  collapsed to one-liners.
+- **§6.4 tolerance.** Pass-2 added an integration test asserting
+  Q-Learning ≥ Bellman − 50.0 reward units. Pass-3 noticed the
+  tolerance was so loose the test was structurally a no-op:
+  Q-Learning would have to collapse by 50 units (not the typical
+  1–5 unit per-seed noise) to fail. Tightened to 5.0 with a
+  matching docstring.
+- **§9 statistical analysis.** EXPERIMENTS.md acknowledged its own
+  SEM-on-bimodal-distributions limitation; Pass-3 actioned the
+  acknowledgement by adding a percentile bootstrap CI helper to
+  `multi_seed_robustness.py` and printing it alongside the per-seed
+  spread. Also added a noise-level OAT sweep (`analysis/noise_sweep.py`)
+  filling the dimension Pass-2 had scope-noted as future work.
+- **§10 Nielsen heuristics.** Pass-2 named four (#1, #3, #5, #6)
+  + #9. Pass-3 added named bullets for the remaining five
+  (#2, #4, #7, #8, #10) — each with a one-line concrete artefact
+  rather than "satisfied implicitly."
+
+### Methodology lessons from running multi-pass audits
+
+10. **False positives are real and worth ~10 % of agent output.**
+    Across Pass-3 alone, 2 of ~30 findings were false positives
+    (an sdk.py code-line miscount, a "changes uncommitted" claim
+    based on a stale gitStatus snapshot). Always verify a finding
+    against current state before fixing it.
+11. **The same section audited at different passes finds different
+    gaps.** Pass-1 §16 closed clean. Pass-2 §16 found that none of
+    the building-block classes had Input/Output/Setup docstrings —
+    a category Pass-1 didn't think to look at. Pass-3 §16 found
+    that Pass-2's new `DecayingAlphaAgent` was missing the same
+    docstring its peers had got. Each pass exposes the previous
+    pass's blind spot, not just its rationalisations.
+12. **Skeptical framing > clever prompting.** The single sentence
+    "the §15 Pass-1 doc-only stance was reversed in Pass-2 after
+    user pushback" did more work than any rule about what counts
+    as a finding. Concrete calibration beats abstract criteria.

@@ -173,3 +173,32 @@ class TestValidateConfig:
         config.agent.epsilon_decay = 0.0
         with pytest.raises(ValueError, match="epsilon_decay"):
             BaseAgent(config)
+
+
+class TestTdUpdate:
+    """§6.3 — direct edge-case tests for the shared TD-update helper."""
+
+    def test_done_true_ignores_next_state(self, agent):
+        """Terminal step: target = reward (no bootstrap from next_state)."""
+        agent.q_table[1, 1, 0] = 99.0  # next_state Q value that should be ignored
+        agent.q_table[0, 0, 0] = 0.0
+        agent._td_update(agent.q_table, (0, 0), 0, 10.0, (1, 1), done=True, step=1.0)
+        # target = 10.0 + γ·0 = 10.0; q[0,0,0] += 1.0 · (10 - 0) = 10.0
+        assert agent.q_table[0, 0, 0] == 10.0
+
+    def test_done_false_bootstraps_next_state(self, agent):
+        """Non-terminal step: target includes γ · max Q(next_state)."""
+        agent.q_table[:] = 0.0
+        agent.q_table[1, 1, 2] = 5.0  # max Q at next_state
+        agent.q_table[0, 0, 0] = 0.0
+        agent._td_update(agent.q_table, (0, 0), 0, 1.0, (1, 1), done=False, step=1.0)
+        # target = 1.0 + γ·5.0 = 1.0 + γ·5; q[0,0,0] += 1.0 · target
+        expected = 1.0 + agent.gamma * 5.0
+        assert abs(agent.q_table[0, 0, 0] - expected) < 1e-9
+
+    def test_step_size_scales_update(self, agent):
+        """Step size (α or lr) scales the TD error."""
+        agent.q_table[:] = 0.0
+        agent._td_update(agent.q_table, (0, 0), 1, 10.0, (1, 1), done=True, step=0.1)
+        # 10% of TD error = 0.1 · 10 = 1.0
+        assert abs(agent.q_table[0, 0, 1] - 1.0) < 1e-9

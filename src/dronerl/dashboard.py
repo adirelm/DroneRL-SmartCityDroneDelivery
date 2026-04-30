@@ -96,7 +96,9 @@ class Dashboard:
 
     def _draw_graph(self, surface, history: list, y) -> int:
         gx, gw, gh = self.x + 15, self.width - 30, 130
-        title = self.small_font.render("Reward History (last 100)", True, self.dim)
+        title = self.small_font.render(
+            f"Reward History (last {self.history_size})", True, self.dim
+        )
         surface.blit(title, (gx, y))
         y += 18
         pygame.draw.rect(surface, self.graph_bg, (gx, y, gw, gh), border_radius=4)

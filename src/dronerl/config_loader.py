@@ -71,9 +71,37 @@ def _validate_version(config_version: str) -> None:
         )
 
 
+_REQUIRED_TOP_LEVEL = (
+    "version", "environment", "rewards", "agent", "training",
+    "wind", "algorithm", "q_learning", "double_q",
+    "dynamic_board", "gui", "colors", "logging", "comparison", "paths",
+)
+
+
+def _validate_schema(data: dict, path: str) -> None:
+    """Warn clearly if a required top-level block is absent.
+
+    Mirrors :func:`_validate_version` — a soft warning rather than a hard
+    raise so synthetic test configs (and partial / WIP configs) still load,
+    but the user sees an actionable message at startup rather than an
+    opaque ``AttributeError`` later when the SDK reaches into a missing
+    sub-block.
+    """
+    missing = [k for k in _REQUIRED_TOP_LEVEL if k not in data]
+    if missing:
+        warnings.warn(
+            f"config at {path!r} is missing required top-level keys: {missing}. "
+            "The SDK will raise AttributeError when it reaches into any of "
+            "these. Restore from config/config.yaml in the repo if unsure.",
+            UserWarning,
+            stacklevel=3,
+        )
+
+
 def load_config(path: str = "config/config.yaml") -> dict:
-    """Load YAML config file, validate its version, and return as a dict."""
+    """Load YAML config file, validate its version + schema, and return as a dict."""
     with open(path) as f:
         data = yaml.safe_load(f)
+    _validate_schema(data, path)
     _validate_version(data.get("version", ""))
     return data

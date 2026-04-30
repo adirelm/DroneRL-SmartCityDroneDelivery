@@ -76,6 +76,35 @@ uv run python scripts/generate_comparison_charts.py
 | `S` / `L` | Save / Load Q-table |
 | `R` | Hard reset (clears training) |
 
+### User Workflow
+
+A typical session walks five steps from a fresh launch to a
+side-by-side three-algorithm comparison:
+
+1. **Launch** — `uv run main.py`. The window opens in **EDIT mode**
+   (paused), with sliders + algorithm-selector + Compare button
+   visible on the right.
+2. **Configure the board** — drag the noise / density / difficulty
+   sliders, then press `G` (or click *Regen Hazards*) to apply.
+   Place individual obstacles by clicking grid cells; cycle the
+   selected obstacle type with `T`.
+3. **Train** — press `SPACE` to leave EDIT mode and start training.
+   Toggle the heatmap (`H`) and policy arrows (`A`) to watch the
+   Q-table converge live. Hit `F` to fast-forward several episodes
+   per render frame for long runs.
+4. **Inspect a learned policy** — press `D` to enter DEMO mode; the
+   trained agent traces its greedy path on the grid without
+   ε-exploration. Press `D` or `SPACE` again to leave DEMO.
+5. **Compare algorithms** — press `1`/`2`/`3` to switch to Bellman /
+   Q-Learning / Double-Q (the board state is preserved, only the
+   agent resets). After training each, press `C` to open the
+   committed comparison chart in the OS file viewer, or run
+   `uv run python scripts/generate_comparison_charts.py` for a
+   fresh end-to-end regeneration.
+
+Save / load a trained brain at any point via `S` / `L` (no-op when
+the savefile is missing — see Nielsen #9 below for recovery options).
+
 ### UX & accessibility notes
 
 The Pygame interface is built keyboard-first; every operation has a
@@ -105,6 +134,35 @@ choices about how the UI handles **Nielsen's usability heuristics**:
   surface a user can read after the action — but there is no undo.
   Recovery is via `L` (load saved brain) if a checkpoint exists.
   Documented honestly here rather than papered over.
+- **Match between system and the real world** (Nielsen #2) —
+  cell types use real-world concepts the user already understands:
+  drone, building (impassable), trap (no-fly zone), pit (terminal
+  hazard), wind (stochastic drift). Reward and penalty values are
+  surfaced in `config/config.yaml` with self-explanatory names
+  (`goal_reward`, `trap_penalty`, `wall_collision`, `wind_penalty`).
+- **Consistency and standards** (Nielsen #4) — same algorithm
+  always renders in the same colour (orange / blue / green via the
+  `ALGORITHM_REGISTRY`). Same key always triggers the same action
+  (`SPACE` always pause/resume; `1`/`2`/`3` always switch algorithm).
+  Status-bar layout is identical across modes — only its content
+  flags change.
+- **Flexibility and efficiency of use** (Nielsen #7) — every
+  operation has both a keyboard shortcut and a mouse path (button
+  panel, slider drag, click-to-place editor). Power users can
+  drive the entire training loop from the keyboard; novices can
+  start with the mouse and learn the shortcuts from the status bar.
+- **Aesthetic and minimalist design** (Nielsen #8) — the GUI shows
+  exactly four panels (grid, dashboard, status bar, optional
+  editor). Heatmap and policy arrows are *toggleable* (`H`, `A`)
+  rather than always-on, so the user can inspect or hide complexity
+  on demand. The dashboard surfaces only the metrics that change
+  during training (episode count, reward, ε, goal-rate).
+- **Help and documentation** (Nielsen #10) — the status bar
+  doubles as a permanent shortcut cheat-sheet ("SPACE Play/Pause F
+  Fast H Heatmap …"). README sections "Keyboard Controls",
+  "User Workflow", and "UX & accessibility notes" are the
+  context-sensitive help. CLAUDE.md and ARCHITECTURE.md serve
+  contributor-facing help.
 
 **Accessibility considerations and known limits.** The algorithm
 colours are picked from the [`ALGORITHM_REGISTRY`](src/dronerl/algorithms.py)

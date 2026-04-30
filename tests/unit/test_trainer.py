@@ -111,3 +111,27 @@ class TestGetMetrics:
         trainer.run_episode()
         m = trainer.get_metrics()
         assert m["epsilon"] < initial_eps
+
+
+class TestValidateConfig:
+    """§16.3 — Trainer._validate_config rejects malformed Setup data."""
+
+    def test_rejects_zero_max_steps(self, agent, env, config):
+        config.training.max_steps_per_episode = 0
+        with pytest.raises(ValueError, match="max_steps_per_episode"):
+            Trainer(agent, env, config)
+
+    def test_rejects_negative_max_steps(self, agent, env, config):
+        config.training.max_steps_per_episode = -10
+        with pytest.raises(ValueError, match="max_steps_per_episode"):
+            Trainer(agent, env, config)
+
+    def test_rejects_zero_convergence_window(self, agent, env, config):
+        config.training.convergence_window = 0
+        with pytest.raises(ValueError, match="convergence_window"):
+            Trainer(agent, env, config)
+
+    def test_rejects_negative_convergence_window(self, agent, env, config):
+        config.training.convergence_window = -1
+        with pytest.raises(ValueError, match="convergence_window"):
+            Trainer(agent, env, config)

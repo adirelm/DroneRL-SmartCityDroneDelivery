@@ -140,12 +140,17 @@ class TestPredictedAlgorithmOrdering:
         return sum(tail) / len(tail)
 
     def test_q_learning_at_least_matches_bellman_medium_board(self):
-        """Q-Learning's last-50 mean should not collapse below Bellman's at noise=0.5."""
+        """Q-Learning's last-50 mean should not collapse below Bellman's at noise=0.5.
+
+        Tolerance is **5.0 reward units** — tight enough to catch a real
+        algorithmic regression (Q-Learning falling clearly behind Bellman),
+        loose enough to absorb the per-seed noise that EXPERIMENTS.md §H1
+        documents (typical last-200 means cluster around 75 ± 1 for both).
+        """
         bellman = self._train("bellman", seed=11, episodes=300)
         q_learning = self._train("q_learning", seed=11, episodes=300)
-        # EXPERIMENTS.md H1: at medium difficulty Q-Learning ties Bellman.
-        # Generous tolerance: fail only if Q-Learning is *significantly* worse.
-        assert q_learning >= bellman - 50.0, (
-            f"Q-Learning ({q_learning:.1f}) collapsed vs Bellman ({bellman:.1f}) "
-            "— contradicts EXPERIMENTS.md §H1 prediction"
+        assert q_learning >= bellman - 5.0, (
+            f"Q-Learning ({q_learning:.1f}) fell behind Bellman ({bellman:.1f}) "
+            "by more than 5.0 — contradicts EXPERIMENTS.md §H1 prediction "
+            "(Q-Learning ties or beats Bellman at medium difficulty)"
         )
