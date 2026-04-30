@@ -167,3 +167,98 @@ Already audited under §12. Summary:
   has ~30 sub-attributes; I have grouped them by characteristic
   and recorded the ones that materially apply to a single-process
   desktop RL learning project.
+
+---
+
+## §18 — Additional International Standards & Sources
+
+§18 of the submission guidelines recommends cross-referencing five
+international standards and sources beyond ISO/IEC 25010. Each is
+named below with the concrete DroneRL artefact that demonstrates
+alignment.
+
+### [14] Nielsen — 10 Usability Heuristics
+
+Already addressed under §10 of the submission guidelines audit. The
+README's *UX & accessibility notes* section walks the heuristics that
+the DroneRL UI applies (status bar = visibility of system status;
+`R` reset / `SPACE` pause = user control and freedom; protected
+start/goal cells = error prevention; status-bar shortcuts = recognition
+not recall). See the README for the full enumeration.
+
+### [15] ISO/IEC 25010 — Software Product Quality Model
+
+This document, sections 1–8 above. Each of the eight quality
+characteristics is mapped to the file, gate, or doc that satisfies it.
+
+### [16] MIT Software Quality Assurance Plan
+
+The MIT SQA framework prescribes: documented requirements,
+configuration management, testing strategy, code review, defect
+tracking, and traceability. DroneRL alignment:
+
+- **Requirements management.** Per-feature PRDs in
+  `docs/assignment-2/PRD_*.md`, plus the original
+  `docs/assignment-1/PRD.md`. Each PRD names theoretical background,
+  I/O requirements, performance metrics, alternatives considered,
+  and success criteria.
+- **Configuration management.** Single source of truth in
+  `config/config.yaml` with a versioned `version` key validated by
+  `_validate_version`. `pyproject.toml` + `uv.lock` pin every
+  runtime + dev dependency.
+- **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
+  ≥85 % coverage gate (current: 97.65 %), 1:1 module-to-test mapping,
+  bit-for-bit determinism test for the parallel sweep
+  (`tests/integration/test_parallel_runner.py`).
+- **Code review.** Pre-commit hooks (ruff + EOF + 150-line file
+  size + pytest pre-push) act as the automated reviewer. The
+  GitHub Actions CI matrix on Python 3.11/3.12/3.13 is the second.
+- **Defect tracking + traceability.** Git history is per-section
+  audit-driven, with each commit's message naming the §
+  it addresses and the specific findings + fixes; commits link to
+  the methodology phase (`instructions/review_methodology/`).
+
+### [17] Google Engineering Practices
+
+Google's public eng-practices repo prescribes:
+
+- **Code review through small, focused changes.** Mirrored by the
+  per-section commit pattern (each §N audit lands one or a few
+  commits, all tightly scoped to that section's findings).
+- **Style guides as a quality lever.** Mirrored by ruff's `select =
+  ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]` rule set in
+  `pyproject.toml`. The `N` (PEP 8 naming) rule in particular
+  enforces descriptive, consistent names.
+- **Testing pyramid.** Mirrored by `tests/unit/` (26 files, fast,
+  per-module) ↔ `tests/integration/` (2 files, multi-component +
+  parallel-runner determinism). Most coverage lands at the unit
+  level by design.
+- **Tests as documentation.** The parametrised
+  `TestFactoryAgentApi` exercises every algorithm against the same
+  fixtures, doubling as a contract-document for what `BaseAgent`
+  subclasses must provide.
+
+### [18] Microsoft REST API Guidelines
+
+DroneRL has no HTTP surface, but the design principles transfer to
+the `DroneRLSDK` Python API:
+
+- **Stable, documented entry points.** `DroneRLSDK` is the single
+  orchestration entry point (CLAUDE.md mandate). Public methods
+  carry docstrings (added in earlier audit phases) and §16's
+  Input / Output / Setup contract block.
+- **Versioning.** `pyproject.toml` `version = "1.1.1"` mirrored by
+  `dronerl.__version__` and `config/config.yaml`'s `version` key,
+  cross-validated by `_validate_version` at start-up.
+- **Consistent naming.** All public methods follow `snake_case`,
+  enforced by ruff's `N` rule. `save_brain` / `load_brain` /
+  `train` / `compare_algorithms` follow a verb-first convention.
+- **Predictable error behaviour.** `agent_factory.create_agent`
+  raises `ValueError` for unknown algorithm names (with the valid
+  list in the message); `_validate_version` warns on missing /
+  mismatched config version. No silent failures.
+
+The Microsoft guidelines' "REST" specifics (HTTP verbs, status
+codes, URL design) don't apply to a single-process Pygame app —
+recording that as a scope note rather than fabricating a fake REST
+layer to tick the box.
