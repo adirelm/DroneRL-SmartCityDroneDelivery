@@ -37,7 +37,7 @@ that a grader can verify against the repo without reading the audit.
 | # | Required item | Where it lives | Status |
 |---|---|---|---|
 | 1 | TDD — tests written before / with code | `docs/shared/PROMPTS.md` documents the RED → GREEN → REFACTOR pattern used throughout; CLAUDE.md mandates it | ✅ |
-| 2 | ≥85 % coverage | Current: **97.65 %**. Gate enforced by `--cov-fail-under=85` in `pyproject.toml`'s `addopts` | ✅ |
+| 2 | ≥85 % coverage | Current: **97.48 %**. Gate enforced by `--cov-fail-under=85` in `pyproject.toml`'s `addopts` | ✅ |
 | 3 | Zero ruff violations | `uv run ruff check src/ tests/ analysis/ scripts/ main.py` → All checks passed | ✅ |
 | 4 | Documented edge cases + exception handling | `tests/unit/` has 26 test files covering edge cases per module; `agent_factory` raises `ValueError` for unknown algorithm; `config_loader` raises on missing/mismatched version | ✅ |
 | 5 | Automated test reports | CI workflow uploads coverage XML on Python 3.13 (`.github/workflows/ci.yml:53-58`) | ✅ |
@@ -59,7 +59,7 @@ that a grader can verify against the repo without reading the audit.
 |---|---|---|---|
 | 1 | Systematic experiments with parameter changes | [analysis/multi_seed_robustness.py](../../analysis/multi_seed_robustness.py) (5 seeds × 3 algos × 1500 ep), [analysis/alpha_decay_sweep.py](../../analysis/alpha_decay_sweep.py) (6 decay values × 3 seeds × 2 algos) | ✅ |
 | 2 | Documented sensitivity analysis + research notebook | [docs/assignment-2/EXPERIMENTS.md](../assignment-2/EXPERIMENTS.md) — 3 hypotheses with H1/H2/H3 results; [notebooks/research_analysis.ipynb](../../notebooks/research_analysis.ipynb) reproduces every experiment inline | ✅ |
-| 3 | Quality charts, screenshots, architecture diagrams | `results/comparison/` (scenario PNGs), `results/analysis/` (multi-seed + decay-sweep PNGs), `assets/assignment-2/` (5 GUI screenshots), `docs/shared/ARCHITECTURE.md` (text-rendered architecture diagrams) | ✅ |
+| 3 | Quality charts, screenshots, architecture diagrams (§20.5.b: Bar / Line / Scatter / Heatmap / Box) | `results/comparison/` (scenario **line** charts); `results/analysis/multi_seed_robustness.png` (**line** chart + **box** plot bottom panel + **scatter** of per-seed dots — `ax_box.scatter` in `multi_seed_robustness.py:109`); `results/analysis/alpha_decay_sweep.png` (**bar** chart); `results/analysis/q_table_heatmap.png` (**heatmap**). All five §20.5.b chart types present. Plus `assets/assignment-2/` (8 GUI screenshots) and `docs/shared/ARCHITECTURE.md` (text-rendered architecture + C4 Context diagrams) | ✅ |
 | 4 | Token cost analysis + optimization strategies | [docs/assignment-2/COST_ANALYSIS.md](../assignment-2/COST_ANALYSIS.md) — per-model breakdown table, list-price-vs-subscription gap, five named optimization strategies, §11.2 budget management (§11 audit) | ✅ |
 
 ## §17.6 — Extensibility & standards
@@ -69,7 +69,7 @@ that a grader can verify against the repo without reading the audit.
 | 1 | Documented extension points | README §"Extending it" + `docs/shared/ARCHITECTURE.md` ADR-002. The algorithm registry is one-line; the hazard-cell-type seam is documented honestly as multiple-places (§12 audit) | ✅ |
 | 2 | Project organised as a Python package | `src/dronerl/__init__.py` with `__version__` and `__all__`; `pyproject.toml` `[build-system] = hatchling` (§14 audit added the missing build-system table) | ✅ |
 | 3 | Parallel processing with thread safety | `analysis/_runner.train_cells` uses `multiprocessing.Pool` with spawn context; `tests/integration/test_parallel_runner.py::test_parallel_matches_serial` asserts bit-for-bit determinism (§15 audit) | ✅ |
-| 4 | Building-block design | Nine building-block classes carry §16.3-style Input / Output / Setup docstrings (`BaseAgent` + 3 subclasses, `Trainer`, `Environment`, `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`) — §16 audit | ✅ |
+| 4 | Building-block design | Ten building-block classes carry §16.3-style Input / Output / Setup docstrings (`BaseAgent`, `DecayingAlphaAgent`, `BellmanAgent`, `QLearningAgent`, `DoubleQAgent`, `Trainer`, `Environment`, `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`) — §16 audit + Pass-2 iter-1 `DecayingAlphaAgent` extraction | ✅ |
 | 5 | ISO/IEC 25010 compliance | [docs/shared/QUALITY_STANDARDS.md](QUALITY_STANDARDS.md) — explicit map from each of the 8 characteristics to the file / gate that satisfies it (§13 audit) | ✅ |
 | 6 | Ordered Git history with license, attribution, deployment instructions | Git log: per-section audit commits with detailed messages, signed off Co-Authored-By Claude. [LICENSE](../../LICENSE) — MIT, copyright 2026 Adir Elmakais. README `## License & Credits` section. Deployment via README `## Installation` + `## Running` sections | ✅ |
 
@@ -81,7 +81,7 @@ that a grader can verify against the repo without reading the audit.
 # All gates pass locally
 uv sync --dev
 uv run ruff check src/ tests/ analysis/ scripts/ main.py    # zero violations
-uv run pytest tests/                                         # 315 passed, 97.65 % coverage
+uv run pytest tests/                                         # 323 passed, 97.48 % coverage
 bash scripts/check_file_sizes.sh                             # all files ≤ 150 code lines
 
 # Reproduce experimental artefacts
@@ -106,11 +106,11 @@ that an auditor can walk through in one minute. Mapping for DroneRL:
 | # | §20.9 item | Status | Pointer |
 |---|---|:--:|---|
 | 1 | **Documentation:** PRD, architecture, README, API doc, prompts book | ✅ | [`docs/INDEX.md`](../INDEX.md), per-feature PRDs in [`assignment-2/`](../assignment-2/), [`README.md`](../../README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PROMPTS.md`](PROMPTS.md) |
-| 2 | **Code:** modular structure, files ≤150 lines, comments+docstrings, code-style consistency | ✅ | `scripts/check_file_sizes.sh` gate (pre-commit + CI); ruff `select = [E,F,W,I,N,UP,B,C4,SIM]`; §16-style Input/Output/Setup docstrings on 9 building-block classes |
+| 2 | **Code:** modular structure, files ≤150 lines, comments+docstrings, code-style consistency | ✅ | `scripts/check_file_sizes.sh` gate (pre-commit + CI); ruff `select = [E,F,W,I,N,UP,B,C4,SIM]`; §16-style Input/Output/Setup docstrings on 10 building-block classes (with `_validate_config` on `BaseAgent` + `Trainer` per §16.3) |
 | 3 | **Configuration:** separate files, `.env-example`, no secrets, `.gitignore` | ✅ | [`config/config.yaml`](../../config/config.yaml), [`.env-example`](../../.env-example), `.gitignore` blocks `*.pem`/`*.key`/`credentials.json`/`*.crt`/`*.p12`/`*.pfx`/`secrets.json` (§7) |
-| 4 | **Tests:** 85 %+ coverage, edge cases, error handling, automated reports | ✅ | **97.65 %** (gate: `--cov-fail-under=85`), 315 tests, CI uploads coverage XML on Python 3.13 |
+| 4 | **Tests:** 85 %+ coverage, edge cases, error handling, automated reports | ✅ | **97.48 %** (gate: `--cov-fail-under=85`), 323 tests, CI uploads coverage XML on Python 3.13 |
 | 5 | **Research:** parameter exploration, sensitivity analysis, comparison notebook, charts | ✅ | [`analysis/multi_seed_robustness.py`](../../analysis/multi_seed_robustness.py), [`analysis/alpha_decay_sweep.py`](../../analysis/alpha_decay_sweep.py) (OAT), [`notebooks/research_analysis.ipynb`](../../notebooks/research_analysis.ipynb), [`EXPERIMENTS.md`](../assignment-2/EXPERIMENTS.md) |
-| 6 | **Visualisation:** quality charts, screenshots, architecture diagrams | ✅ | `results/comparison/` (scenario PNGs), `results/analysis/` (multi-seed + decay-sweep PNGs), `assets/assignment-2/` (5 GUI screenshots), ARCHITECTURE.md text-rendered diagrams (C4 framing) |
+| 6 | **Visualisation:** quality charts, screenshots, architecture diagrams | ✅ | `results/comparison/` (scenario PNGs), `results/analysis/` (multi-seed CI-band line chart, alpha-decay sweep bar chart, Q-table heatmap), `assets/assignment-2/` (8 GUI screenshots), ARCHITECTURE.md text-rendered diagrams (C4 framing) |
 | 7 | **Costs:** tokens table, detailed analysis, optimisation | ✅ | [`COST_ANALYSIS.md`](../assignment-2/COST_ANALYSIS.md) — per-model token table (Sonnet 4.x / Opus 4.x / GPT-5-Codex), 5 named optimisation strategies, §11.2 budget management (§11) |
 | 8 | **Extensibility:** extension points, examples, plugins, interfaces | ✅ | README §"Extending it" + ADR-002; `ALGORITHM_REGISTRY` one-line extension recipe (§12) |
 | 9 | **General:** Git history, license, attribution, deployment | ✅ | Per-section audit-driven Git log; [LICENSE](../../LICENSE) — MIT 2026; README `## License & Credits`; deployment via README `## Installation` + `## Running` |

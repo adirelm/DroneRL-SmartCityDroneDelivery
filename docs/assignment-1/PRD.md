@@ -35,7 +35,7 @@ DroneRL's differentiator is **playable, visual, professionally-tested tabular RL
 | KPI | Target | Verification |
 |---|---|---|
 | Learning convergence | Agent reaches goal in ≤ 3 000 episodes on the medium-difficulty board | `analysis/multi_seed_robustness.py` measured runs |
-| Test coverage | ≥ 85 % line coverage | `pytest --cov-fail-under=85` (current: 97.65 %) |
+| Test coverage | ≥ 85 % line coverage | `pytest --cov-fail-under=85` (current: 97.48 %) |
 | File-size discipline | All `.py` files ≤ 150 *code* lines | `scripts/check_file_sizes.sh` (pre-commit + CI gate) |
 | Lint cleanliness | 0 ruff violations | `uv run ruff check src/ tests/ analysis/ scripts/ main.py` |
 | GUI smoothness | 30 FPS sustained during training render | Pygame clock, exercised by manual screenshot capture |

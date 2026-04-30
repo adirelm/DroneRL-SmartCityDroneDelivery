@@ -14,16 +14,16 @@ import pytest
 
 from analysis._runner import base_raw_config, resolve_workers, train_cells
 
-EPISODES = 50  # tiny — keeps the test under a second
+EPISODES = 300  # past the early-ε-greedy random-walk plateau where seeding bugs surface
 ALGOS = ("bellman", "q_learning")  # 2 algos × 2 seeds = 4 cells, fits on any CPU
 SEEDS = (3, 11)
 
 
-def _cells() -> list:
+def _cells(episodes: int = EPISODES) -> list:
     raw = base_raw_config()
     raw["dynamic_board"]["enabled"] = True
     board = {"noise_level": 0.5, "hazard_density": 0.1, "difficulty": 0.3}
-    return [(raw, algo, seed, EPISODES, board) for algo in ALGOS for seed in SEEDS]
+    return [(raw, algo, seed, episodes, board) for algo in ALGOS for seed in SEEDS]
 
 
 def test_serial_run_produces_per_cell_results():
@@ -59,3 +59,24 @@ def test_resolve_workers_clamps_and_defaults(monkeypatch):
     assert resolve_workers(2) == min(2, os.cpu_count() or 1)
     monkeypatch.setenv("DRONERL_PARALLEL", "3")
     assert resolve_workers() == min(3, os.cpu_count() or 1)
+
+
+def test_different_seeds_produce_different_results():
+    """Canary: proves the determinism test has discriminating power.
+
+    If `test_parallel_matches_serial` only passes because the workload is too
+    short to expose seeding (everything is identical random walk), this test
+    would also pass — same seed → same result is *trivially* true. The check
+    here is the inverse: same code, different seeds, results MUST differ. If
+    they don't, the determinism test isn't testing anything meaningful.
+    """
+    raw = base_raw_config()
+    raw["dynamic_board"]["enabled"] = True
+    board = {"noise_level": 0.5, "hazard_density": 0.1, "difficulty": 0.3}
+    cells = [(raw, "q_learning", 7, EPISODES, board), (raw, "q_learning", 23, EPISODES, board)]
+    results = train_cells(cells, n_workers=1)
+    rewards_by_seed = {seed: rewards for _, seed, rewards, _ in results}
+    assert rewards_by_seed[7] != rewards_by_seed[23], (
+        "Two different seeds produced identical reward sequences — the "
+        "determinism test is not actually testing seed-dependence."
+    )

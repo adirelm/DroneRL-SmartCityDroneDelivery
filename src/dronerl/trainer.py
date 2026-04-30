@@ -27,6 +27,14 @@ class Trainer:
         self._goal_count = 0
         self._reward_history: list[float] = []
         self._steps_history: list[int] = []
+        self._validate_config()
+
+    def _validate_config(self) -> None:
+        """§16.3 — fail fast on malformed Setup data, with clear messages."""
+        if self.max_steps <= 0:
+            raise ValueError(f"max_steps_per_episode must be positive: got {self.max_steps}")
+        if self._metric_window <= 0:
+            raise ValueError(f"convergence_window must be positive: got {self._metric_window}")
 
     @property
     def episode_count(self) -> int:

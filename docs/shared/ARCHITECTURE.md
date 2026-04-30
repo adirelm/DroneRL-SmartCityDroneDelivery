@@ -28,7 +28,7 @@ points to the file that backs it up.
 
 ```bash
 uv sync --dev                                          # install dependencies
-uv run pytest tests/                                   # 315 tests, 97.65% coverage
+uv run pytest tests/                                   # 323 tests, 97.48 % coverage
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 uv run python scripts/generate_comparison_charts.py    # regenerate scenario PNGs
 uv run python -m analysis.multi_seed_robustness        # 5 seeds × 1500 ep × 3 algos
@@ -56,6 +56,37 @@ mapped to the four C4 levels as follows:
 UML-style flow diagrams for the *complex processes* (training loop,
 GUI event flow, comparison-runner dispatch) are rendered in the
 "Data Flow" section.
+
+### C4 Context-level diagram
+
+```
+┌────────────────┐                            ┌──────────────────────┐
+│                │   Pygame events            │                      │
+│   End user     │   (keys / mouse) ──────►   │                      │
+│  (developer /  │                            │     DroneRL app      │
+│   student /    │   Screen + chart PNGs ◄──  │  (single Python      │
+│    grader)     │                            │   process, Pygame    │
+│                │                            │   GUI + RL training) │
+└────────────────┘                            └─────┬──────┬─────────┘
+                                                    │      │
+              ┌─────────────────────────────────────┘      └────────────────┐
+              │ subprocess.Popen                                            │ file I/O
+              │ (chart-gen, OS                                              │
+              │  viewer dispatch)                                           │
+              ▼                                                             ▼
+┌──────────────────────┐                                       ┌──────────────────────┐
+│  OS file viewer      │                                       │  config/config.yaml  │
+│  (Preview / Explorer │                                       │  data/saved_brains/  │
+│  / xdg-open)         │                                       │  results/*.png       │
+└──────────────────────┘                                       └──────────────────────┘
+```
+
+The diagram captures the C4-Context boundary: one user, one
+single-process app, two external systems (the OS file viewer and the
+on-disk config + persisted artefacts), no network surface. The
+process-level `subprocess.Popen` story for chart generation and
+file-viewer launch is detailed in
+[CONCURRENCY.md](CONCURRENCY.md) §2.
 
 ---
 

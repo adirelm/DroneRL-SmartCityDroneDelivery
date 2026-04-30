@@ -142,3 +142,34 @@ def test_load_missing_path_is_noop(agent, tmp_path):
     before = agent.q_table.copy()
     agent.load(str(tmp_path / "does_not_exist.npy"))
     np.testing.assert_array_equal(agent.q_table, before)
+
+
+class TestValidateConfig:
+    """§16.3 — _validate_config must reject malformed Setup data with clear messages."""
+
+    def _broken(self, config, **overrides):
+        # Build an agent post-mutation by tweaking the env/agent sub-config in place.
+        for path, value in overrides.items():
+            sub, attr = path.split(".")
+            setattr(getattr(config, sub), attr, value)
+
+    def test_rejects_zero_grid(self, config):
+        config.environment.grid_rows = 0
+        with pytest.raises(ValueError, match="grid dimensions"):
+            BaseAgent(config)
+
+    def test_rejects_gamma_out_of_range(self, config):
+        config.agent.discount_factor = 1.5
+        with pytest.raises(ValueError, match="discount_factor"):
+            BaseAgent(config)
+
+    def test_rejects_inverted_epsilon(self, config):
+        config.agent.epsilon_start = 0.1
+        config.agent.epsilon_end = 0.5
+        with pytest.raises(ValueError, match="epsilon range invalid"):
+            BaseAgent(config)
+
+    def test_rejects_zero_epsilon_decay(self, config):
+        config.agent.epsilon_decay = 0.0
+        with pytest.raises(ValueError, match="epsilon_decay"):
+            BaseAgent(config)

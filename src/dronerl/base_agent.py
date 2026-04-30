@@ -40,7 +40,22 @@ class BaseAgent:
         self.epsilon_end = agent_cfg.epsilon_end
         self.epsilon_decay = agent_cfg.epsilon_decay
 
+        self._validate_config()
         self.q_table = np.zeros((self.rows, self.cols, self.NUM_ACTIONS))
+
+    def _validate_config(self) -> None:
+        """§16.3 — fail fast on malformed Setup data, with clear messages."""
+        if self.rows <= 0 or self.cols <= 0:
+            raise ValueError(f"grid dimensions must be positive: got {self.rows}x{self.cols}")
+        if not 0.0 <= self.gamma <= 1.0:
+            raise ValueError(f"discount_factor must be in [0, 1]: got {self.gamma}")
+        if not 0.0 <= self.epsilon_end <= self.epsilon <= 1.0:
+            raise ValueError(
+                f"epsilon range invalid: start={self.epsilon}, end={self.epsilon_end} "
+                "(require 0 ≤ end ≤ start ≤ 1)"
+            )
+        if not 0.0 < self.epsilon_decay <= 1.0:
+            raise ValueError(f"epsilon_decay must be in (0, 1]: got {self.epsilon_decay}")
 
     def choose_action(self, state: tuple[int, int]) -> int:
         """Select action using epsilon-greedy policy."""
@@ -87,10 +102,14 @@ class BaseAgent:
 class DecayingAlphaAgent(BaseAgent):
     """``BaseAgent`` + geometric α decay. Shared base for Q-Learning + Double-Q.
 
-    Subclasses call :meth:`_init_decay` from their ``__init__`` after the
-    ``super().__init__(config)`` line, passing their algorithm-specific
-    ``alpha_start`` / ``alpha_end`` / ``alpha_decay`` triple from their own
-    config sub-block (``config.q_learning`` or ``config.double_q``).
+    Input/Output: inherits the ``BaseAgent`` contract. Adds ``self.alpha``
+        (float, mutable) as per-episode state — read by subclass ``update``
+        bodies and decayed by ``decay_epsilon`` on every episode boundary.
+    Setup: subclasses must call :meth:`_init_decay` *after* their
+        ``super().__init__(config)`` line, passing the algorithm-specific
+        triple ``(alpha_start, alpha_end, alpha_decay)`` from their own
+        config sub-block (``config.q_learning`` or ``config.double_q``).
+        Decay protocol: ``α ← max(alpha_end, α · alpha_decay)`` per episode.
     """
 
     def _init_decay(self, alpha_start: float, alpha_end: float, alpha_decay: float) -> None:

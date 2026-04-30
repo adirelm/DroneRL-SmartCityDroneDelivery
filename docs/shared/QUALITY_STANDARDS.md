@@ -88,7 +88,7 @@ Already audited under §10 of the submission guidelines. See:
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 315 unit + integration tests, 97.65 % coverage
+- **Maturity.** 323 unit + integration tests, 97.48 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
 - **Availability.** GUI can pause / resume mid-training without
@@ -207,7 +207,7 @@ tracking, and traceability. DroneRL alignment:
   `_validate_version`. `pyproject.toml` + `uv.lock` pin every
   runtime + dev dependency.
 - **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
-  ≥85 % coverage gate (current: 97.65 %), 1:1 module-to-test mapping,
+  ≥85 % coverage gate (current: 97.48 %), 1:1 module-to-test mapping,
   bit-for-bit determinism test for the parallel sweep
   (`tests/integration/test_parallel_runner.py`).
 - **Code review.** Pre-commit hooks (ruff + EOF + 150-line file
@@ -229,7 +229,7 @@ Google's public eng-practices repo prescribes:
   ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]` rule set in
   `pyproject.toml`. The `N` (PEP 8 naming) rule in particular
   enforces descriptive, consistent names.
-- **Testing pyramid.** Mirrored by `tests/unit/` (26 files, fast,
+- **Testing pyramid.** Mirrored by `tests/unit/` (24 files, fast,
   per-module) ↔ `tests/integration/` (2 files, multi-component +
   parallel-runner determinism). Most coverage lands at the unit
   level by design.
@@ -262,3 +262,32 @@ The Microsoft guidelines' "REST" specifics (HTTP verbs, status
 codes, URL design) don't apply to a single-process Pygame app —
 recording that as a scope note rather than fabricating a fake REST
 layer to tick the box.
+
+### Python Enhancement Proposals (PEPs) — also followed
+
+§18 of the submission guidelines names five international standards
+above. The project additionally follows three Python-specific
+standards that are arguably more directly traceable to source-level
+artefacts and worth naming explicitly:
+
+- **[PEP 8](https://peps.python.org/pep-0008/)** — Python style
+  guide. Enforced by ruff's `N` rule (`pyproject.toml`'s
+  `select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]`).
+  Naming conventions, line length (`line-length = 100`), and import
+  ordering are all gated on every commit.
+- **[PEP 257](https://peps.python.org/pep-0257/)** — docstring
+  conventions. The §16 "Input / Output / Setup" contract block
+  enforced on every building-block class (`BaseAgent`,
+  `DecayingAlphaAgent`, three subclasses, `Trainer`, `Environment`,
+  `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`) follows the
+  PEP 257 layout (one-line summary, blank line, structured body).
+- **[PEP 484](https://peps.python.org/pep-0484/)** — type hints.
+  Used throughout `src/dronerl/`: e.g. `tuple[int, int]` for
+  state, `int | None` for the `n_workers` keyword, `list[float]`
+  for histories. Type hints make the §16 Input/Output contracts
+  machine-checkable rather than purely documentary.
+
+These three are arguably the most directly auditable standards in
+the project: any reviewer can run `ruff check`, read a class's
+docstring, or check a function signature to verify compliance,
+without needing to interpret a high-level model.

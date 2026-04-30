@@ -17,16 +17,22 @@ from dronerl.trainer import Trainer
 class DroneRLSDK:
     """High-level orchestration entry point — composes config, env, agent, trainer.
 
-    Input:  ``config_path: str`` (default ``"config/config.yaml"``) at construction;
-            ``train(episodes: int)``, ``run_step()``, ``save_brain(path)`` /
-            ``load_brain(path)``, ``compare_algorithms(...)`` post-construction.
-    Output: ``train()`` returns nothing — populates ``self.metrics`` / agent's Q-table.
-            ``run_step()`` returns one ``(state, action, reward, next_state, done)`` tuple.
-            ``compare_algorithms()`` writes a PNG to ``results/comparison/`` and returns
-            its path.
+    Input:  ``config_path: str`` (default ``"config/config.yaml"``) at construction
+            *or* keyword-only ``config: Config`` to share a pre-loaded instance
+            (the GUI path — skips a YAML re-read so SDK + GUI see the same Config
+            object). Post-construction methods: ``train_step()``,
+            ``train_batch(n)``, ``reset()``, ``switch_algorithm(name)``,
+            ``run_comparison(episodes)``, ``save_brain(path)`` /
+            ``load_brain(path)``, ``set_dynamic_params(...)``.
+    Output: ``train_step()`` returns ``{"reward": float, "steps": int,
+            "reached_goal": bool}``; ``train_batch(n)`` returns a list of those
+            dicts. ``run_comparison()`` returns ``{algo_name: reward_history}``
+            and populates ``self.comparison`` with steps history too.
+            ``generate_chart()`` writes a PNG to ``results/comparison/`` and
+            returns its path. ``load_brain`` is a no-op on a missing file.
     Setup:  YAML at ``config_path`` — must contain the full schema validated by
             ``config_loader._validate_version`` (algorithm choice, hyperparameters,
-            board dimensions, reward magnitudes).
+            board dimensions, reward magnitudes, ``analysis.max_parallel_workers``).
     """
 
     def __init__(self, config_path: str = "config/config.yaml", *, config: Config | None = None):
