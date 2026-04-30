@@ -330,17 +330,17 @@ The README must include:
 
 ## 11. Timeline & Milestones
 
-| Phase | Deliverable |
-|-------|------------|
-| 1 | Create `src/dronerl/double_q_agent.py` with two Q-tables and cross-table update |
-| 2 | Add `double_q` section to config.yaml |
-| 3 | Register in agent factory |
-| 4 | Write comprehensive tests |
-| 5 | Create `src/dronerl/comparison.py` with store + chart generation |
-| 6 | Extend SDK with comparison and algorithm switching |
-| 7 | Add algorithm selector buttons and keyboard shortcuts to GUI |
-| 8 | Generate comparison scenarios and tune parameters |
-| 9 | Save comparison charts, embed in README |
+| # | Phase | Day | Calendar | Review checkpoint |
+|---|---|---|---|---|
+| 1 | `double_q_agent.py` with QA/QB tables + cross-table update | D1 | 2026-04-08 | Hasselt 2010 update form verified by hand on a 2×2 toy MDP |
+| 2 | Add `double_q` section to config.yaml | D1 | 2026-04-08 | `_validate_version` clean; new keys load without error |
+| 3 | Register in agent factory | D2 | 2026-04-09 | `create_agent({"name": "double_q"})` returns DoubleQAgent |
+| 4 | Comprehensive tests | D2 | 2026-04-09 | parametrised `TestFactoryAgentApi` exercises Double-Q's save/load with two .npy files |
+| 5 | `comparison.py` with store + chart generation | D3 | 2026-04-10 | matplotlib chart renders headlessly (`Agg` backend); PNG written to `results/comparison/` |
+| 6 | Extend SDK with comparison + switch | D3 | 2026-04-10 | `sdk.run_comparison(episodes)` populates `ComparisonStore` for all 3 algos |
+| 7 | GUI algorithm-selector buttons + keys 1/2/3 | D4 | 2026-04-11 | switching on the live GUI never resets the trained Q-table |
+| 8 | Generate comparison scenarios + tune | D5–D6 | 2026-04-12 → 13 | Scenario 1 (medium) + Scenario 2 (high noise) PNGs match prediction in EXPERIMENTS.md |
+| 9 | Embed charts in README | D7 | 2026-04-14 | README's "Algorithm Comparison" section renders both PNGs with reading-the-graph callouts |
 
 ---
 

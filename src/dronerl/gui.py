@@ -118,10 +118,7 @@ class GUI:
 
     def _on_slider_change(self):
         s = self.sliders
-        self.hazards.set_noise(s.get("noise"))
-        self.hazards.set_density(s.get("density"))
-        self.hazards.set_difficulty(s.get("difficulty"))
-        self.env.set_wind_drift(self.hazards.effective_drift())
+        self.sdk.set_dynamic_params(s.get("noise"), s.get("density"), s.get("difficulty"))
 
     def _draw(self):
         self.screen.fill(tuple(self.cfg.colors.background))

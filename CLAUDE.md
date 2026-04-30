@@ -6,6 +6,37 @@ DroneRL is a reinforcement learning project comparing three algorithms:
 Bellman (constant LR), Q-Learning (decaying alpha), and Double Q-Learning (dual tables).
 Built with Pygame GUI. Assignment for Bar-Ilan University Vibe Coding Workshop.
 
+## Human ↔ AI Responsibility Contract (§1.4)
+
+§1.4 of the submission guidelines frames the developer as **architect**,
+the AI as **implementer**. This file is the contract that boundary makes
+explicit. Each row says **who decides** before any code is generated.
+
+| Concern | Human-decided (non-delegable) | AI-delegated |
+|---|---|---|
+| Requirements (PRD, scope, success criteria, KPIs) | ✅ | — |
+| Architecture (ADRs, layer boundaries, public API shape) | ✅ | — |
+| Test acceptance criteria + the assertions that must hold | ✅ | — |
+| Final code-review sign-off + commit message intent | ✅ | — |
+| Self-score / grade claim against the rubric | ✅ | — |
+| Cost-budget envelope (what we're willing to spend) | ✅ | — |
+| Code generation against an approved spec | — | ✅ |
+| Refactoring within an existing public API | — | ✅ |
+| Test scaffolding + boilerplate from a written spec | — | ✅ |
+| Docstring drafts (human edits before commit) | — | ✅ |
+| Routine doc maintenance (link fixes, freshness sweeps) | — | ✅ |
+| Lint / format auto-fixes | — | ✅ |
+
+**Operating rule.** If any AI-generated change would alter a human-decided
+column above (e.g. add a new public SDK method, change a test assertion,
+weaken a quality gate, choose between two architectures), the human must
+sign off explicitly *before* the code lands — typically by approving the
+PRD/PLAN edit first, *then* letting the AI execute against it.
+
+This contract is also evidenced in `docs/shared/PROMPTS.md` (the literal
+prompts used) and in the per-section commit messages that name the §
+of the submission guidelines being addressed.
+
 ## Hard Constraints (Apply to ALL Files)
 
 ### 1. File Size Limit — 150 Lines Maximum

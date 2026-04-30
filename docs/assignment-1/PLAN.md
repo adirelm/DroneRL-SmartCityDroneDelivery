@@ -156,3 +156,36 @@ Grid  Dashboard  Editor
 ## File Size Constraint
 
 Every `.py` file must stay under **150 lines**. If a module grows beyond this, split it into sub-modules.
+
+---
+
+## Deployment Strategy
+
+DroneRL is a single-process Pygame application installed and run from
+the user's local Python 3.11+ environment. There is no server, no
+container, no cloud deploy. The deploy contract is:
+
+| Step | Command | Pass criterion |
+|---|---|---|
+| **Install** | `uv sync --dev` | exits 0; `uv pip list` shows `dronerl 1.1.1` editable |
+| **Run (GUI)** | `uv run main.py` | Pygame window opens at the configured `gui.window_width × gui.window_height` |
+| **Run (headless analysis)** | `DRONERL_PARALLEL=4 uv run python -m analysis.multi_seed_robustness` | charts written to `results/analysis/` |
+| **Reproduce comparison** | `uv run python scripts/generate_comparison_charts.py` | scenario PNGs written to `results/comparison/` |
+| **Verify gates** | `uv run pytest tests/` + `uv run ruff check src/ tests/ analysis/ scripts/ main.py` + `bash scripts/check_file_sizes.sh` | all three exit 0 |
+
+Distribution channels considered + scope-noted:
+
+- **PyPI publish** — the project has a working `[build-system] = hatchling`,
+  so `uv build` produces a wheel. *Not* published because the project is
+  a coursework deliverable, not a library; the GitHub repo is the
+  distribution surface.
+- **Docker image** — would add ~300 MB and a build-step for marginal
+  benefit on a desktop GUI app. Out of scope.
+- **PyInstaller bundle** — viable for distributing a no-Python-required
+  binary, but unnecessary for the grader path (`uv sync` is the
+  documented install).
+
+Target environments: macOS 13+, Linux X11/Wayland, Windows 11. CI
+verifies the test suite on Python 3.11 / 3.12 / 3.13 (the GitHub
+Actions matrix). No GPU required; the project runs on a 2-core CPU
+within the documented runtime.

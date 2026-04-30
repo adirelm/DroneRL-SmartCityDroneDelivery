@@ -84,7 +84,6 @@ class Editor:
             ov = pygame.Surface((self.cell_size, self.cell_size), pygame.SRCALPHA)
             ov.fill((*color, 140))
             surface.blit(ov, (col * self.cell_size, row * self.cell_size))
-            # White border on hovered cell
             r = pygame.Rect(col * self.cell_size, row * self.cell_size,
                             self.cell_size, self.cell_size)
             pygame.draw.rect(surface, self.c_white, r, 2)
@@ -96,17 +95,14 @@ class Editor:
         bar_y = grid_h + 4
         bar_h = 40
 
-        # Background bar across grid area
         pygame.draw.rect(surface, self.c_bar_bg,
                          (0, bar_y, self.dashboard_x, bar_h))
         pygame.draw.line(surface, self.c_border,
                          (0, bar_y), (self.dashboard_x, bar_y))
 
-        # Title
         title = self.font.render("Place:", True, self.c_dim)
         surface.blit(title, (10, bar_y + 12))
 
-        # Type buttons side by side
         bx = 60
         bw, bh = 120, 30
         for i, cell_type in enumerate(EDITABLE_TYPES):
@@ -119,7 +115,6 @@ class Editor:
             border = self.c_white if selected else self.c_unsel_border
             pygame.draw.rect(surface, border, rect, 2, border_radius=4)
 
-            # Color dot + label
             pygame.draw.circle(surface, color,
                                (rect.x + 14, rect.y + bh // 2), 6)
             lbl = self.btn_font.render(TYPE_NAMES[cell_type], True, self.c_label)

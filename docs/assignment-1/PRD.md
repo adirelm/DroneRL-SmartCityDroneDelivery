@@ -130,13 +130,24 @@ DroneRL's differentiator is **playable, visual, professionally-tested tabular RL
 
 ## 6. Timeline & Milestones
 
-| Phase | Deliverable |
-|-------|------------|
-| 1 | Project setup, config, environment |
-| 2 | Core RL engine (Q-table, agent, training loop) |
-| 3 | Pygame GUI (grid rendering, heatmap, arrows) |
-| 4 | Dashboard panel |
-| 5 | Level editor |
-| 6 | SDK layer integration |
-| 7 | Tests (85%+ coverage) |
-| 8 | Documentation & README |
+Dates are written as relative day-anchors (`Day N`) plus the calendar
+day they actually landed on, so the timeline is reproducible from the
+git history. Each phase ends with an explicit **review checkpoint**
+that gates the next phase — no phase starts until the previous
+checkpoint passes.
+
+| # | Phase | Deliverable | Day | Calendar | Review checkpoint (gate to next phase) |
+|---|---|---|---|---|---|
+| 1 | Setup | `pyproject.toml`, `config/config.yaml`, package skeleton | D1 | 2026-03-15 | `uv sync --dev` succeeds; `uv run python -c "import dronerl"` passes |
+| 2 | Core RL | Q-table, BellmanAgent, training loop | D2–D4 | 2026-03-16 → 18 | `tests/unit/test_agent.py` green; convergence on 12×12 grid in < 3 000 ep |
+| 3 | Pygame GUI | grid render, heatmap, policy arrows | D5–D7 | 2026-03-19 → 21 | `uv run main.py` launches; heatmap + arrows visibly update during training |
+| 4 | Dashboard | episode count, reward graph, goal-rate, ε | D8 | 2026-03-22 | dashboard renders without truncation at the configured `dashboard_width` |
+| 5 | Editor | place/erase obstacles, save/load brain | D9 | 2026-03-23 | editor refuses placement on start/goal cells (boundary test) |
+| 6 | SDK | `DroneRLSDK` orchestration entry point | D10 | 2026-03-24 | every external caller routes through `DroneRLSDK` (§4.1 grep) |
+| 7 | Tests | ≥ 85 % coverage gate enabled | D11 | 2026-03-25 | `--cov-fail-under=85` lands in `pyproject.toml addopts`; CI green |
+| 8 | Docs | README + ARCHITECTURE + INDEX + LICENSE | D12 | 2026-03-26 | external-grader checklist (§17 / §20) walks the repo without a missing artefact |
+
+A separate **Pass-2 / Pass-3 review** epic ran 2026-04-29 → 2026-04-30,
+re-auditing every section §1–§20 with five independent reviewers per
+iteration. Findings + fixes are tagged `Pass-N iter M` in the git log
+and re-pin tag `T2`.

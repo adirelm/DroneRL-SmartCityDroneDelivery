@@ -52,9 +52,9 @@ def dispatch(gui, a):
         gui.paused = True
         gui.logic.exit_demo()
     elif a == "save":
-        gui.agent.save(gui.brain_path)
+        gui.sdk.save_brain(gui.brain_path)
     elif a == "load" and os.path.exists(gui.brain_path):
-        gui.agent.load(gui.brain_path)
+        gui.sdk.load_brain(gui.brain_path)
     elif a == "reset":
         gui.sdk.reset()
         gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()
@@ -84,6 +84,11 @@ def _run_comparison_scripts(gui) -> None:
     Python subprocesses. The module-level ``_comparison_proc`` reference is
     consulted before each spawn; if a previous chart-generation process is
     still running, we skip rather than stack a second one.
+
+    Thread safety: the read-modify-write on ``_comparison_proc`` is safe only
+    because Pygame's event loop is single-threaded and ``dispatch`` is the
+    only caller. If a future change moves dispatch into a thread or async
+    context, replace this sentinel with a ``threading.Lock``.
     """
     global _comparison_proc
     import subprocess

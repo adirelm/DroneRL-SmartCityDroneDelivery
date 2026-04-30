@@ -30,7 +30,4 @@ class QLearningAgent(DecayingAlphaAgent):
         done: bool,
     ) -> None:
         """Update Q-value using decaying alpha."""
-        current_q = self.q_table[state[0], state[1], action]
-        next_max_q = 0.0 if done else self.get_max_q(next_state)
-        target = reward + self.gamma * next_max_q
-        self.q_table[state[0], state[1], action] += self.alpha * (target - current_q)
+        self._td_update(self.q_table, state, action, reward, next_state, done, self.alpha)

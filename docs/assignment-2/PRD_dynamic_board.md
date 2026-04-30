@@ -220,16 +220,16 @@ colors:
 
 ## 8. Timeline & Milestones
 
-| Phase | Deliverable |
-|-------|------------|
-| 1 | Add CellType.PIT to environment, renderer, editor, overlays |
-| 2 | Create HazardGenerator class with apply/clear/set_params |
-| 3 | Create SliderPanel widget with 3 sliders |
-| 4 | Integrate sliders into editor panel in GUI |
-| 5 | Wire sliders → SDK → HazardGenerator → Environment |
-| 6 | Write tests for all new components |
-| 7 | Update config.yaml with new sections |
-| 8 | Verify backward compatibility with dynamic_board.enabled = false |
+| # | Phase | Day | Calendar | Review checkpoint |
+|---|---|---|---|---|
+| 1 | Add `CellType.PIT` to environment / renderer / editor / overlays | D1 | 2026-04-15 | grid renders pit colour distinctly from trap; step() returns trap_penalty + done=True |
+| 2 | `HazardGenerator` class with apply/clear/set_params | D2 | 2026-04-16 | density slider drives placed-cell count; ratio table sums to 1.0 |
+| 3 | `SliderPanel` with 3 sliders (noise/density/difficulty) | D3 | 2026-04-17 | each slider emits change events; clamps to [0, 1] |
+| 4 | Integrate sliders into editor panel in GUI | D3 | 2026-04-17 | sliders only render when editor is active |
+| 5 | Wire sliders → SDK → HazardGenerator → Environment | D4 | 2026-04-18 | dragging a slider mutates env drift via `sdk.set_dynamic_params` |
+| 6 | Tests for all new components | D5 | 2026-04-19 | unit tests for HazardGenerator, SliderPanel, dynamic_board path; coverage stays ≥ 85 % |
+| 7 | Update config.yaml with new sections | D5 | 2026-04-19 | `_validate_version` clean; defaults match assignment-1 visual baseline |
+| 8 | Verify backward compatibility with `dynamic_board.enabled=false` | D6 | 2026-04-20 | with the flag off, the project's behaviour matches Assignment-1 exactly |
 
 ---
 

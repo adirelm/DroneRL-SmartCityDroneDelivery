@@ -7,6 +7,7 @@ scripts compose this into multi-seed sweeps and parameter sweeps.
 
 from __future__ import annotations
 
+import logging
 import multiprocessing as mp
 import os
 import random
@@ -20,6 +21,8 @@ from dronerl.config_loader import Config, load_config
 from dronerl.environment import Environment
 from dronerl.hazard_generator import HazardGenerator
 from dronerl.trainer import Trainer
+
+_log = logging.getLogger(__name__)
 
 CellArgs = tuple[dict, str, int, int, dict]
 CellResult = tuple[str, int, list[float], list[int]]
@@ -76,13 +79,21 @@ def _config_max_workers() -> int:
     """Read ``analysis.max_parallel_workers`` from config; fall back to cpu_count.
 
     Keeps the rate-limit policy in ``config/config.yaml`` per §5.2 instead of
-    silently using ``os.cpu_count()`` as the implicit ceiling.
+    silently using ``os.cpu_count()`` as the implicit ceiling. The fallback
+    branches log a warning so a stripped-config deploy doesn't silently abandon
+    the configured limit.
     """
+    cpu_default = os.cpu_count() or 1
     try:
         raw = load_config()
-        return int(raw.get("analysis", {}).get("max_parallel_workers", os.cpu_count() or 1))
-    except (FileNotFoundError, KeyError, ValueError):
-        return os.cpu_count() or 1
+        val = raw.get("analysis", {}).get("max_parallel_workers")
+        if val is None:
+            _log.warning("analysis.max_parallel_workers absent from config; using cpu_count=%d", cpu_default)
+            return cpu_default
+        return int(val)
+    except (FileNotFoundError, KeyError, ValueError) as exc:
+        _log.warning("config unreachable for max_parallel_workers (%s); using cpu_count=%d", exc, cpu_default)
+        return cpu_default
 
 
 def resolve_workers(requested: int | None = None) -> int:

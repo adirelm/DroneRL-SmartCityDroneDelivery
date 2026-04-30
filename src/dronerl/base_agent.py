@@ -71,6 +71,14 @@ class BaseAgent:
         """Return the maximum Q-value for the given state."""
         return float(np.max(self.q_table[state[0], state[1]]))
 
+    def _td_update(self, q, state, action, reward, next_state, done, step) -> None:
+        """In-place Bellman TD update: ``q[s,a] += step · (r + γ·max q[s'] − q[s,a])``."""
+        r, c = state
+        nr, nc = next_state
+        next_max = 0.0 if done else float(np.max(q[nr, nc]))
+        target = reward + self.gamma * next_max
+        q[r, c, action] += step * (target - q[r, c, action])
+
     def update(
         self,
         state: tuple[int, int],

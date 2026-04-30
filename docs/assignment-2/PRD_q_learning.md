@@ -253,16 +253,16 @@ q_learning:
 
 ## 8. Timeline & Milestones
 
-| Phase | Deliverable |
-|-------|------------|
-| 1 | Create `src/dronerl/base_agent.py` with shared interface |
-| 2 | Refactor `src/dronerl/agent.py` to `BellmanAgent(BaseAgent)` |
-| 3 | Create `src/dronerl/agent_factory.py` |
-| 4 | Verify all existing tests pass |
-| 5 | Create `src/dronerl/q_agent.py` with decaying alpha |
-| 6 | Add `algorithm` and `q_learning` sections to config.yaml |
-| 7 | Write tests for BaseAgent, QLearningAgent, factory |
-| 8 | Integrate factory into SDK |
+| # | Phase | Day | Calendar | Review checkpoint |
+|---|---|---|---|---|
+| 1 | Create `src/dronerl/base_agent.py` with shared interface | D1 | 2026-04-02 | abstract `update()` raises `NotImplementedError`; tests for shared init pass |
+| 2 | Refactor `agent.py` to `BellmanAgent(BaseAgent)` | D1 | 2026-04-02 | every existing Bellman test still green |
+| 3 | Create `agent_factory.py` | D2 | 2026-04-03 | `ValueError` on unknown name; round-trip via factory matches direct construction |
+| 4 | Verify all existing tests pass | D2 | 2026-04-03 | full suite green, no coverage regression |
+| 5 | Create `q_agent.py` with decaying alpha | D3 | 2026-04-04 | α decays per `decay_epsilon`; tests verify floor at `alpha_end` |
+| 6 | Add `algorithm` + `q_learning` to config.yaml | D3 | 2026-04-04 | `_validate_version` warns on stale config; new keys load without error |
+| 7 | Tests for BaseAgent, QLearningAgent, factory | D4 | 2026-04-05 | parametrised `TestFactoryAgentApi` covers every registered algo |
+| 8 | Integrate factory into SDK | D5 | 2026-04-06 | `sdk.switch_algorithm("q_learning")` swaps agent without resetting board |
 
 ---
 

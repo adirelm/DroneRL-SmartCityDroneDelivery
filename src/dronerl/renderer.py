@@ -112,18 +112,14 @@ class Renderer:
         cx = col * self.cs + self.cs // 2
         cy = row * self.cs + self.cs // 2
         s = self.cs
-        # Glow
         glow = pygame.Surface((s, s), pygame.SRCALPHA)
         pygame.draw.circle(glow, (*self.c_drone_glow, 50), (s // 2, s // 2), s // 3)
         surface.blit(glow, (cx - s // 2, cy - s // 2))
-        # Body cross
         arm = s // 4
         pygame.draw.line(surface, self.c_drone, (cx - arm, cy - arm), (cx + arm, cy + arm), 3)
         pygame.draw.line(surface, self.c_drone, (cx + arm, cy - arm), (cx - arm, cy + arm), 3)
-        # Center
         pygame.draw.circle(surface, self.c_drone, (cx, cy), s // 8)
         pygame.draw.circle(surface, self.c_white, (cx, cy), s // 8, 1)
-        # Rotors at 4 corners of the cross
         rr = s // 7
         for dx, dy in [(-arm, -arm), (arm, -arm), (-arm, arm), (arm, arm)]:
             pygame.draw.circle(surface, self.c_white, (cx + dx, cy + dy), rr, 2)
