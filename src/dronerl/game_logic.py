@@ -6,7 +6,22 @@ from dronerl.environment import Environment
 
 
 class GameLogic:
-    """Manages training steps, convergence, and demo playback."""
+    """GUI-side training controller — runs training steps, detects convergence, drives demo playback.
+
+    Input:  ``agent`` (BaseAgent), ``env`` (Environment) at construction;
+            no per-call inputs to ``training_step`` / ``demo_step`` — the env
+            owns the state and ``self.agent`` owns the policy.
+    Output: ``training_step()`` returns nothing — mutates ``reward_history``,
+            ``goal_count``, and the episode counter; ``check_convergence()``
+            returns ``bool``; ``demo_step(fps)`` advances the trail one cell
+            per frame at the configured cadence; ``get_metrics()`` returns
+            the dashboard's snapshot dict.
+    Setup:  Config — uses ``training.max_steps_per_episode``,
+            ``training.convergence_window``, ``training.convergence_rate``,
+            ``training.min_episodes_before_converge``,
+            ``training.max_epsilon_for_converge``, and
+            ``gui.demo_speed``.
+    """
 
     def __init__(self, agent: BaseAgent, env: Environment, config: Config):
         self.agent = agent

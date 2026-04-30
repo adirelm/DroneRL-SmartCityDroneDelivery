@@ -88,7 +88,7 @@ Already audited under §10 of the submission guidelines. See:
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 323 unit + integration tests, 97.48 % coverage
+- **Maturity.** 331 unit + integration tests, 97.17 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
 - **Availability.** GUI can pause / resume mid-training without
@@ -204,10 +204,13 @@ tracking, and traceability. DroneRL alignment:
   and success criteria.
 - **Configuration management.** Single source of truth in
   `config/config.yaml` with a versioned `version` key validated by
-  `_validate_version`. `pyproject.toml` + `uv.lock` pin every
-  runtime + dev dependency.
+  `_validate_version`; missing required top-level blocks are caught
+  by `_validate_schema` (warns with the actionable list of missing
+  keys); malformed YAML and empty files raise a clear `RuntimeError`
+  rather than crashing downstream. `pyproject.toml` + `uv.lock` pin
+  every runtime + dev dependency.
 - **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
-  ≥85 % coverage gate (current: 97.48 %), 1:1 module-to-test mapping,
+  ≥85 % coverage gate (current: 97.17 %), 1:1 module-to-test mapping,
   bit-for-bit determinism test for the parallel sweep
   (`tests/integration/test_parallel_runner.py`).
 - **Code review.** Pre-commit hooks (ruff + EOF + 150-line file
