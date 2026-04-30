@@ -95,3 +95,25 @@ uv run python -m analysis.cost_profile                       # measured timings 
 If every command above succeeds and the chart artefacts under
 `results/` regenerate without diff (within seed determinism), the
 project is ready to tag.
+
+---
+
+## §20.9 — Compact 9-item final-inspection list
+
+§20.9 of the submission guidelines defines a single 9-row roll-up
+that an auditor can walk through in one minute. Mapping for DroneRL:
+
+| # | §20.9 item | Status | Pointer |
+|---|---|:--:|---|
+| 1 | **Documentation:** PRD, architecture, README, API doc, prompts book | ✅ | [`docs/INDEX.md`](../INDEX.md), per-feature PRDs in [`assignment-2/`](../assignment-2/), [`README.md`](../../README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PROMPTS.md`](PROMPTS.md) |
+| 2 | **Code:** modular structure, files ≤150 lines, comments+docstrings, code-style consistency | ✅ | `scripts/check_file_sizes.sh` gate (pre-commit + CI); ruff `select = [E,F,W,I,N,UP,B,C4,SIM]`; §16-style Input/Output/Setup docstrings on 9 building-block classes |
+| 3 | **Configuration:** separate files, `.env-example`, no secrets, `.gitignore` | ✅ | [`config/config.yaml`](../../config/config.yaml), [`.env-example`](../../.env-example), `.gitignore` blocks `*.pem`/`*.key`/`credentials.json`/`*.crt`/`*.p12`/`*.pfx`/`secrets.json` (§7) |
+| 4 | **Tests:** 85 %+ coverage, edge cases, error handling, automated reports | ✅ | **97.65 %** (gate: `--cov-fail-under=85`), 315 tests, CI uploads coverage XML on Python 3.13 |
+| 5 | **Research:** parameter exploration, sensitivity analysis, comparison notebook, charts | ✅ | [`analysis/multi_seed_robustness.py`](../../analysis/multi_seed_robustness.py), [`analysis/alpha_decay_sweep.py`](../../analysis/alpha_decay_sweep.py) (OAT), [`notebooks/research_analysis.ipynb`](../../notebooks/research_analysis.ipynb), [`EXPERIMENTS.md`](../assignment-2/EXPERIMENTS.md) |
+| 6 | **Visualisation:** quality charts, screenshots, architecture diagrams | ✅ | `results/comparison/` (scenario PNGs), `results/analysis/` (multi-seed + decay-sweep PNGs), `assets/assignment-2/` (5 GUI screenshots), ARCHITECTURE.md text-rendered diagrams (C4 framing) |
+| 7 | **Costs:** tokens table, detailed analysis, optimisation | ✅ | [`COST_ANALYSIS.md`](../assignment-2/COST_ANALYSIS.md) — per-model token table (Sonnet 4.x / Opus 4.x / GPT-5-Codex), 5 named optimisation strategies, §11.2 budget management (§11) |
+| 8 | **Extensibility:** extension points, examples, plugins, interfaces | ✅ | README §"Extending it" + ADR-002; `ALGORITHM_REGISTRY` one-line extension recipe (§12) |
+| 9 | **General:** Git history, license, attribution, deployment | ✅ | Per-section audit-driven Git log; [LICENSE](../../LICENSE) — MIT 2026; README `## License & Credits`; deployment via README `## Installation` + `## Running` |
+
+Every row points to the concrete file or gate that satisfies it,
+so this list is auditable without reading the rest of the doc.

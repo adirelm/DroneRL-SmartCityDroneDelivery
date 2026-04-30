@@ -39,6 +39,26 @@ uv run main.py                                         # launch the Pygame GUI
 
 ---
 
+## C4 Model framing (§20.1)
+
+The submission guidelines (§20.1) recommend the
+**C4 model** — Context / Container / Component / Code — for
+architecture documentation. DroneRL uses text-rendered diagrams
+mapped to the four C4 levels as follows:
+
+| C4 level | What it shows | Where it lives |
+|---|---|---|
+| **Context** | DroneRL is a single-process desktop RL training app. Boundaries: user (Pygame events in, screen + file outputs out), the OS file viewer (chart PNG handoff via `subprocess.Popen`), `config/config.yaml` and `data/saved_brains/` on disk | "Reproducing the artifacts" block above + the `_open_file` / `_run_comparison_scripts` actions described in [CONCURRENCY.md](CONCURRENCY.md) §2 |
+| **Container** | Layered architecture: External (GUI/CLI) ↔ SDK ↔ Core RL ↔ Infrastructure ↔ Research/Analysis ↔ Tooling | The "Layered Architecture" diagram and the six "Layer Descriptions" sub-sections below |
+| **Component** | Module dependency graph: which file imports which, no cycles | The "Module Dependency Diagram" section further down |
+| **Code** | Class-level contracts (Input / Output / Setup) for every building block | The §16-style class docstrings on `BaseAgent`, `Trainer`, `Environment`, `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`, plus the registered `AlgorithmSpec` dataclass |
+
+UML-style flow diagrams for the *complex processes* (training loop,
+GUI event flow, comparison-runner dispatch) are rendered in the
+"Data Flow" section.
+
+---
+
 ## Layered Architecture
 
 ```
