@@ -56,3 +56,4 @@ secrets.json
 
 # Codex agent definitions (mirror of CLAUDE.md, kept local)
 AGENTS.md
+.coverage*
