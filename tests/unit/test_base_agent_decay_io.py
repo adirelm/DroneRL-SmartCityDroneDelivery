@@ -79,6 +79,8 @@ class TestSaveLoad:
         agent.load(path)
         np.testing.assert_array_equal(agent.q_table, original)
 
-    def test_load_nonexistent_raises(self, agent, tmp_path):
-        with pytest.raises(FileNotFoundError):
-            agent.load(str(tmp_path / "missing.npy"))
+    def test_load_nonexistent_is_noop(self, agent, tmp_path):
+        """§13 / Reliability — load() on a missing path is a no-op (graceful)."""
+        before = agent.q_table.copy()
+        agent.load(str(tmp_path / "missing.npy"))
+        np.testing.assert_array_equal(agent.q_table, before)

@@ -726,9 +726,17 @@ gate list and CI configuration.
 
 ## Contributing
 
-Follow the rules in [CLAUDE.md](CLAUDE.md):
+**Onboarding path** (read in this order, ~ 20 minutes):
+1. [`docs/shared/ARCHITECTURE.md`](docs/shared/ARCHITECTURE.md) — layered architecture, module map, ADRs.
+2. [`CLAUDE.md`](CLAUDE.md) — coding constraints (TDD, file size, OOP, config-driven, ruff zero-violations).
+3. [`config/config.yaml`](config/config.yaml) — every tunable in the system.
+4. [`docs/shared/PROMPTS.md`](docs/shared/PROMPTS.md) — how the project was built (post-feedback iteration log).
+
+After `uv sync --dev`, run `uv run pytest tests/` to confirm the green baseline (315+ tests, ≥ 85 % coverage).
+
+**Coding rules** (the gates each PR must pass):
 - TDD — write the failing test first.
-- Every file ≤ 150 lines; split by responsibility, not by layer.
+- Every file ≤ 150 *code* lines; split by responsibility, not by layer.
 - All tunables go to `config/config.yaml`. No magic numbers in source.
 - `ruff check` must report zero issues before every commit.
 - Maintain ≥ 85 % coverage.

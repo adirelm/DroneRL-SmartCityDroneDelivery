@@ -35,6 +35,17 @@ keeps two tables = 9,216 bytes). I'd consider Q-Learning's 89.8 KB the
 honest "RL working set" number, with Bellman/Double-Q expected to sit in
 the same ballpark on a warm interpreter.
 
+**Methodology note.** Each row is the wall time of a *single* sequential
+run on a warm interpreter (no per-algorithm warm-up; Bellman absorbs the
+cold-start cost as noted above). The µs-per-episode column is `wall_time
+/ (episodes × avg_steps)`. **Variance across repeated runs was not
+measured** — treat the 3.7–4.2 µs spread as an order-of-magnitude
+estimate, not a statistically controlled benchmark. Confidence intervals
+on the algorithm-vs-algorithm comparison live in
+[`results/analysis/multi_seed_robustness.png`](../../results/analysis/multi_seed_robustness.png),
+which uses 5 seeds × 1500 episodes per cell — that is the artefact to
+trust for *between-algorithm* timing differences.
+
 **Reading the table.** Q-Learning is the cheapest per episode. Bellman is
 slightly more expensive only because of an artefact in `decay_epsilon()`
 allocations (it gets called every episode but the agent ignores its
@@ -202,26 +213,38 @@ providers.
 
 Estimated token usage by model and direction across the whole project
 (both assignments + the post-feedback iteration). These are
-order-of-magnitude figures derived from typical session sizes — I did
-not instrument the sessions; the runtime / billing platform does the
-exact accounting.
+**order-of-magnitude figures derived from typical session sizes**; the
+sessions were not instrumented for token counts. The authoritative
+numbers live on the Anthropic and OpenAI billing dashboards
+(`console.anthropic.com → Usage` and `platform.openai.com → Usage`).
+The reproducibility recipe is: export the billing CSV for the project
+period (Mar–Apr 2026) and replace the table below with the actual
+per-model totals.
 
-| Model | Input Tokens (est.) | Output Tokens (est.) | List-price unit | Total Cost (est.) |
-|-------|--------------------:|---------------------:|-----------------|------------------:|
-| Anthropic Claude Sonnet 4.x (Claude Code) | ~6 M | ~1.5 M | $3 / $15 per MTok | ~$40 |
-| Anthropic Claude Opus 4.x (Claude Code, harder turns) | ~1.5 M | ~0.4 M | $15 / $75 per MTok | ~$53 |
-| OpenAI GPT-5.4-Codex (Codex rescue, occasional) | ~0.2 M | ~0.05 M | included in Codex sub | $0 (sub) |
-| **Total (list-price equivalent)** | **~7.7 M** | **~1.95 M** | — | **~$93** |
-| Subscription paid (Claude Max × 2 months + Codex sub) | — | — | flat | **~$300** |
+| Model | Input (est.) | Output (est.) | List-price unit | List-price ceiling | Cache-adjusted (est.) |
+|-------|-------------:|--------------:|-----------------|--------------------:|----------------------:|
+| Anthropic Claude Sonnet 4.x (Claude Code) | ~6 M | ~1.5 M | $3 / $15 per MTok | ~$40 | ~$8 |
+| Anthropic Claude Opus 4.x (Claude Code, harder turns) | ~1.5 M | ~0.4 M | $15 / $75 per MTok | ~$53 | ~$18 |
+| OpenAI GPT-5.4-Codex (Codex rescue, occasional) | ~0.2 M | ~0.05 M | included in Codex sub | $0 (sub) | $0 (sub) |
+| **Total list-price ceiling** | **~7.7 M** | **~1.95 M** | — | **~$93** | **~$26** |
+| Subscription paid (Claude Max × 2 months + Codex sub) | — | — | flat | **~$300** | **~$300** |
 
-Two reasons the real outlay (~$300 subscription) is higher than the
-list-price equivalent (~$93): (a) subscriptions buy access to
-*capabilities* (rate limits, caching, longer context) that an
-unsubscribed pay-as-you-go user wouldn't necessarily get; (b) flat
-fees overpay for any individual project that doesn't fully consume
-the rate-limit envelope. The list-price column is what an external
-consumer would pay if they tried to reproduce this exact project
-through pay-per-token API access only.
+The two right-most columns deliberately bracket the answer: the
+**list-price ceiling** assumes zero prompt-cache utilisation and bills
+every input token at the full uncached rate; the **cache-adjusted**
+column assumes ~70 % cache-hit rate (cached input is ~10× cheaper at
+$0.30/MTok), which is roughly what the project's repeated CLAUDE.md /
+ARCHITECTURE.md context loads should achieve on Anthropic's prompt
+cache. The truth lies inside that bracket, closer to the
+cache-adjusted figure for a long-running session-heavy project.
+
+Two reasons the real outlay (~$300 subscription) is higher than even
+the list-price ceiling: (a) subscriptions buy access to *capabilities*
+(rate limits, longer context, prompt-cache eligibility itself) that an
+unsubscribed pay-as-you-go user would not have; (b) flat fees overpay
+for any individual project that doesn't fully consume the rate-limit
+envelope. The list-price column is what an external consumer *might*
+pay reproducing this project through pay-per-token API access only.
 
 ### Optimization strategies
 

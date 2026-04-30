@@ -135,3 +135,10 @@ class TestAlgorithmName:
 
     def test_bellman_algorithm_name(self, agent):
         assert agent.algorithm_name == "Bellman"
+
+
+def test_load_missing_path_is_noop(agent, tmp_path):
+    """§13.5 / Reliability: load() on a missing path must not crash."""
+    before = agent.q_table.copy()
+    agent.load(str(tmp_path / "does_not_exist.npy"))
+    np.testing.assert_array_equal(agent.q_table, before)

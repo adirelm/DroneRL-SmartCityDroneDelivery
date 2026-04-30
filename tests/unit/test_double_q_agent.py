@@ -101,6 +101,15 @@ class TestSaveLoad:
         assert agent.q_table_a[2, 3, 1] == 42.0
         assert agent.q_table_b[5, 5, 2] == 99.0
 
+    def test_load_missing_pair_is_noop(self, agent, tmp_path):
+        """§13.5 / Reliability: load() on a missing pair must not crash."""
+        before_a = agent.q_table_a.copy()
+        before_b = agent.q_table_b.copy()
+        agent.load(str(tmp_path / "missing.npy"))
+        import numpy as np
+        np.testing.assert_array_equal(agent.q_table_a, before_a)
+        np.testing.assert_array_equal(agent.q_table_b, before_b)
+
     def test_save_creates_parent_directory(self, agent, tmp_path):
         path = tmp_path / "nested" / "double.npy"
         agent.save(str(path))

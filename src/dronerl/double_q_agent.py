@@ -69,7 +69,10 @@ class DoubleQAgent(DecayingAlphaAgent):
         np.save(f"{base}_b.npy", self.q_table_b)
 
     def load(self, path: str) -> None:
-        """Load both Q-tables from .npy files."""
+        """Load both Q-tables from .npy files. Missing pair is a no-op (graceful)."""
         base = str(Path(path).with_suffix(""))
-        self.q_table_a = np.load(f"{base}_a.npy")
-        self.q_table_b = np.load(f"{base}_b.npy")
+        path_a, path_b = Path(f"{base}_a.npy"), Path(f"{base}_b.npy")
+        if not (path_a.exists() and path_b.exists()):
+            return
+        self.q_table_a = np.load(path_a)
+        self.q_table_b = np.load(path_b)

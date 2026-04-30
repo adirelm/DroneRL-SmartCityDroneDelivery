@@ -78,7 +78,9 @@ class BaseAgent:
         np.save(path, self.q_table)
 
     def load(self, path: str) -> None:
-        """Load Q-table from a numpy file."""
+        """Load Q-table from a numpy file. Missing path is a no-op (graceful)."""
+        if not Path(path).exists():
+            return
         self.q_table = np.load(path)
 
 
