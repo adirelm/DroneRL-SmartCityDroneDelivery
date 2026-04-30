@@ -20,6 +20,7 @@ class Trainer:
         self.agent = agent
         self.env = environment
         self.max_steps = config.training.max_steps_per_episode
+        self._metric_window = config.training.convergence_window
         self.on_episode_start = None
 
         self._episode_count = 0
@@ -85,7 +86,8 @@ class Trainer:
 
     def get_metrics(self) -> dict:
         """Return a dictionary of current training metrics."""
-        recent = self._reward_history[-100:] if self._reward_history else []
+        w = self._metric_window
+        recent = self._reward_history[-w:] if self._reward_history else []
         return {
             "episode_count": self._episode_count,
             "goal_rate": self.goal_rate,
@@ -94,7 +96,7 @@ class Trainer:
             "avg_reward": sum(recent) / len(recent) if recent else 0.0,
             "last_reward": self._reward_history[-1] if self._reward_history else 0.0,
             "avg_steps": (
-                sum(self._steps_history[-100:]) / len(self._steps_history[-100:])
+                sum(self._steps_history[-w:]) / len(self._steps_history[-w:])
                 if self._steps_history
                 else 0.0
             ),

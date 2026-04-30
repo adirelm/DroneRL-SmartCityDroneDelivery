@@ -3,10 +3,10 @@
     {
       "algorithm": "bellman",
       "episodes": 1500,
-      "elapsed_s": 6.045,
-      "episodes_per_s": 248.1,
-      "us_per_episode": 4029.9,
-      "peak_traced_kb": 970.9,
+      "elapsed_s": 6.416,
+      "episodes_per_s": 233.8,
+      "us_per_episode": 4277.3,
+      "peak_traced_kb": 93.5,
       "q_table_bytes": 4608,
       "tables": 1,
       "final_mean_200": 78.0,
@@ -16,10 +16,10 @@
     {
       "algorithm": "q_learning",
       "episodes": 1500,
-      "elapsed_s": 5.541,
-      "episodes_per_s": 270.7,
-      "us_per_episode": 3694.1,
-      "peak_traced_kb": 89.8,
+      "elapsed_s": 6.339,
+      "episodes_per_s": 236.6,
+      "us_per_episode": 4226.0,
+      "peak_traced_kb": 91.9,
       "q_table_bytes": 4608,
       "tables": 1,
       "final_mean_200": 78.0,
@@ -29,10 +29,10 @@
     {
       "algorithm": "double_q",
       "episodes": 1500,
-      "elapsed_s": 6.276,
-      "episodes_per_s": 239.0,
-      "us_per_episode": 4184.0,
-      "peak_traced_kb": 94.5,
+      "elapsed_s": 7.099,
+      "episodes_per_s": 211.3,
+      "us_per_episode": 4732.9,
+      "peak_traced_kb": 95.3,
       "q_table_bytes": 9216,
       "tables": 2,
       "final_mean_200": 77.0,
@@ -43,28 +43,28 @@
   "projections": {
     "Single 1500-ep run (development)": {
       "episodes": 1500,
-      "estimated_seconds": 6.0,
-      "estimated_minutes": 0.1
+      "estimated_seconds": 6.6,
+      "estimated_minutes": 0.11
     },
     "Scenario 1 in repo (3500 ep \u00d7 3 algos)": {
       "episodes": 10500,
-      "estimated_seconds": 41.7,
-      "estimated_minutes": 0.69
+      "estimated_seconds": 46.3,
+      "estimated_minutes": 0.77
     },
     "Scenario 2 in repo (6000 ep \u00d7 3 algos)": {
       "episodes": 18000,
-      "estimated_seconds": 71.4,
-      "estimated_minutes": 1.19
+      "estimated_seconds": 79.4,
+      "estimated_minutes": 1.32
     },
     "Multi-seed sweep (5 seeds \u00d7 1500 ep \u00d7 3 algos)": {
       "episodes": 22500,
-      "estimated_seconds": 89.3,
-      "estimated_minutes": 1.49
+      "estimated_seconds": 99.3,
+      "estimated_minutes": 1.65
     },
     "Alpha-decay sweep (6 decays \u00d7 3 seeds \u00d7 1500 ep \u00d7 2 algos)": {
       "episodes": 54000,
-      "estimated_seconds": 214.3,
-      "estimated_minutes": 3.57
+      "estimated_seconds": 238.3,
+      "estimated_minutes": 3.97
     }
   }
 }

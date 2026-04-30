@@ -97,6 +97,14 @@ choices about how the UI handles **Nielsen's usability heuristics**:
   rather than crashing.
 - **User control & freedom** — `R` (hard reset) and `SPACE` (pause)
   are always available; algorithm switching never resets the board.
+- **Help users recognise, diagnose, recover from errors** (Nielsen #9)
+  — destructive actions (`R` reset, `1`/`2`/`3` algorithm switch)
+  *do* discard the trained Q-table without an explicit confirmation
+  prompt; this is a known gap. The status bar's **mode + algo**
+  display (`Mode: TRAIN  Algo: Q-Learning`) is the diagnostic
+  surface a user can read after the action — but there is no undo.
+  Recovery is via `L` (load saved brain) if a checkpoint exists.
+  Documented honestly here rather than papered over.
 
 **Accessibility considerations and known limits.** The algorithm
 colours are picked from the [`ALGORITHM_REGISTRY`](src/dronerl/algorithms.py)
@@ -127,6 +135,24 @@ both gaps documented in [What I'd do differently](#what-id-do-differently).
 
 **Double Q-Learning agent after 400 episodes — combined `Q_A + Q_B` heatmap**
 ![Double Q-Learning trained](assets/assignment-2/05_training_double_q.png)
+
+**Paused training — `[PAUSED]` flag visible in the status bar; heatmap + arrows held while paused**
+![Paused training state](assets/assignment-2/06_paused_training.png)
+
+**Demo mode — trail overlay shows the learned policy executing greedily without ε-exploration**
+![Demo mode trail](assets/assignment-2/07_demo_mode.png)
+
+**Fast-mode indicator — `[FAST]` flag in the status bar; multiple episodes per render frame**
+![Fast-mode active](assets/assignment-2/08_fast_mode_indicator.png)
+
+The comparison-result view a user sees after pressing `C` is the OS-default
+viewer opened on `results/comparison/scenario1_medium.png` (or the headed
+chart from running the comparison runner directly); both charts are
+included in the *Algorithm Comparison* section below.
+
+> The screenshots numbered `06`–`08` are reproducible from a clean
+> checkout via `uv run python scripts/capture_screenshots.py` (headless
+> Pygame using the `dummy` SDL driver — no display required).
 
 ---
 
