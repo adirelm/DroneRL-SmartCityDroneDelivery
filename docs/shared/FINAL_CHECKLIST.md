@@ -19,7 +19,7 @@ that a grader can verify against the repo without reading the audit.
 | 2 | `docs/` directory with PRD / PLAN / TODO | [docs/INDEX.md](../INDEX.md) is the top-level pointer; per-assignment dirs hold [PRD](../assignment-1/PRD.md) / [PLAN](../assignment-1/PLAN.md) / [TODO](../assignment-1/TODO.md) | ✅ |
 | 3 | Specialised PRDs for every algorithm / central mechanism | [PRD_q_learning.md](../assignment-2/PRD_q_learning.md), [PRD_double_q_learning.md](../assignment-2/PRD_double_q_learning.md), [PRD_dynamic_board.md](../assignment-2/PRD_dynamic_board.md) | ✅ |
 | 4 | Architecture documentation with clear diagrams | [docs/shared/ARCHITECTURE.md](ARCHITECTURE.md) — navigation table, layered architecture diagram, data-flow diagram, module-dependency diagram, ADRs | ✅ |
-| 5 | Documented prompt log | [docs/shared/PROMPTS.md](PROMPTS.md) — 401 lines, original development + post-feedback iteration | ✅ |
+| 5 | Documented prompt log | [docs/shared/PROMPTS.md](PROMPTS.md) — original development + post-feedback iteration + Multi-Pass Submission Audit (Pass-2 + Pass-3) section appended in Pass-3 iter 2 | ✅ |
 
 ## §17.2 — Architecture & code
 

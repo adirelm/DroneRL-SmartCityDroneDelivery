@@ -488,11 +488,17 @@ Pass-3 surfaced lingering gaps Pass-2 missed:
 
 ### Methodology lessons from running multi-pass audits
 
-10. **False positives are real and worth ~10 % of agent output.**
-    Across Pass-3 alone, 2 of ~30 findings were false positives
-    (an sdk.py code-line miscount, a "changes uncommitted" claim
-    based on a stale gitStatus snapshot). Always verify a finding
-    against current state before fixing it.
+10. **False positives are real and run 10–15 % across passes.**
+    Pass-3 totals: 40 candidate findings across 4 iterations × 5
+    agents → 5 outright false positives (an `sdk.py` code-line
+    miscount, a stale-gitStatus "uncommitted" claim, a
+    `tests/unit` count drift, a missing `v1.1.1` tag claim that
+    the tag actually existed, and an over-broad GUI-class scope
+    claim). 2 more findings were borderline / doc-only and
+    skipped. So 7 of 40 (17.5 %) didn't merit a code change.
+    Always verify a finding against current state — re-running
+    the relevant `git`/`grep`/`uv pytest --co` is cheaper than a
+    spurious commit.
 11. **The same section audited at different passes finds different
     gaps.** Pass-1 §16 closed clean. Pass-2 §16 found that none of
     the building-block classes had Input/Output/Setup docstrings —
