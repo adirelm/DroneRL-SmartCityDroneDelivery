@@ -88,7 +88,7 @@ Already audited under §10 of the submission guidelines. See:
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 301 unit + integration tests, 97.62 % coverage
+- **Maturity.** 315 unit + integration tests, 97.65 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
 - **Availability.** GUI can pause / resume mid-training without

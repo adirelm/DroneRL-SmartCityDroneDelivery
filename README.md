@@ -526,8 +526,8 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 301 tests pass, ≥85% line coverage (current: 97.62%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
-| **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 lines. |
+| **Pytest + coverage** | pre-push, CI | 315 tests pass, ≥85% line coverage (current: 97.65%). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 code lines (blank + `#` comment lines excluded per §3.2). |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
 
@@ -549,6 +549,28 @@ For an explicit map of how this project maps onto each of the
 Performance Efficiency, Compatibility, Usability, Reliability,
 Security, Maintainability, Portability), see
 [docs/shared/QUALITY_STANDARDS.md](docs/shared/QUALITY_STANDARDS.md).
+
+### Quick-reference card (§19.1, Table 5)
+
+The submission guidelines summarise the project's quality bars in a
+single rule / threshold / enforcement table. DroneRL's measured
+state against that table:
+
+| Rule | Threshold | Enforcement | Where |
+|---|---|---|---|
+| **SDK architecture** | All business logic flows through the SDK layer | Code review | `src/dronerl/sdk.py` is the single orchestration entry point ([README → "Replacing the GUI"](#extending-it)) |
+| **OOP / no duplication** | Refactor the moment a pattern appears in 2+ places | Code review | `BaseAgent` hierarchy + `ALGORITHM_REGISTRY` (replaced 13-place duplication) |
+| **API gatekeeper** | Every external call goes through it | Code review + tests | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) |
+| **Rate limits** | From config, not hardcoded | Config check | `config/config.yaml` `training.max_steps_per_episode` |
+| **Overflow handling** | Queue, not crash | Integration test | Trainer caps episodes at `max_steps`; no unbounded loops |
+| **Version control** | Module starts at 1.00 | Version module | `pyproject.toml` `version = "1.1.1"` ↔ `dronerl.__version__` ↔ `config/config.yaml` `version`, cross-validated by `_validate_version` |
+| **TDD** | Red → Green → Refactor | Workflow | CLAUDE.md mandate; documented in [docs/shared/PROMPTS.md](docs/shared/PROMPTS.md) |
+| **File size** | ≤ 150 code lines | Automated check | `scripts/check_file_sizes.sh` (pre-commit + CI) |
+| **Linter** | 0 ruff violations | `ruff check` | `pyproject.toml` ruff config, gated in pre-commit + CI |
+| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.65 %**, gate via `--cov-fail-under=85` in `addopts` |
+| **Hardcoded values** | 0 in source code | Code review | All tunables in `config/config.yaml`; CLAUDE.md "no magic numbers" rule |
+| **Secrets** | `.env-example` + 0 in repo | Automated scan | `.env-example` exists; `.gitignore` blocks secret patterns (`*.pem`, `*.key`, `credentials.json`, etc.) — see §7 audit |
+| **Package manager** | Everything via uv | Automated check | `pyproject.toml` + `uv.lock`; `[build-system] = hatchling` makes `dronerl` installable; CI runs `uv sync --frozen` |
 
 Every reward, color, grid size, and algorithm hyperparameter lives in
 `config/config.yaml`; the source code holds no magic numbers. The 150-line
@@ -657,7 +679,7 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/                              # 301 tests, 97.62% coverage, gate enforced
+uv run pytest tests/                              # 315 tests, 97.65% coverage, gate enforced
 uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```
