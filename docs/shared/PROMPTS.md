@@ -1,5 +1,19 @@
 # PROMPTS -- Prompt Engineering Log
 
+## Quick prompt index
+
+For graders / first-time readers who want the verbatim prompts only,
+not the surrounding narrative:
+
+- §1 Initial system description -- [→ here](#1-initial-system-description)
+- §2 PRD generation -- [→ here](#2-prd-generation)
+- §3 Implementation plan -- [→ here](#3-implementation-plan)
+- §4 Task generation -- [→ here](#4-task-generation)
+- §5 Validation -- [→ here](#5-validation)
+- §6 Implementation -- [→ here](#6-implementation)
+- Multi-pass audit orchestrating prompt (Pass-2/3/4) --
+  [→ here](#the-orchestrating-prompt-verbatim-one-per-agent)
+
 ## Overview
 
 DroneRL was built using **Claude AI** with a **vibe coding** methodology.
@@ -402,15 +416,29 @@ on this."* That sentence is in there deliberately.
 
 ---
 
-## Multi-Pass Submission Audit (Pass-2 + Pass-3)
+## Multi-Pass Submission Audit (Pass-2 + Pass-3 + Pass-4 in progress)
 
-After the post-feedback iteration closed Pass-1, the project ran two
-additional multi-agent audit passes against the submission guidelines
-(§1–§20). The pattern: each pass dispatches **5 independent reviewer
-sub-agents per iteration × 4 iterations** to cover all 20 sections,
-with explicit "be skeptical, find what the previous pass rationalised"
-framing. Each agent operates in a clean context (no shared memory with
-the others), so findings are genuinely independent.
+After the post-feedback iteration closed Pass-1, the project ran
+multiple multi-agent audit passes against the submission guidelines
+(§1–§20). The pattern evolved across passes:
+
+- **Pass-2 / Pass-3**: 5 independent reviewer sub-agents per iteration ×
+  4 iterations to cover all 20 sections.
+- **Pass-4**: section-by-section cadence — **5 agents on a single
+  section**, fix the findings, commit, re-pin tag, then dispatch the
+  next 5 on the next section. The user changed the cadence mid-Pass-4
+  ("instead 1 agent per section, 5 agents per section, section by
+  section, lets go") to maximise lens-diversity per section at the cost
+  of throughput.
+
+Each agent operates in a clean context (no shared memory with the
+others), so findings are genuinely independent. The five lenses used in
+Pass-4 are: literalist (does it actually meet §X?), calibration
+skeptic (what would Pass-3 have rationalised?), grader simulation (am
+I the lecturer reading this cold?), cross-reference verifier (do
+documents claim things the code disagrees with?), and audit-doc
+integrity (is the local `submission_guidelines_audit.md` itself
+up-to-date?).
 
 ### The orchestrating prompt (verbatim, one per agent)
 
@@ -486,19 +514,42 @@ Pass-3 surfaced lingering gaps Pass-2 missed:
   (#2, #4, #7, #8, #10) — each with a one-line concrete artefact
   rather than "satisfied implicitly."
 
+### Pass-4 (in progress, section-by-section, 5 lenses per section)
+
+Pass-4 swapped the iteration-based cadence for a slower, deeper
+section-by-section walk. Each section gets 5 agents, each running one
+of the lenses listed above. The user gates progression to the next
+section ("continue" prompt), so every section's findings are triaged,
+fixed, and committed before the next dispatches.
+
+The recurring pattern Pass-4 has surfaced through §1–§7 is **audit-doc
+staleness**: the local `instructions/assignment-2/submission_guidelines_audit.md`
+had Findings sections that stopped at the Pass-1 baseline even when
+Pass-2 / Pass-3 had landed real code changes. Each section now grows
+F&lt;N&gt;.M entries documenting the cumulative trail. Other recurring
+finds: `# what` comments in modules earlier passes hadn't read, test
+counts drifting in README/docs, and one-off prose claims that no
+longer match `git log`.
+
+Cumulative through §1–§8: **31 findings fixed across 8 sections**, no
+behavioural regressions, gates green at every commit.
+
 ### Methodology lessons from running multi-pass audits
 
-10. **False positives are real and run 10–15 % across passes.**
-    Pass-3 totals: 40 candidate findings across 4 iterations × 5
+10. **False positives are real and run 10–20 % across passes.**
+    Pass-3 baseline: 40 candidate findings across 4 iterations × 5
     agents → 5 outright false positives (an `sdk.py` code-line
     miscount, a stale-gitStatus "uncommitted" claim, a
     `tests/unit` count drift, a missing `v1.1.1` tag claim that
     the tag actually existed, and an over-broad GUI-class scope
     claim). 2 more findings were borderline / doc-only and
-    skipped. So 7 of 40 (17.5 %) didn't merit a code change.
-    Always verify a finding against current state — re-running
-    the relevant `git`/`grep`/`uv pytest --co` is cheaper than a
-    spurious commit.
+    skipped — so 7 of 40 (17.5 %) didn't merit a code change.
+    Pass-4 is showing the same range per-section (5 agents → 0–2
+    FPs typical), with the FP shape shifting from
+    miscount-style to "claim is true but already addressed
+    in an earlier pass". Always verify a finding against current
+    state — re-running the relevant `git`/`grep`/`uv pytest --co`
+    is cheaper than a spurious commit.
 11. **The same section audited at different passes finds different
     gaps.** Pass-1 §16 closed clean. Pass-2 §16 found that none of
     the building-block classes had Input/Output/Setup docstrings —
