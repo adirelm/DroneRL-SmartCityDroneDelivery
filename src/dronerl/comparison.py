@@ -13,6 +13,14 @@ import numpy as np  # noqa: E402
 
 from dronerl.algorithms import ALGORITHM_COLORS, ALGORITHM_LABELS, ALGORITHMS  # noqa: E402
 
+# Trailing window for the chart's "last-N mean ± std" summary box.
+# Kept as a module constant rather than a config key because (a) it's a
+# *visual annotation* tied to the rendered chart's specific summary box,
+# and (b) it should always match the multi_seed_robustness analysis
+# (which also uses 200) so the README narrative line up. If you change
+# this, also update analysis/multi_seed_robustness.py + EXPERIMENTS.md.
+_SUMMARY_TAIL = 200
+
 __all__ = (
     "ALGORITHM_COLORS", "ALGORITHM_LABELS", "ALGORITHMS",
     "ComparisonStore", "generate_comparison_chart", "smooth",
@@ -98,14 +106,14 @@ def _plot_series(ax, store_dict, smoothing_window, ylabel, title, fmt="6.1f"):
         color = ALGORITHM_COLORS[algo]
         ax.fill_between(x, smoothed - std, smoothed + std, color=color, alpha=0.15)
         ax.plot(x, smoothed, label=ALGORITHM_LABELS[algo], color=color, linewidth=2)
-        tail = np.asarray(history[-200:], dtype=float)
+        tail = np.asarray(history[-_SUMMARY_TAIL:], dtype=float)
         summary.append(f"{ALGORITHM_LABELS[algo]:<28s}  mean={tail.mean():{fmt}}  std={tail.std():{fmt}}")
     ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=11, fontweight="bold")
     ax.grid(True, alpha=0.3)
     ax.legend(loc="lower right", framealpha=0.92, fontsize=8)
     if summary:
-        ax.text(0.015, 0.97, "Last-200-episode:\n" + "\n".join(summary),
+        ax.text(0.015, 0.97, f"Last-{_SUMMARY_TAIL}-episode:\n" + "\n".join(summary),
                 transform=ax.transAxes, va="top", ha="left", fontsize=8, family="monospace",
                 bbox={"boxstyle": "round,pad=0.4", "facecolor": "white",
                       "edgecolor": "#888", "alpha": 0.92})

@@ -18,11 +18,17 @@ repos:
         args: [--fix]
         files: ^(src|tests|analysis|scripts)/.*\.py$|^main\.py$
 
+
   - repo: local
     hooks:
       - id: file-size-limit
         name: Enforce 150-line file-size limit
         entry: scripts/check_file_sizes.sh
+        language: script
+        pass_filenames: false
+      - id: secret-scan
+        name: §7.4 — secret-pattern scan (auditable evidence, not just .gitignore)
+        entry: scripts/check_no_secrets.sh
         language: script
         pass_filenames: false
       - id: pytest-fast

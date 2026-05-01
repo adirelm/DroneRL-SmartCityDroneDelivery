@@ -31,6 +31,13 @@ import numpy as np  # noqa: E402
 from analysis._runner import base_raw_config, resolve_workers, train_cells  # noqa: E402
 from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS  # noqa: E402
 
+# Per CLAUDE.md §4 scope note: experiment-specific axes (which seeds, how
+# many episodes per cell, which noise levels to sweep) live at module
+# level here, not in config/config.yaml. The baseline RL hyperparameters
+# (gamma, epsilon schedule, alpha schedule, board size, rewards) DO come
+# from config — see ``base_raw_config()`` below. Only the *sweep axes*
+# are local to this script. EXPERIMENTS.md documents the rationale for
+# each value.
 NOISE_LEVELS = (0.0, 0.25, 0.5, 0.75, 0.95)
 ALGOS = ("bellman", "q_learning")
 SEEDS = (3, 11, 23)
