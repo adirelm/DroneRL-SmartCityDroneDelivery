@@ -44,10 +44,7 @@ class GUI:
         self.fast_mode = self.show_heatmap = self.show_arrows = False
         self.status_font = None
         if getattr(config.dynamic_board, "randomize_per_episode", False):
-            self.logic.on_episode_end = lambda: (
-                self.sdk.hazards.apply(self.sdk.environment),
-                self.sdk.environment.set_wind_drift(self.sdk.hazards.effective_drift()),
-            )
+            self.logic.on_episode_end = self.sdk.regenerate_hazards
 
     @property
     def env(self):  # \u00a74.1 \u2014 single source of truth lives on the SDK
@@ -102,7 +99,7 @@ class GUI:
             if r:
                 cur = self.env.get_cell(r[0], r[1])
                 new = CellType.EMPTY if cur == r[2] else r[2]
-                self.env.set_cell(r[0], r[1], new, editor=True)
+                self.sdk.set_cell(r[0], r[1], new, editor=True)
 
     def _on_key(self, key):
         km = {pygame.K_SPACE: "primary", pygame.K_f: "toggle_fast",

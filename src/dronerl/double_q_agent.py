@@ -38,6 +38,15 @@ class DoubleQAgent(DecayingAlphaAgent):
     def q_table(self, _value):
         """Ignore base-class zero init; we manage two tables ourselves."""
 
+    def _cross_table_update(self, q_eval, q_target, state, action, reward, next_state, done) -> None:
+        """One Hasselt half-step: pick best action from ``q_eval``, value from ``q_target``."""
+        r, c = state
+        nr, nc = next_state
+        best_a = int(np.argmax(q_eval[nr, nc]))
+        next_val = 0.0 if done else float(q_target[nr, nc, best_a])
+        target = reward + self.gamma * next_val
+        q_eval[r, c, action] += self.alpha * (target - q_eval[r, c, action])
+
     def update(
         self,
         state: tuple[int, int],
@@ -47,18 +56,12 @@ class DoubleQAgent(DecayingAlphaAgent):
         done: bool,
     ) -> None:
         """Update one Q-table using the other for evaluation (50/50 split)."""
-        r, c = state
-        nr, nc = next_state
         if random.random() < self.update_a_probability:
-            best_a = int(np.argmax(self.q_table_a[nr, nc]))
-            next_val = 0.0 if done else float(self.q_table_b[nr, nc, best_a])
-            target = reward + self.gamma * next_val
-            self.q_table_a[r, c, action] += self.alpha * (target - self.q_table_a[r, c, action])
+            self._cross_table_update(self.q_table_a, self.q_table_b,
+                                     state, action, reward, next_state, done)
         else:
-            best_a = int(np.argmax(self.q_table_b[nr, nc]))
-            next_val = 0.0 if done else float(self.q_table_a[nr, nc, best_a])
-            target = reward + self.gamma * next_val
-            self.q_table_b[r, c, action] += self.alpha * (target - self.q_table_b[r, c, action])
+            self._cross_table_update(self.q_table_b, self.q_table_a,
+                                     state, action, reward, next_state, done)
 
     def save(self, path: str) -> None:
         """Save both Q-tables to .npy files (path_a.npy and path_b.npy)."""

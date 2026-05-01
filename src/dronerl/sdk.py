@@ -146,9 +146,9 @@ class DroneRLSDK:
         self.agent.load(path)
         self.logger.info("Q-table loaded from %s", path)
 
-    def set_cell(self, row: int, col: int, cell_type: CellType) -> None:
-        """Place ``cell_type`` at ``(row, col)`` via the editor path (tracked as user-placed)."""
-        self.environment.set_cell(row, col, cell_type)
+    def set_cell(self, row: int, col: int, cell_type: CellType, *, editor: bool = False) -> None:
+        """Place ``cell_type`` at ``(row, col)``; ``editor=True`` marks it as user-placed (survives hazard regen)."""
+        self.environment.set_cell(row, col, cell_type, editor=editor)
 
     @property
     def episode_count(self) -> int:
