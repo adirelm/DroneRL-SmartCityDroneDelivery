@@ -145,20 +145,63 @@ would need a sweep over episode count, which I haven't run.
 
 ---
 
+## Hypothesis 4 — Noise level should make decaying α matter
+
+> **H4.** Bellman's constant α should lose ground to Q-Learning's
+> decaying α as noise level rises. Robbins-Monro predicts that
+> $\sum_t \alpha_t^2 < \infty$ is required for convergence in stochastic
+> environments — at high noise, Bellman's flat α=0.1 should fail to
+> settle whereas Q-Learning's decaying α should.
+
+**Method.** `analysis/noise_sweep.py`. One-At-a-Time sweep of
+`noise_level ∈ {0.0, 0.25, 0.5, 0.75, 0.95}` for both algorithms, with
+3 seeds × 1500 episodes per cell. Everything else fixed (alpha_start
+0.5, alpha_decay 0.9995, hazard density 0.12, difficulty 0.3,
+medium-board defaults). Renders `results/analysis/noise_sweep.png`.
+
+**Result (last-200 mean reward, average over 3 seeds; SEM in
+parentheses):**
+
+| `noise_level` | Bellman          | Q-Learning       | Δ (Q − B) |
+|---------------|------------------|------------------|-----------|
+| 0.00          | 77.5 (±0.2)      | 78.2 (±0.3)      | +0.8      |
+| 0.25          | 77.2 (±0.4)      | 77.4 (±0.8)      | +0.2      |
+| 0.50          | 77.5 (±0.4)      | 77.4 (±0.5)      | −0.1      |
+| 0.75          | 77.5 (±0.6)      | 76.7 (±1.0)      | −0.8      |
+| 0.95          | 77.6 (±0.7)      | 78.1 (±0.5)      | +0.5      |
+
+Numbers regenerate by `uv run python -m analysis.noise_sweep` (last
+run committed at the time of writing this section). The Δ column is
+non-monotonic — it does not grow with noise — which is the empirical
+basis for the verdict below.
+
+**H4 verdict — REJECTED at this episode budget.** Bellman and
+Q-Learning are essentially indistinguishable across the entire noise
+range. At 1500 episodes on the medium-difficulty board, the predicted
+"noise breaks constant α" effect does not appear. The most likely
+explanations are: (a) 1500 episodes is enough samples for even a
+constant-α Bellman to settle on this board size; or (b) the wind-drift
+noise as implemented is *episodic* (a single per-step coin flip), not
+the *value-bootstrap* noise that drives the Robbins-Monro argument.
+This is an honest negative finding I would have missed without the
+sweep — the README narrative "noise breaks Bellman" is itself only
+asymptotically true and does not show up empirically at this budget.
+
+---
+
 ## What I'd do next
 
 The experiments above are enough to make the README's qualitative claims
 honest, but a more thorough study would:
 
 1. **Sweep episode budget** — run each algorithm at 500, 1500, 5000, 15000
-   episodes and plot final reward vs budget. Confirms or refutes H3.
-2. **Sweep noise level** — fix everything else, vary `noise_level` from 0.0
-   to 1.0, plot the gap between Bellman and Q-Learning. Would directly
-   measure where in noise-space Bellman's constant-α actually starts to
-   matter.
-3. **Bootstrap confidence intervals** for the alpha-decay points instead
-   of SEM, since the per-seed distributions are clearly bimodal (some
-   seeds converge, others don't).
+   episodes and plot final reward vs budget. Confirms or refutes H3,
+   and gives the noise sweep room to surface the predicted divergence.
+2. **Increase noise *amplitude* not just frequency.** The current
+   `noise_level` is a coin-flip multiplier on the wind-drift transition.
+   A noise model that perturbs the *reward signal* would test the
+   value-bootstrap mechanism the Robbins-Monro argument actually
+   targets.
 
 I'm calling these out as future work rather than pretending they're done.
 
