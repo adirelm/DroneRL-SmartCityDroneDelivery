@@ -783,7 +783,7 @@ process is at least as much of the assignment as the final code is.
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 331 pytest tests, 97 %+ coverage
+├── tests/                  # 344 pytest tests, 97 %+ coverage
 ├── analysis/               # Headless research experiments (multi-seed, sweep, cost)
 ├── scripts/
 │   ├── generate_comparison_charts.py
@@ -841,7 +841,7 @@ gate list and CI configuration.
 3. [`config/config.yaml`](config/config.yaml) — every tunable in the system.
 4. [`docs/shared/PROMPTS.md`](docs/shared/PROMPTS.md) — how the project was built (post-feedback iteration log).
 
-After `uv sync --dev`, run `uv run pytest tests/` to confirm the green baseline (331+ tests, ≥ 85 % coverage).
+After `uv sync --dev`, run `uv run pytest tests/` to confirm the green baseline (344+ tests, ≥ 85 % coverage).
 
 **Coding rules** (the gates each PR must pass):
 - TDD — write the failing test first.
