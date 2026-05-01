@@ -9,7 +9,24 @@ from dronerl.environment import CellType
 
 
 class Renderer:
-    """Draws the grid, cells, drone, and grid lines with polished visuals."""
+    """Polished grid, cell, and drone renderer for the Pygame surface.
+
+    Input:  ``draw_grid(surface, grid_array)`` — a `pygame.Surface` and the
+            ``Environment.grid`` ndarray of `int`-coded :class:`CellType`
+            values. ``draw_drone(surface, (row, col))`` accepts the drone's
+            current cell position. ``draw_grid_lines(surface)`` overlays
+            the grid mesh.
+    Output: side-effects on the passed `pygame.Surface` (no return value).
+            Frame-counter ``self.frame`` is incremented on each draw to
+            drive the drone's pulse animation.
+    Setup:  ``Config`` — reads ``environment.grid_rows/grid_cols``,
+            ``gui.cell_size``, and the full `colors.*` palette
+            (`empty`, `building` + `building_accent`, `trap` + `trap_accent`,
+            `goal` + `goal_accent`, `wind` + `wind_accent`, `pit` +
+            `pit_accent`, `drone` + `drone_glow`, `grid_line`,
+            `start_marker`, `white`). Each cell-type colour pair is read
+            once at construction and cached on the instance.
+    """
 
     def __init__(self, config: Config):
         gui = config.gui

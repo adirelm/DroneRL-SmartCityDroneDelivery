@@ -12,7 +12,26 @@ _SKIP_HEAT = {CellType.BUILDING, CellType.TRAP, CellType.GOAL, CellType.PIT}
 
 
 class Overlays:
-    """Draws Q-value heatmap and best-action arrows on the grid."""
+    """Q-value heatmap, best-action arrows, demo-trail, and start/goal labels.
+
+    Input:  ``draw_heatmap(surface, q_table, grid)`` — the agent's
+            Q-table (`np.ndarray` shaped ``(rows, cols, NUM_ACTIONS)``)
+            and the grid array. ``draw_arrows(surface, q_table, grid)``
+            takes the same; ``draw_trail(surface, trail)`` accepts the
+            demo-mode breadcrumb list of ``(row, col)`` tuples;
+            ``draw_labels(surface)`` paints the start/goal markers using
+            cached coordinates. Cells in ``_SKIP_HEAT`` (BUILDING, TRAP,
+            GOAL, PIT) are intentionally skipped because they're terminal
+            or opaque — drawing Q-values there would mislead.
+    Output: side-effects on the ``surface``; no return values. The
+            heatmap normalises Q-values per-frame so the colour ramp is
+            stable across very different reward scales.
+    Setup:  ``Config`` — reads ``environment.grid_rows/grid_cols/
+            start_position/goal_position``, ``gui.cell_size`` /
+            ``font_name``, and ``colors.{start_marker, white, arrow_fill,
+            heatmap_low, heatmap_high}``. The font is lazy-initialised on
+            first draw call.
+    """
 
     def __init__(self, config: Config):
         """Initialise overlay settings and colors from config."""

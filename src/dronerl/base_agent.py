@@ -119,14 +119,18 @@ class BaseAgent:
 class DecayingAlphaAgent(BaseAgent):
     """``BaseAgent`` + geometric α decay. Shared base for Q-Learning + Double-Q.
 
-    Input/Output: inherits the ``BaseAgent`` contract. Adds ``self.alpha``
-        (float, mutable) as per-episode state — read by subclass ``update``
-        bodies and decayed by ``decay_epsilon`` on every episode boundary.
-    Setup: subclasses must call :meth:`_init_decay` *after* their
-        ``super().__init__(config)`` line, passing the algorithm-specific
-        triple ``(alpha_start, alpha_end, alpha_decay)`` from their own
-        config sub-block (``config.q_learning`` or ``config.double_q``).
-        Decay protocol: ``α ← max(alpha_end, α · alpha_decay)`` per episode.
+    Input:  inherits the ``BaseAgent`` contract — `(state, action,
+            reward, next_state, done)` to ``update``.
+    Output: inherits the ``BaseAgent`` contract; adds ``self.alpha``
+            (float, mutable) as per-episode state — read by subclass
+            ``update`` bodies and decayed by ``decay_epsilon`` on every
+            episode boundary together with ε.
+    Setup:  subclasses must call :meth:`_init_decay` *after* their
+            ``super().__init__(config)`` line, passing the
+            algorithm-specific triple ``(alpha_start, alpha_end,
+            alpha_decay)`` from their own config sub-block
+            (``config.q_learning`` or ``config.double_q``). Decay
+            protocol: ``α ← max(alpha_end, α · alpha_decay)`` per episode.
     """
 
     def _init_decay(self, alpha_start: float, alpha_end: float, alpha_decay: float) -> None:

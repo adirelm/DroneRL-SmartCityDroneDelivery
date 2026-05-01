@@ -7,11 +7,14 @@ from dronerl.config_loader import Config
 class QLearningAgent(DecayingAlphaAgent):
     """Q-Learning agent where α decays per episode for stable convergence under noise.
 
-    Input/Output: inherits the ``BaseAgent`` contract via ``DecayingAlphaAgent``.
-    Setup: adds ``config.q_learning.alpha_start`` (initial α),
-        ``config.q_learning.alpha_end`` (floor), ``config.q_learning.alpha_decay``
-        (geometric decay applied each ``decay_epsilon`` call —
-        ``α ← max(alpha_end, α · alpha_decay)``).
+    Input:  inherits the ``BaseAgent`` contract via ``DecayingAlphaAgent``
+            — ``(state, action, reward, next_state, done)`` to ``update``.
+    Output: inherits the ``BaseAgent`` contract — mutates ``self.q_table``
+            in place; ``decay_epsilon`` decays ε *and* α together each
+            episode (via ``DecayingAlphaAgent``).
+    Setup:  adds ``config.q_learning.{alpha_start, alpha_end, alpha_decay}``
+            — initial α, floor, and geometric decay applied each
+            ``decay_epsilon`` call: ``α ← max(alpha_end, α · alpha_decay)``.
     """
 
     algorithm_name = "Q-Learning"

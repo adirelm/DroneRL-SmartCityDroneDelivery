@@ -12,11 +12,17 @@ from dronerl.config_loader import Config
 class DoubleQAgent(DecayingAlphaAgent):
     """Double Q-Learning agent (Hasselt 2010) using two Q-tables to remove TD-bias.
 
-    Input/Output: inherits the ``BaseAgent`` contract via ``DecayingAlphaAgent``.
-        Note that ``q_table`` is exposed as ``QA + QB`` for GUI / save / load
-        compatibility; the internal storage is the pair ``(q_table_a, q_table_b)``.
-    Setup: adds ``config.double_q.alpha_start`` / ``alpha_end`` / ``alpha_decay``,
-        same decay protocol as Q-Learning (shared via ``DecayingAlphaAgent``).
+    Input:  inherits the ``BaseAgent`` contract via ``DecayingAlphaAgent``
+            — ``(state, action, reward, next_state, done)`` to ``update``.
+    Output: inherits the ``BaseAgent`` contract, with one specialisation:
+            ``q_table`` is exposed as ``QA + QB`` for GUI / save / load
+            compatibility, while the internal storage is the pair
+            ``(q_table_a, q_table_b)``. Each ``update`` call randomly
+            picks one of the two tables to update using the *other* for
+            the bootstrap (Hasselt 2010 cross-evaluation).
+    Setup:  adds ``config.double_q.{alpha_start, alpha_end, alpha_decay}``
+            — same decay protocol as Q-Learning (shared via
+            ``DecayingAlphaAgent``).
     """
 
     algorithm_name = "Double Q-Learning"

@@ -7,7 +7,22 @@ from dronerl.config_loader import Config
 
 
 class Dashboard:
-    """Renders metrics, reward graph, legend, and buttons on the dashboard."""
+    """Right-side dashboard panel: metrics, reward graph, cell-type legend, action buttons.
+
+    Input:  ``draw(surface, metrics, reward_history, state_dict=None)`` —
+            ``metrics`` is ``GameLogic.get_metrics()`` (episode, reward, ε,
+            steps, goal-rate); ``state_dict`` carries ``converged`` /
+            ``demo_mode`` flags to drive the banner + buttons.
+    Output: returns the y-coordinate below the button panel so ``GUI._draw``
+            can place the editor sliders. Side-effect: full right-side
+            panel rendered on ``surface``. Owns ``buttons: ButtonPanel``
+            whose hover/click handlers are called from ``GUI._on_click``.
+    Setup:  ``Config`` — reads ``gui.{grid_area_width, dashboard_width,
+            window_height, reward_history_size, font_name}`` and the full
+            ``colors.*`` palette (dashboard_bg, text, accent, panel_border,
+            graph_*, banner_*, plus cell-type colours for legend swatches).
+            Fonts lazy-initialised on first ``draw`` call.
+    """
 
     def __init__(self, config: Config):
         """Initialise dashboard layout, colors, and fonts from config."""

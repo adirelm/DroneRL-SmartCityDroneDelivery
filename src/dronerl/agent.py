@@ -7,8 +7,9 @@ from dronerl.config_loader import Config
 class BellmanAgent(BaseAgent):
     """Tabular Q-Learning agent with the Bellman update at a *constant* learning rate.
 
-    Input/Output: inherits the ``BaseAgent`` contract.
-    Setup: adds ``config.agent.learning_rate`` (the constant α used for every update).
+    Input:  inherits the ``BaseAgent`` contract — `(state, action, reward, next_state, done)`.
+    Output: inherits the ``BaseAgent`` contract — mutates `self.q_table` in place.
+    Setup:  adds ``config.agent.learning_rate`` (the constant α used for every update).
     """
 
     algorithm_name = "Bellman"

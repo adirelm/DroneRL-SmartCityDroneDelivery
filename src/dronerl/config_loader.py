@@ -9,7 +9,22 @@ from dronerl import __version__ as _project_version
 
 
 class Config:
-    """Provides dot-access to nested config values."""
+    """Recursive dot-access wrapper around the parsed YAML config (the project's most-reused building block).
+
+    Input:  ``data: dict`` — the parsed `config/config.yaml` shape, with any
+            nesting depth. Numeric lists (e.g. ``start_position: [1, 1]``) are
+            coerced to tuples so they're hashable and immutable; mixed-type
+            lists are preserved as ``list``.
+    Output: instance attributes for every top-level key, with nested dicts
+            wrapped recursively into more ``Config`` instances. ``to_dict()``
+            round-trips back to a plain dict (tuples → lists).
+    Setup:  no constructor parameters beyond ``data``. Schema and version
+            validation live in :func:`load_config` (the ingest path that
+            calls ``_validate_schema`` and ``_validate_version``); a Config
+            built directly from a literal dict bypasses both — this is
+            intentional so tests can construct minimal configs without the
+            full YAML schema.
+    """
 
     def __init__(self, data: dict):
         for key, value in data.items():
