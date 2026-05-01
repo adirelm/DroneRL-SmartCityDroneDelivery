@@ -89,6 +89,24 @@ def test_load_without_file_is_a_no_op(pygame_ready, ui_config, tmp_path):
     assert (gui.agent.q_table == snapshot).all()
 
 
+def test_repeated_save_within_debounce_window_is_skipped(pygame_ready, ui_config, tmp_path):
+    """§5.3 — held `S` key shouldn't spam disk writes (debounce 1s)."""
+    from dronerl import actions as actions_mod
+
+    actions_mod._last_io_t.clear()  # fresh per-test state
+    gui = GUI(ui_config)
+    gui.brain_path = str(tmp_path / "brain.npy")
+    gui.editor.active = False
+
+    gui.agent.q_table[0, 0, 0] = 1.0
+    dispatch(gui, "save")
+    first_mtime = (tmp_path / "brain.npy").stat().st_mtime_ns
+    gui.agent.q_table[0, 0, 0] = 99.0
+    dispatch(gui, "save")  # within 1s — should be skipped
+    second_mtime = (tmp_path / "brain.npy").stat().st_mtime_ns
+    assert first_mtime == second_mtime, "second save within debounce window must not rewrite the file"
+
+
 def test_use_q_learning_switches_algorithm(pygame_ready, ui_config):
     gui = GUI(ui_config)
     dispatch(gui, "use_q_learning")

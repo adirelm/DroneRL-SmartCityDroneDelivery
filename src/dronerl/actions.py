@@ -7,10 +7,27 @@ open_editor) stay in this module.
 """
 
 import os
+import time
 
 _ALGO_KEYS = {"use_bellman": "bellman",
               "use_q_learning": "q_learning",
               "use_double_q": "double_q"}
+
+_SAVE_LOAD_DEBOUNCE_S = 1.0  # §5.3 — held S/L key shouldn't spam disk writes
+_last_io_t: dict[str, float] = {}  # per-action timestamps; safe under single-threaded Pygame loop
+
+
+def _io_debounced(action: str) -> bool:
+    """Return True if ``action`` is allowed now; False if it's repeating within the debounce window.
+
+    Per-action timers (so a `save` followed by `load` is fine — they are
+    different operations and shouldn't gate each other).
+    """
+    now = time.monotonic()
+    if now - _last_io_t.get(action, 0.0) < _SAVE_LOAD_DEBOUNCE_S:
+        return False
+    _last_io_t[action] = now
+    return True
 
 
 def dispatch(gui, a):
@@ -52,9 +69,11 @@ def dispatch(gui, a):
         gui.paused = True
         gui.logic.exit_demo()
     elif a == "save":
-        gui.sdk.save_brain(gui.brain_path)
+        if _io_debounced("save"):
+            gui.sdk.save_brain(gui.brain_path)
     elif a == "load" and os.path.exists(gui.brain_path):
-        gui.sdk.load_brain(gui.brain_path)
+        if _io_debounced("load"):
+            gui.sdk.load_brain(gui.brain_path)
     elif a == "reset":
         gui.sdk.reset()
         gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()

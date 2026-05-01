@@ -300,6 +300,7 @@ dimension, hazard ratio, GUI value, and colour. Top-level sections:
 | `q_learning` | `alpha_start`, `alpha_end`, `alpha_decay` (decay rule: `α ← max(α_end, α · alpha_decay)`) |
 | `double_q` | Same three knobs as `q_learning`; both QA and QB share them |
 | `comparison` | `max_episodes`, `output_dir`, `smoothing_window` for the canonical scenario charts |
+| `analysis` | `max_parallel_workers` — caps `multiprocessing.Pool` size for the analysis sweeps (`DRONERL_PARALLEL` env var overrides at runtime within this ceiling) |
 | `gui` | Window size, cell size, FPS, dashboard width, fast-mode episodes-per-frame, font name |
 | `colors` | RGB triplets for every cell type and overlay element (palette is config-driven, not hardcoded) |
 | `logging` | Stdlib log `level` (`DEBUG` / `INFO` / `WARNING` / `ERROR`) |
@@ -679,7 +680,7 @@ state against that table:
 |---|---|---|---|
 | **SDK architecture** | All business logic flows through the SDK layer | Code review | `src/dronerl/sdk.py` is the single orchestration entry point ([README → "Replacing the GUI"](#extending-it)) |
 | **OOP / no duplication** | Refactor the moment a pattern appears in 2+ places | Code review | `BaseAgent` hierarchy + `ALGORITHM_REGISTRY` (replaced 13-place duplication) |
-| **API gatekeeper** | Every external call goes through it | Code review + tests | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) |
+| **API gatekeeper** | Single dispatch point that validates input and rejects malformed calls (§5 N/A for HTTP; agent factory is the project's structural analogue) | Code review + tests | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) raises `ValueError` for unknown algorithm names |
 | **Rate limits** | From config, not hardcoded | Config check | `config/config.yaml` — `training.max_steps_per_episode`, `training.convergence_window`, `analysis.max_parallel_workers` |
 | **Overflow handling** | Queue, not crash | Integration test | Trainer caps episodes at `max_steps`; no unbounded loops |
 | **Version control** | Module starts at 1.00 | Version module | `pyproject.toml` `version = "1.1.1"` ↔ `dronerl.__version__` ↔ `config/config.yaml` `version`, cross-validated by `_validate_version` |
