@@ -107,6 +107,12 @@ the savefile is missing — see Nielsen #9 below for recovery options).
 
 ### UX & accessibility notes
 
+> Per-heuristic mapping with concrete artefact pointers (file paths +
+> screenshot references) lives in [`docs/shared/QUALITY_STANDARDS.md`](docs/shared/QUALITY_STANDARDS.md)
+> §18 [14] Nielsen — that's the §18 alignment view. The narrative
+> below is the §10 audit view, written for a reader who wants the
+> "why" before the artefact list.
+
 The Pygame interface is built keyboard-first; every operation has a
 shortcut so the app is fully usable without a mouse. A few deliberate
 choices about how the UI handles **Nielsen's usability heuristics**:

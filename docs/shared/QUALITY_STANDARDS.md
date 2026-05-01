@@ -227,12 +227,44 @@ alignment.
 
 ### [14] Nielsen — 10 Usability Heuristics
 
-Already addressed under §10 of the submission guidelines audit. The
-README's *UX & accessibility notes* section walks the heuristics that
-the DroneRL UI applies (status bar = visibility of system status;
-`R` reset / `SPACE` pause = user control and freedom; protected
-start/goal cells = error prevention; status-bar shortcuts = recognition
-not recall). See the README for the full enumeration.
+Each of Nielsen's 10 heuristics is mapped here to a *concrete
+artefact* (file path, gate, screenshot) rather than only a
+README pointer. The full per-heuristic narrative lives in the
+README's *UX & accessibility notes* section.
+
+- **#1 Visibility of system status.** `_status_bar()`
+  ([gui.py:141-156](../../src/dronerl/gui.py)) renders mode +
+  algorithm + flags + transient flash on every frame. Visible in
+  [`assets/assignment-2/03_training_bellman.png`](../../assets/assignment-2/03_training_bellman.png).
+- **#2 Match between system and the real world.** Cell-type
+  vocabulary (drone / building / trap / pit / wind) chosen for
+  domain familiarity; reward keys self-explanatory in
+  [`config/config.yaml`](../../config/config.yaml).
+- **#3 User control and freedom.** `R` reset, `SPACE` pause,
+  algorithm switch never resets the board — see
+  [`actions.dispatch`](../../src/dronerl/actions.py).
+- **#4 Consistency and standards.** Algorithm colour palette
+  driven by `ALGORITHM_REGISTRY` so the same algorithm is the same
+  hue in every chart and button.
+- **#5 Error prevention.** `Environment.is_protected_cell` refuses
+  edits to start/goal; `S`/`L` no-op on missing brain file.
+- **#6 Recognition rather than recall.** The status-bar shortcut
+  row at the bottom of every frame is the in-app cheat-sheet —
+  see [`assets/assignment-2/01_editor_sliders_and_algo_buttons.png`](../../assets/assignment-2/01_editor_sliders_and_algo_buttons.png).
+- **#7 Flexibility and efficiency.** Every action has both a
+  keyboard shortcut and a mouse-clickable button (the dashboard
+  panel doubles as a fall-back path).
+- **#8 Aesthetic and minimalist design.** Four panels (grid +
+  dashboard + status bar + optional editor) with toggleable
+  overlays (`H` heatmap, `A` arrows) — captured in
+  [`assets/assignment-2/04_training_q_learning.png`](../../assets/assignment-2/04_training_q_learning.png).
+- **#9 Help users recognise, diagnose, recover from errors.**
+  Editor-rejection 2.5 s flash message in `gui._on_click`
+  (Pass-4 §10 fix); destructive actions documented honestly in
+  README's "What I'd do differently" rather than papered over.
+- **#10 Help and documentation.** Status-bar cheat-sheet (in-app
+  help) + README sections + `CLAUDE.md` / `ARCHITECTURE.md` for
+  contributors.
 
 ### [15] ISO/IEC 25010 — Software Product Quality Model
 
@@ -258,16 +290,26 @@ tracking, and traceability. DroneRL alignment:
   rather than crashing downstream. `pyproject.toml` + `uv.lock` pin
   every runtime + dev dependency.
 - **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
-  ≥85 % coverage gate (current: 97.20 %), 1:1 module-to-test mapping,
+  ≥85 % coverage gate (current: 97.22 %), 1:1 module-to-test mapping,
   bit-for-bit determinism test for the parallel sweep
   (`tests/integration/test_parallel_runner.py`).
 - **Code review.** Pre-commit hooks (ruff + EOF + 150-line file
   size + pytest pre-push) act as the automated reviewer. The
   GitHub Actions CI matrix on Python 3.11/3.12/3.13 is the second.
-- **Defect tracking + traceability.** Git history is per-section
-  audit-driven, with each commit's message naming the §
-  it addresses and the specific findings + fixes; commits link to
-  the methodology phase (`instructions/review_methodology/`).
+- **Traceability.** Git history is per-section audit-driven, with
+  each commit's message naming the § it addresses and the specific
+  findings + fixes; commits link to the methodology phase
+  (`instructions/review_methodology/`). Every audit finding
+  ("F<N>.M") is grep-able from the commit log back to the audit
+  doc entry that motivated it.
+- **Defect tracking — scope note.** MIT SQA prescribes a formal
+  defect log / issue tracker as a distinct deliverable. DroneRL
+  uses **commit-message-driven defect tracking** (each
+  `Pass-N §X: ...` commit names the finding it closes) and the
+  per-section audit doc as the long-form defect register.
+  Recording this honestly as a *project-scale* alternative rather
+  than fabricating an `ISSUES.md` or pretending GitHub Issues are
+  in use — the project is solo coursework, not a team workflow.
 
 ### [17] Google Engineering Practices
 
@@ -308,6 +350,30 @@ the `DroneRLSDK` Python API:
   raises `ValueError` for unknown algorithm names (with the valid
   list in the message); `_validate_version` warns on missing /
   mismatched config version. No silent failures.
+- **Idempotency of operations** (Pass-4 §18 addition). Repeated
+  calls are safe and deterministic: `DroneRLSDK.save_brain(path)`
+  overwrites the file (no append/duplicate state); `load_brain` is
+  a no-op when the brain file is missing rather than crashing;
+  `regenerate_hazards()` reseeds from the same RNG state given the
+  same seed input; `set_dynamic_params(...)` updates the cached
+  hazard parameters in place rather than stacking. The
+  `train_step()` / `train_batch(n)` methods are *intentionally*
+  non-idempotent (they mutate the agent's Q-table — that's the
+  point of training); the Q-table is the externalised mutable
+  state, captured by `save_brain` for explicit checkpointing.
+- **Backwards compatibility / deprecation policy** (Pass-4 §18
+  addition). The SDK is at `1.1.1`; the project's policy is
+  semver-style: patch (`1.1.x`) preserves the public API
+  (`DroneRLSDK` methods, `BaseAgent` subclass contract,
+  `ALGORITHM_REGISTRY` shape); minor (`1.x.0`) may add new entries
+  without removing old; major (`x.0.0`) reserved for breaking
+  changes. The `_validate_version` cross-check between
+  `pyproject.toml` / `__version__` / `config/config.yaml` warns
+  on any drift so a stale config doesn't silently load against a
+  newer SDK. Backward-compat hacks (e.g. `Agent = BellmanAgent`
+  in `src/dronerl/agent.py`) are deliberate kept rather than
+  ripped out, so existing tests / external scripts that
+  pre-date the rename keep working.
 
 The Microsoft guidelines' "REST" specifics (HTTP verbs, status
 codes, URL design) don't apply to a single-process Pygame app —
@@ -328,10 +394,13 @@ artefacts and worth naming explicitly:
   ordering are all gated on every commit.
 - **[PEP 257](https://peps.python.org/pep-0257/)** — docstring
   conventions. The §16 "Input / Output / Setup" contract block
-  enforced on every building-block class (`BaseAgent`,
-  `DecayingAlphaAgent`, three subclasses, `Trainer`, `Environment`,
-  `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`) follows the
-  PEP 257 layout (one-line summary, blank line, structured body).
+  enforced on **15 building-block classes** (`BaseAgent`,
+  `DecayingAlphaAgent`, three agent subclasses, `Trainer`,
+  `Environment`, `HazardGenerator`, `DroneRLSDK`, `ComparisonStore`,
+  `GameLogic`, plus the Pass-4 §16 additions: `Config`, `Renderer`,
+  `Dashboard`, `Overlays`) follows the PEP 257 layout (one-line
+  summary, blank line, structured body). Verifiable via
+  `grep -nE "Input:\|Output:\|Setup:" src/dronerl/*.py`.
 - **[PEP 484](https://peps.python.org/pep-0484/)** — type hints.
   Used throughout `src/dronerl/`: e.g. `tuple[int, int]` for
   state, `int | None` for the `n_workers` keyword, `list[float]`
