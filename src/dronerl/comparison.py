@@ -7,7 +7,7 @@ from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")  # Headless backend
+matplotlib.use("Agg")  # set before any pyplot import; avoids display-init crash on headless / CI hosts
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 

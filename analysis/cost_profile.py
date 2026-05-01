@@ -32,6 +32,7 @@ def _q_table_bytes(rows: int, cols: int, actions: int = 4, tables: int = 1) -> i
 
 
 def _profile_one(algorithm: str) -> dict:
+    """Profile one algorithm: wall-time, peak-heap, Q-table footprint, last-200 stats."""
     raw = base_raw_config()
     raw["dynamic_board"]["enabled"] = True
     raw["agent"]["learning_rate"] = 0.7

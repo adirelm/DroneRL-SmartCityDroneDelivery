@@ -6,7 +6,8 @@ import pygame
 from dronerl.config_loader import Config
 from dronerl.environment import CellType
 
-# Cells to skip for heatmap
+# Terminal / opaque cells have no navigable Q-values — colouring them
+# would visually mislead the user about where the policy *can* go.
 _SKIP_HEAT = {CellType.BUILDING, CellType.TRAP, CellType.GOAL, CellType.PIT}
 
 
