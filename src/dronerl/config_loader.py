@@ -1,6 +1,7 @@
 """Configuration loader for DroneRL project."""
 
 import warnings
+from pathlib import Path
 
 import yaml
 
@@ -98,7 +99,10 @@ def _validate_schema(data: dict, path: str) -> None:
         )
 
 
-def load_config(path: str = "config/config.yaml") -> dict:
+_DEFAULT_CONFIG_PATH = str(Path(__file__).resolve().parents[2] / "config" / "config.yaml")  # §14.3 — anchor to the package, not CWD
+
+
+def load_config(path: str = _DEFAULT_CONFIG_PATH) -> dict:
     """Load YAML config, validate version + schema, return as a dict.
 
     Fault tolerance (§13 Reliability): malformed YAML and empty files raise

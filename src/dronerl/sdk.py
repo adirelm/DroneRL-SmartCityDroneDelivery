@@ -35,9 +35,9 @@ class DroneRLSDK:
             board dimensions, reward magnitudes, ``analysis.max_parallel_workers``).
     """
 
-    def __init__(self, config_path: str = "config/config.yaml", *, config: Config | None = None):
-        """Construct from a YAML path *or* a pre-loaded ``Config`` (GUI uses the latter so it shares one ``Config`` instance with the SDK)."""
-        self.config = config if config is not None else Config(load_config(config_path))
+    def __init__(self, config_path: str | None = None, *, config: Config | None = None):
+        """Construct from a YAML path *or* a pre-loaded ``Config`` (GUI uses the latter so SDK + GUI share one ``Config``); ``None`` resolves to the package-relative default (§14.3)."""
+        self.config = config if config is not None else Config(load_config(config_path) if config_path else load_config())
         self.logger = setup_logger("DroneRL", self.config.logging.level)
         self.agent = create_agent(self.config)
         self.environment = Environment(self.config)
