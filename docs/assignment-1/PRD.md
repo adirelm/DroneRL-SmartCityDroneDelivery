@@ -120,7 +120,18 @@ DroneRL's differentiator is **playable, visual, professionally-tested tabular RL
 
 ---
 
-## 5. Assumptions & Constraints
+## 5. User Stories
+
+§2.2.a of the submission guidelines lists "user stories" as a mandatory PRD content element. The four primary stories the project is designed against:
+
+1. **As an RL student**, I want to *see* the Q-table updating live so I can build intuition for *why* a tabular agent converges, instead of trusting a final number.
+2. **As an instructor preparing a lab session**, I want to drop the project on a student's machine via `uv sync --dev && uv run main.py` and have the GUI launch first try, so class time is spent on RL, not on environment debugging.
+3. **As a self-learner coming from software engineering**, I want a runnable reference implementation with tests and a clean extension recipe (one new agent ≈ one file + one registry line), so I can fork it and try SARSA without reverse-engineering an undocumented codebase.
+4. **As a TA grading the assignment**, I want every claim in the README to be backed by a test, a chart, or a reproducible script — and I want all three to live behind one `uv` command — so reviewing the project takes minutes, not hours.
+
+The Assignment-2 specialised PRDs (`docs/assignment-2/PRD_*.md`) extend this list with feature-specific stories per algorithm; the four above are the cross-cutting personas all four PRDs share.
+
+## 6. Assumptions & Constraints
 
 - The state space is small enough to fit in memory (Tabular RL).
 - The environment is fully observable.
@@ -128,13 +139,17 @@ DroneRL's differentiator is **playable, visual, professionally-tested tabular RL
 
 ---
 
-## 6. Timeline & Milestones
+## 7. Timeline & Milestones
 
 Dates are written as relative day-anchors (`Day N`) plus the calendar
-day they actually landed on, so the timeline is reproducible from the
-git history. Each phase ends with an explicit **review checkpoint**
-that gates the next phase — no phase starts until the previous
-checkpoint passes.
+day the corresponding work was committed during the AI-assisted
+build period. The intent is *planning targets* with a per-phase
+**review checkpoint** that gates the next phase — not a literal
+serial commit log. The actual project was developed via concurrent
+AI-assisted pair-programming sessions where docs and code landed
+together; the calendar anchors below are the planning view, not the
+git-log view (per `docs/shared/PROMPTS.md` "Multi-Pass Submission
+Audit" methodology lessons).
 
 | # | Phase | Deliverable | Day | Calendar | Review checkpoint (gate to next phase) |
 |---|---|---|---|---|---|

@@ -3,10 +3,10 @@
     {
       "algorithm": "bellman",
       "episodes": 1500,
-      "elapsed_s": 6.416,
-      "episodes_per_s": 233.8,
-      "us_per_episode": 4277.3,
-      "peak_traced_kb": 93.5,
+      "elapsed_s": 6.494,
+      "episodes_per_s": 231.0,
+      "us_per_episode": 4329.6,
+      "peak_traced_kb": 93.7,
       "q_table_bytes": 4608,
       "tables": 1,
       "final_mean_200": 78.0,
@@ -16,9 +16,9 @@
     {
       "algorithm": "q_learning",
       "episodes": 1500,
-      "elapsed_s": 6.339,
-      "episodes_per_s": 236.6,
-      "us_per_episode": 4226.0,
+      "elapsed_s": 6.33,
+      "episodes_per_s": 237.0,
+      "us_per_episode": 4219.9,
       "peak_traced_kb": 91.9,
       "q_table_bytes": 4608,
       "tables": 1,
@@ -29,10 +29,10 @@
     {
       "algorithm": "double_q",
       "episodes": 1500,
-      "elapsed_s": 7.099,
-      "episodes_per_s": 211.3,
-      "us_per_episode": 4732.9,
-      "peak_traced_kb": 95.3,
+      "elapsed_s": 7.086,
+      "episodes_per_s": 211.7,
+      "us_per_episode": 4724.0,
+      "peak_traced_kb": 95.4,
       "q_table_bytes": 9216,
       "tables": 2,
       "final_mean_200": 77.0,
@@ -48,23 +48,23 @@
     },
     "Scenario 1 in repo (3500 ep \u00d7 3 algos)": {
       "episodes": 10500,
-      "estimated_seconds": 46.3,
+      "estimated_seconds": 46.5,
       "estimated_minutes": 0.77
     },
     "Scenario 2 in repo (6000 ep \u00d7 3 algos)": {
       "episodes": 18000,
-      "estimated_seconds": 79.4,
-      "estimated_minutes": 1.32
+      "estimated_seconds": 79.6,
+      "estimated_minutes": 1.33
     },
     "Multi-seed sweep (5 seeds \u00d7 1500 ep \u00d7 3 algos)": {
       "episodes": 22500,
-      "estimated_seconds": 99.3,
-      "estimated_minutes": 1.65
+      "estimated_seconds": 99.6,
+      "estimated_minutes": 1.66
     },
     "Alpha-decay sweep (6 decays \u00d7 3 seeds \u00d7 1500 ep \u00d7 2 algos)": {
       "episodes": 54000,
-      "estimated_seconds": 238.3,
-      "estimated_minutes": 3.97
+      "estimated_seconds": 238.9,
+      "estimated_minutes": 3.98
     }
   }
 }

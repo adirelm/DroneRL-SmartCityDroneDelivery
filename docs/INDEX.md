@@ -12,7 +12,8 @@ top-level pointer the guidelines expect.**
 |---|---|---|
 | **`docs/PRD.md`** (Product Requirements) | [`docs/assignment-1/PRD.md`](assignment-1/PRD.md) | Initial scope: Bellman + GUI + tests + comparison surface. |
 | **`docs/PLAN.md`** (Architecture & Planning) | [`docs/assignment-1/PLAN.md`](assignment-1/PLAN.md) and [`docs/shared/ARCHITECTURE.md`](shared/ARCHITECTURE.md) | The high-level plan + ADRs are in `ARCHITECTURE.md` (which is also the project's navigation index). The phase-level breakdown is in `assignment-1/PLAN.md`. |
-| **`docs/TODO.md`** (Task tracking) | [`docs/assignment-1/TODO.md`](assignment-1/TODO.md) | 860 tasks, all completed. Per-phase definitions-of-done at the top of the file. |
+| **`docs/TODO.md`** (Task tracking — Assignment 1) | [`docs/assignment-1/TODO.md`](assignment-1/TODO.md) | 860 tasks, all completed. Per-phase definitions-of-done at the top of the file. |
+| **`docs/TODO.md`** (Task tracking — Assignment 2) | [`docs/assignment-2/TODO_q_learning.md`](assignment-2/TODO_q_learning.md), [`docs/assignment-2/TODO_double_q_learning.md`](assignment-2/TODO_double_q_learning.md), [`docs/assignment-2/TODO_dynamic_board.md`](assignment-2/TODO_dynamic_board.md) | 560 + 662 + 910 = 2 132 tasks, all completed. Per-feature breakdown so each specialised PRD has a matching TODO list. |
 
 ## Specialized PRDs (per §2.3)
 
