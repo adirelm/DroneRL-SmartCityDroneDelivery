@@ -106,7 +106,7 @@ mapped here for 25010 traceability:
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 344 unit + integration tests, 97.20 % coverage
+- **Maturity.** 344 unit + integration tests, 97.22 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
 - **Availability.** Scope note: a single-process desktop app has

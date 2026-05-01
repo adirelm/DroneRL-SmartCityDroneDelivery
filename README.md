@@ -662,7 +662,7 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 344 tests pass, ≥85% line coverage (current: 97.20 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **Pytest + coverage** | pre-push, CI | 344 tests pass, ≥85% line coverage (current: 97.22 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
 | **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 code lines (blank + `#` comment lines excluded per §3.2). |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
@@ -698,13 +698,13 @@ state against that table:
 | **OOP / no duplication** | Refactor the moment a pattern appears in 2+ places | Code review | `BaseAgent` hierarchy + `ALGORITHM_REGISTRY` (replaced 13-place duplication) |
 | **API gatekeeper** | Single dispatch point that validates input and rejects malformed calls (§5 N/A for HTTP; agent factory is the project's structural analogue) | Code review + tests | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) raises `ValueError` for unknown algorithm names |
 | **Rate limits** | From config, not hardcoded | Config check | `config/config.yaml` — `training.max_steps_per_episode`, `training.convergence_window`, `analysis.max_parallel_workers` |
-| **Overflow handling** | Queue, not crash | Integration test | Trainer caps episodes at `max_steps`; no unbounded loops |
+| **Overflow handling** | Bounded loops, no crash | Code review (no async I/O queue surface — `Trainer` is the only loop) | `Trainer.run_episode` caps each episode at `config.training.max_steps_per_episode`; convergence loop bounded by `convergence_window`; no unbounded `while True:` anywhere |
 | **Version control** | Module starts at 1.00 | Version module | `pyproject.toml` `version = "1.1.1"` ↔ `dronerl.__version__` ↔ `config/config.yaml` `version`, cross-validated by `_validate_version` |
 | **TDD** | Red → Green → Refactor | Workflow | CLAUDE.md mandate; documented in [docs/shared/PROMPTS.md](docs/shared/PROMPTS.md) |
 | **File size** | ≤ 150 code lines | Automated check | `scripts/check_file_sizes.sh` (pre-commit + CI) |
 | **Linter** | 0 ruff violations | `ruff check` | `pyproject.toml` ruff config, gated in pre-commit + CI |
-| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.20 %**, gate via `--cov-fail-under=85` in `addopts` |
-| **Hardcoded values** | 0 in source code | Code review | All tunables in `config/config.yaml`; CLAUDE.md "no magic numbers" rule |
+| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.22 %**, gate via `--cov-fail-under=85` in `addopts` |
+| **Hardcoded values** | 0 algorithm-relevant magic numbers in source | Workflow (CLAUDE.md §4 mandate; no automated gate — UI-styling literals stay local per CLAUDE.md scope) | All RL hyperparameters / rewards / colours / dimensions in `config/config.yaml`; `Config` is the typed accessor |
 | **Secrets** | `.env-example` + 0 in repo | Automated scan | `.env-example` exists; `.gitignore` blocks secret patterns (`*.pem`, `*.key`, `credentials.json`, etc.) — see §7 audit |
 | **Package manager** | Everything via uv | Automated check | `pyproject.toml` + `uv.lock`; `[build-system] = hatchling` makes `dronerl` installable; CI runs `uv sync --frozen` |
 
@@ -820,7 +820,7 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/                              # 344 tests, 97.20 % coverage, gate enforced
+uv run pytest tests/                              # 344 tests, 97.22 % coverage, gate enforced
 uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```
