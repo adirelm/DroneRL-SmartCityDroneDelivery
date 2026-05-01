@@ -24,34 +24,34 @@ tables below were copied verbatim from one such run on a 2023 MacBook Pro
 
 | Algorithm  | Wall time | Episodes/s | µs/episode | Peak Python heap | Q-table bytes |
 |------------|-----------|-----------:|-----------:|-----------------:|--------------:|
-| Bellman    | 5.83 s    | 257        | 3,885      | 971 KB *         | 4,608         |
-| Q-Learning | 5.55 s    | 270        | 3,700      | 89.8 KB          | 4,608         |
-| Double-Q   | 6.37 s    | 236        | 4,245      | 94.5 KB          | 9,216         |
+| Bellman    | 6.49 s    | 231        | 4,330      | 93.7 KB *        | 4,608         |
+| Q-Learning | 6.33 s    | 237        | 4,220      | 91.9 KB          | 4,608         |
+| Double-Q   | 7.09 s    | 212        | 4,724      | 95.4 KB          | 9,216         |
 
-\* Bellman's headline peak is inflated because it ran first in the loop and
-absorbed the lazy-import allocations of NumPy / Matplotlib backends. The
-Q-table footprint is 4,608 bytes on every algorithm except Double-Q (which
-keeps two tables = 9,216 bytes). I'd consider Q-Learning's 89.8 KB the
-honest "RL working set" number, with Bellman/Double-Q expected to sit in
-the same ballpark on a warm interpreter.
+\* Bellman is reported first in the loop and absorbs cold-start
+allocations from NumPy / Matplotlib lazy imports; the per-algorithm
+Python-heap numbers above are from `tracemalloc.peak_traced` after
+warm-up, so the three sit in the same ballpark (~92–95 KB). The
+Q-table footprint is 4,608 bytes on every algorithm except Double-Q
+(which keeps two tables = 9,216 bytes).
 
 **Methodology note.** Each row is the wall time of a *single* sequential
-run on a warm interpreter (no per-algorithm warm-up; Bellman absorbs the
-cold-start cost as noted above). The µs-per-episode column is `wall_time
+run on a warm interpreter. The µs-per-episode column is `wall_time
 / (episodes × avg_steps)`. **Variance across repeated runs was not
-measured** — treat the 3.7–4.2 µs spread as an order-of-magnitude
-estimate, not a statistically controlled benchmark. Confidence intervals
-on the algorithm-vs-algorithm comparison live in
-[`results/analysis/multi_seed_robustness.png`](../../results/analysis/multi_seed_robustness.png),
-which uses 5 seeds × 1500 episodes per cell — that is the artefact to
-trust for *between-algorithm* timing differences.
+measured** — treat the 4.2–4.7 µs spread as an order-of-magnitude
+estimate, not a statistically controlled benchmark. The numbers
+above are paste-from-current `results/analysis/cost_profile.json`;
+re-running `uv run python -m analysis.cost_profile` will overwrite
+that JSON and may shift each cell by ±5 % depending on background
+load. Confidence intervals on the algorithm-vs-algorithm *reward*
+comparison (not timing) live in
+[`results/analysis/multi_seed_robustness.png`](../../results/analysis/multi_seed_robustness.png).
 
-**Reading the table.** Q-Learning is the cheapest per episode. Bellman is
-slightly more expensive only because of an artefact in `decay_epsilon()`
-allocations (it gets called every episode but the agent ignores its
-own decay since α is constant — see `src/dronerl/agent.py`). Double-Q pays a real
-~15% time premium for keeping two Q-tables in sync, which is consistent
-with its design.
+**Reading the table.** Q-Learning is the cheapest per episode (4,220
+µs). Bellman trails by ~3 % (one extra `decay_epsilon` call per
+episode that the constant-α agent then ignores — see
+`src/dronerl/agent.py`). Double-Q pays a real ~12 % time premium for
+keeping two Q-tables in sync, which is consistent with its design.
 
 ---
 
@@ -66,16 +66,18 @@ Wall time ≈ episodes × avg_steps_per_episode × T_step
 Memory   ≈ rows × cols × actions × tables × 8 bytes  (float64)
 ```
 
-Where `T_step` is roughly **3.7–4.2 µs** on the reference machine for
-tabular Bellman / Q-Learning / Double-Q. The implied scaling table:
+Where `T_step` is roughly **4.2–4.7 µs** on the reference machine for
+tabular Bellman / Q-Learning / Double-Q. The implied scaling table
+(numbers below come from the same `cost_profile.json` projections row,
+not back-of-envelope multiplication):
 
 | Workload | Episodes | Estimated time | Q-table memory |
 |----------|---------:|----------------|----------------|
-| Single dev run (1 algo, 1500 ep) | 1.5 K    | ~6 s    | 4.6–9.2 KB |
-| Scenario 1 (3 algos, 3.5K ep)    | 10.5 K   | ~41 s   | ~18.4 KB total |
-| Scenario 2 (3 algos, 6K ep)      | 18 K     | ~71 s   | ~18.4 KB total |
-| Multi-seed sweep (15 runs)       | 22.5 K   | ~89 s   | per-run, isolated |
-| Alpha-decay sweep (36 runs)      | 54 K     | ~213 s  | per-run, isolated |
+| Single dev run (1 algo, 1500 ep) | 1.5 K    | ~6.6 s   | 4.6–9.2 KB |
+| Scenario 1 (3 algos, 3.5K ep)    | 10.5 K   | ~46.5 s  | ~18.4 KB total |
+| Scenario 2 (3 algos, 6K ep)      | 18 K     | ~79.6 s  | ~18.4 KB total |
+| Multi-seed sweep (15 runs)       | 22.5 K   | ~99.6 s  | per-run, isolated |
+| Alpha-decay sweep (36 runs)      | 54 K     | ~238.9 s | per-run, isolated |
 
 **Memory scales sublinearly with what matters.** Doubling the grid to 24×24
 takes Q-table memory from 4.6 KB to 18.4 KB — still negligible. The wall is
@@ -92,20 +94,20 @@ Sample complexity for tabular Q-learning is roughly `O(|S| × |A| / (1−γ)²)`
 in the worst case (Even-Dar & Mansour, 2003) — meaning that to keep
 training cost linear, the state space must stay small.
 
-Concrete back-of-envelope numbers using the measured 3.9 µs/step:
+Concrete back-of-envelope numbers using the measured 4.4 µs/step:
 
-- **Current** 12×12 grid (144 states): 1500 episodes train in ~6 s.
+- **Current** 12×12 grid (144 states): 1500 episodes train in ~6.5 s.
 - **24×24 grid** (576 states): if convergence still takes ~10 episodes per
-  state visit, ~40 s — still fine.
-- **48×48 grid** (2304 states): ~3 minutes — borderline.
-- **96×96 grid or with velocity dimension** (~36K states): ~50 minutes.
+  state visit, ~45 s — still fine.
+- **48×48 grid** (2304 states): ~3.5 minutes — borderline.
+- **96×96 grid or with velocity dimension** (~36K states): ~55 minutes.
   At this point function approximation (DQN with a small MLP) starts being
   faster *and* more memory-efficient because the network parameters don't
   grow with the state count.
 
 A natural cloud comparison: on AWS `c7i.large` (~$0.09/hr on-demand,
-2 vCPUs), a 1500-episode dev run costs roughly **$0.0002** of compute.
-The full README comparison suite (multi-seed + decay sweep) is **~$0.008**.
+2 vCPUs), a 1500-episode dev run costs roughly **$0.00016** of compute.
+The full README comparison suite (multi-seed + decay sweep) is **~$0.0085**.
 The price-per-experiment is so low that the only real cost gates are
 developer time and disk space for charts.
 
@@ -120,7 +122,7 @@ extended to:
   multiplies, sample complexity blows up, and even tabular methods become
   expensive enough to matter.
 - Hyperparameter optimisation at scale (e.g. Optuna with 200 trials on
-  Scenario 2): ~200 × 71 s = ~4 hours of single-machine time, or ~$0.40.
+  Scenario 2): ~200 × 80 s = ~4.4 hours of single-machine time, or ~$0.40.
 
 These are not part of this assignment — but documenting them is the point
 of "cost awareness": the architecture *currently* costs nothing, and the
@@ -197,9 +199,10 @@ Code workflows:
   This is a wide range; I'm choosing not to fake precision.
 
 Translated to Anthropic API list prices (Sonnet 4.x at $3/MTok input,
-$15/MTok output) the *if-billed-pay-as-you-go* cost would be roughly in
-the **$30–$300** range for the entire project, depending on the
-input/output mix and how aggressively prompt caching kicks in.
+$15/MTok output; Opus 4.x at $15/$75) the *if-billed-pay-as-you-go*
+cost would be roughly in the **$30–$300** range for the entire
+project, depending on the input/output mix and how aggressively
+prompt caching kicks in.
 
 In practice I'm using a Claude **Max** subscription (~$200/month). For
 the subscription user, marginal cost per session is $0 within rate
@@ -212,10 +215,10 @@ providers.
 ### Per-model breakdown
 
 Estimated token usage by model and direction across the whole project
-(both assignments + the post-feedback iteration + the Pass-2 / Pass-3
-audit campaigns). These are **order-of-magnitude figures derived from
-typical session sizes**; the sessions were not instrumented for token
-counts. The closest reproducible upper bound is the date-filtered
+(both assignments + the post-feedback iteration + the Pass-2 / Pass-3 /
+Pass-4 audit campaigns). These are **order-of-magnitude figures derived
+from typical session sizes**; the sessions were not instrumented for
+token counts. The closest reproducible upper bound is the date-filtered
 **Anthropic Usage view** at `console.anthropic.com → Usage` (and
 `platform.openai.com → Usage` for Codex). Both dashboards show
 *organization-wide* aggregate spend per day — they do not currently
@@ -224,24 +227,32 @@ cannot be tied to this repo specifically without an external
 record-keeping pipeline (which the project does not have, and which
 would be over-engineering for a coursework deliverable). Treat the
 table as a *self-disclosed estimate* anchored to the project's session
-cadence rather than a verifiable count.
+cadence rather than a verifiable count. Model versions reflect what the
+project actually ran on: Sonnet upgraded from 4.5 → 4.6 mid-project,
+and Opus from 4.5 → 4.7 across the post-feedback + Pass-4 windows.
 
 | Model | Input (est.) | Output (est.) | List-price unit | List-price ceiling | Cache-adjusted (est.) |
 |-------|-------------:|--------------:|-----------------|--------------------:|----------------------:|
-| Anthropic Claude Sonnet 4.x (Claude Code) | ~6 M | ~1.5 M | $3 / $15 per MTok | ~$40 | ~$8 |
-| Anthropic Claude Opus 4.x (Claude Code, harder turns) | ~1.5 M | ~0.4 M | $15 / $75 per MTok | ~$53 | ~$18 |
-| OpenAI GPT-5.4-Codex (Codex rescue, occasional) | ~0.2 M | ~0.05 M | included in Codex sub | $0 (sub) | $0 (sub) |
-| **Total list-price ceiling** | **~7.7 M** | **~1.95 M** | — | **~$93** | **~$26** |
+| Anthropic Claude Sonnet 4.5 / 4.6 (Claude Code) | ~6 M | ~1.5 M | $3 / $15 per MTok | ~$40 | ~$29 |
+| Anthropic Claude Opus 4.5 / 4.7 (Claude Code, harder turns) | ~1.5 M | ~0.4 M | $15 / $75 per MTok | ~$53 | ~$38 |
+| OpenAI GPT-5 Codex (Codex rescue, occasional) | ~0.2 M | ~0.05 M | included in Codex sub | $0 (sub) | $0 (sub) |
+| **Total list-price ceiling** | **~7.7 M** | **~1.95 M** | — | **~$93** | **~$67** |
 | Subscription paid (Claude Max × 2 months + Codex sub) | — | — | flat | **~$300** | **~$300** |
 
-The two right-most columns deliberately bracket the answer: the
+The two right-most columns deliberately bracket the answer. The
 **list-price ceiling** assumes zero prompt-cache utilisation and bills
-every input token at the full uncached rate; the **cache-adjusted**
-column assumes ~70 % cache-hit rate (cached input is ~10× cheaper at
-$0.30/MTok), which is roughly what the project's repeated CLAUDE.md /
-ARCHITECTURE.md context loads should achieve on Anthropic's prompt
-cache. The truth lies inside that bracket, closer to the
-cache-adjusted figure for a long-running session-heavy project.
+every input token at the full uncached rate. The **cache-adjusted**
+column models a ~70 % cache-hit rate on **input only** (cached input
+is ~10× cheaper at $0.30/MTok for Sonnet, $1.50/MTok for Opus); output
+tokens are *never* cached and remain at the full output-rate
+(`output_tokens × $output_price` is therefore a hard floor). Worked
+example for Sonnet: `6 M × 0.7 × $0.30 + 6 M × 0.3 × $3 + 1.5 M × $15
+≈ $29`. The earlier `~$26` figure in this column reflected
+*list-price minus cache-adjusted* (i.e. the savings, ~$26 off $93),
+not the cache-adjusted cost itself — re-stated above so the column
+is internally consistent with its label. The truth lies inside the
+$67–$93 bracket, closer to the cache-adjusted figure for a
+long-running session-heavy project.
 
 Two reasons the real outlay (~$300 subscription) is higher than even
 the list-price ceiling: (a) subscriptions buy access to *capabilities*
@@ -263,9 +274,11 @@ apply to AI-assisted development:
   explicitly chooses cache-friendly delays for `ScheduleWakeup`-style
   loops.
 - **Smaller model for boilerplate, larger model for design.** Claude
-  Sonnet 4.x covered ~80 % of the project; Opus was reached for only
-  the harder design calls (the registry refactor, the Pass-2
-  retrospective). This kept the Opus token volume below 2 MTok total.
+  Sonnet (4.5 → 4.6) covered ~80 % of the project; Opus (4.5 → 4.7)
+  was reached for only the harder design calls (the registry
+  refactor, the Pass-2 / Pass-3 retrospectives, the Pass-4
+  section-by-section walk). This kept the Opus token volume below
+  2 MTok total.
 - **Methodology over re-prompting** — once the
   `instructions/review_methodology/` framework was in place, each
   audit phase ran in one prompt instead of being rebuilt from

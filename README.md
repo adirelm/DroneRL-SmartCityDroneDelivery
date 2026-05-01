@@ -489,19 +489,20 @@ uv run python -m analysis.cost_profile
 
 | Algorithm  | Wall time | Episodes/s | µs/episode | Q-table memory |
 |------------|----------:|-----------:|-----------:|---------------:|
-| Bellman    | 5.83 s    | 257        | 3,885      | 4,608 B        |
-| Q-Learning | 5.55 s    | 270        | 3,700      | 4,608 B        |
-| Double-Q   | 6.37 s    | 236        | 4,245      | 9,216 B (2 tables) |
+| Bellman    | 6.49 s    | 231        | 4,330      | 4,608 B        |
+| Q-Learning | 6.33 s    | 237        | 4,220      | 4,608 B        |
+| Double-Q   | 7.09 s    | 212        | 4,724      | 9,216 B (2 tables) |
 
-**Reading the numbers.** Q-Learning is the cheapest per episode; Double-Q
-pays a real ~15% time premium for keeping two tables in sync, which is
-consistent with its design. The Q-table itself fits in roughly 5 KB —
-memory is not a constraint at this scale.
+**Reading the numbers.** Q-Learning is the cheapest per episode (4,220 µs);
+Bellman trails by ~3 % (one extra `decay_epsilon` call the constant-α
+agent ignores); Double-Q pays a real ~12 % time premium for keeping two
+tables in sync, which is consistent with its design. The Q-table itself
+fits in roughly 5 KB — memory is not a constraint at this scale.
 
 ### Cost model
 
 ```
-Wall time ≈ episodes × avg_steps_per_episode × T_step    (T_step ≈ 3.7–4.2 µs)
+Wall time ≈ episodes × avg_steps_per_episode × T_step    (T_step ≈ 4.2–4.7 µs)
 Memory   ≈ rows × cols × actions × tables × 8 bytes      (float64)
 ```
 
@@ -513,11 +514,11 @@ space (not the grid resolution) blows up.
 
 | Workload                                                   | Episodes | Estimated time |
 |------------------------------------------------------------|---------:|----------------|
-| Single dev run (1 algo, 1500 ep)                           | 1,500    | ~6 s           |
-| Scenario 1 in repo (3 algos × 3,500 ep)                    | 10,500   | ~41 s          |
-| Scenario 2 in repo (3 algos × 6,000 ep)                    | 18,000   | ~71 s          |
-| Multi-seed sweep (5 seeds × 3 algos × 1,500 ep)            | 22,500   | ~89 s          |
-| Alpha-decay sweep (6 decays × 3 seeds × 2 algos × 1,500 ep)| 54,000   | ~213 s         |
+| Single dev run (1 algo, 1500 ep)                           | 1,500    | ~6.6 s         |
+| Scenario 1 in repo (3 algos × 3,500 ep)                    | 10,500   | ~46.5 s        |
+| Scenario 2 in repo (3 algos × 6,000 ep)                    | 18,000   | ~79.6 s        |
+| Multi-seed sweep (5 seeds × 3 algos × 1,500 ep)            | 22,500   | ~99.6 s        |
+| Alpha-decay sweep (6 decays × 3 seeds × 2 algos × 1,500 ep)| 54,000   | ~238.9 s       |
 
 Translated to AWS `c7i.large` on-demand pricing (~$0.09/hr): the entire
 suite of comparison + multi-seed + decay-sweep costs roughly **$0.01** of
