@@ -73,6 +73,22 @@ def test_gui_draw_and_status_bar_render_without_errors(pygame_ready, ui_config):
     assert gui.status_font is not None
 
 
+def test_on_click_protected_cell_flashes_warning_and_does_not_place(pygame_ready, ui_config):
+    """Nielsen #9 — clicking START/GOAL in editor mode surfaces a flash message and rejects the placement."""
+    gui = GUI(ui_config)
+    gui.editor.active = True
+    gui.dashboard.buttons.handle_click = lambda pos: None
+    start_r, start_c = gui.env.start
+    before = gui.env.get_cell(start_r, start_c)
+    gui.editor.handle_click = lambda pos: (start_r, start_c, CellType.TRAP)
+
+    gui._on_click((10, 10))
+
+    assert gui._flash_msg.startswith("Cannot edit START / GOAL")
+    assert gui._flash_until > 0.0
+    assert gui.env.get_cell(start_r, start_c) == before  # protected cell unchanged
+
+
 def test_on_slider_change_updates_drift(pygame_ready, ui_config):
     gui = GUI(ui_config)
     gui.sliders.sliders["noise"].value = 0.8

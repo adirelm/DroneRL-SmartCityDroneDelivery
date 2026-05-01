@@ -166,14 +166,23 @@ choices about how the UI handles **Nielsen's usability heuristics**:
 
 **Accessibility considerations and known limits.** The algorithm
 colours are picked from the [`ALGORITHM_REGISTRY`](src/dronerl/algorithms.py)
-in distinct hues (orange / blue / green) so they survive the most
-common forms of red-green colour blindness. The grid colour palette
-is fully driven by `config/config.yaml` so a user with different
-contrast needs can adjust it without code changes. **Known
-limitations**: the Pygame surface doesn't integrate with screen
-readers, and the font sizes are configured in `config/config.yaml`
+in three distinct hues — orange (`#d35400`), blue (`#2980b9`), green
+(`#27ae60`) — chosen to avoid a red/green pair, which is the most
+common colour-vision deficiency. **The palette has not been formally
+verified through a CVD simulator (e.g. Coblis); the claim is "distinct
+hues + luminance separation" rather than "WCAG-tested colour-blind
+safe".** Every chart also distinguishes algorithms by line-style and
+labelled legend, so colour is a redundant rather than load-bearing
+channel. The grid colour palette is fully driven by `config/config.yaml`
+so a user with different contrast needs can adjust it without code
+changes. Editor-rejection feedback (e.g. clicking a protected
+START/GOAL cell) is surfaced as a transient status-bar message so the
+user gets a readable explanation instead of a silent failure
+(Nielsen #9). **Known limitations**: the Pygame surface doesn't
+integrate with screen readers, the colour palette is only informally
+CVD-checked, and the font sizes are configured in `config/config.yaml`
 under `gui.*_font_size` rather than auto-scaled to the system DPI —
-both gaps documented in [What I'd do differently](#what-id-do-differently).
+all three gaps documented in [What I'd do differently](#what-id-do-differently).
 
 ---
 
@@ -732,8 +741,11 @@ process is at least as much of the assignment as the final code is.
 - **Accessibility is shallow.** Pygame doesn't talk to screen readers,
   font sizes don't auto-scale to system DPI, and the colour palette is
   config-driven but not bundled with a high-contrast preset. The
-  algorithm chart colours were picked to survive red-green colour
-  blindness, but that's the only deliberate accessibility decision.
+  algorithm chart colours avoid a red/green pair so they survive the
+  most common colour-vision deficiency, but that claim has not been
+  formally checked through a CVD simulator — it's a "distinct hues +
+  redundant line-style + labelled legend" choice, not a WCAG-tested
+  one. That's the only deliberate accessibility decision.
 
 - **I don't think I deserve a 100 on this.** Submitting at 95 last time was already meant as
   honest headroom, and after seeing the feedback I'm submitting at 88. The biggest gaps I'm

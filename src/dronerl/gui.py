@@ -1,5 +1,7 @@
 """Main GUI orchestrator for the DroneRL project."""
 
+import time
+
 import pygame
 
 from dronerl.actions import dispatch
@@ -43,6 +45,7 @@ class GUI:
         self.paused, self.editor.active = True, True
         self.fast_mode = self.show_heatmap = self.show_arrows = False
         self.status_font = None
+        self._flash_msg, self._flash_until = "", 0.0  # Nielsen #9 — transient editor-rejection feedback
         if getattr(config.dynamic_board, "randomize_per_episode", False):
             self.logic.on_episode_end = self.sdk.regenerate_hazards
 
@@ -97,6 +100,9 @@ class GUI:
         if self.editor.active:
             r = self.editor.handle_click(pos)
             if r:
+                if self.env.is_protected_cell(r[0], r[1]):
+                    self._flash_msg, self._flash_until = "Cannot edit START / GOAL — protected cell.", time.monotonic() + 2.5
+                    return
                 cur = self.env.get_cell(r[0], r[1])
                 new = CellType.EMPTY if cur == r[2] else r[2]
                 self.sdk.set_cell(r[0], r[1], new, editor=True)
@@ -152,4 +158,6 @@ class GUI:
         y = self.height - self.status_bar_height
         pygame.draw.rect(self.screen, self.c_status_bg, (0, y, self.width, self.status_bar_height))
         self.screen.blit(self.status_font.render(state, True, self.c_status_text), (10, y + 6))
-        self.screen.blit(self.status_font.render(shortcuts, True, self.c_status_dim), (10, y + 22))
+        flash_active = self._flash_msg and time.monotonic() < self._flash_until
+        text, color = (self._flash_msg, self.c_status_text) if flash_active else (shortcuts, self.c_status_dim)
+        self.screen.blit(self.status_font.render(text, True, color), (10, y + 22))
