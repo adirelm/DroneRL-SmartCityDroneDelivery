@@ -37,7 +37,7 @@ that a grader can verify against the repo without reading the audit.
 | # | Required item | Where it lives | Status |
 |---|---|---|---|
 | 1 | TDD — tests written before / with code | `docs/shared/PROMPTS.md` documents the RED → GREEN → REFACTOR pattern used throughout; CLAUDE.md mandates it | ✅ |
-| 2 | ≥85 % coverage | Current: **97.17 %**. Gate enforced by `--cov-fail-under=85` in `pyproject.toml`'s `addopts` | ✅ |
+| 2 | ≥85 % coverage | Current: **97.19 %**. Gate enforced by `--cov-fail-under=85` in `pyproject.toml`'s `addopts` | ✅ |
 | 3 | Zero ruff violations | `uv run ruff check src/ tests/ analysis/ scripts/ main.py` → All checks passed | ✅ |
 | 4 | Documented edge cases + exception handling | `tests/unit/` has 24 test files (1:1 module mapping), `tests/integration/` has 2; `agent_factory` raises `ValueError` for unknown algorithm; `config_loader` warns on missing/mismatched version + raises `RuntimeError` on malformed YAML | ✅ |
 | 5 | Automated test reports | CI workflow uploads coverage XML on Python 3.13 (`.github/workflows/ci.yml:53-58`) | ✅ |
@@ -81,7 +81,7 @@ that a grader can verify against the repo without reading the audit.
 # All gates pass locally
 uv sync --dev
 uv run ruff check src/ tests/ analysis/ scripts/ main.py    # zero violations
-uv run pytest tests/                                         # 331 passed, 97.17 % coverage
+uv run pytest tests/                                         # 341 passed, 97.19 % coverage
 bash scripts/check_file_sizes.sh                             # all files ≤ 150 code lines
 
 # Reproduce experimental artefacts
@@ -111,7 +111,7 @@ that an auditor can walk through in one minute. Mapping for DroneRL:
 | 1 | **Documentation:** PRD, architecture, README, API doc, prompts book | ✅ | [`docs/INDEX.md`](../INDEX.md), per-feature PRDs in [`assignment-2/`](../assignment-2/), [`README.md`](../../README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PROMPTS.md`](PROMPTS.md) |
 | 2 | **Code:** modular structure, files ≤150 lines, comments+docstrings, code-style consistency | ✅ | `scripts/check_file_sizes.sh` gate (pre-commit + CI); ruff `select = [E,F,W,I,N,UP,B,C4,SIM]`; §16-style Input/Output/Setup docstrings on 10 building-block classes (with `_validate_config` on `BaseAgent` + `Trainer` per §16.3) |
 | 3 | **Configuration:** separate files, `.env-example`, no secrets, `.gitignore` | ✅ | [`config/config.yaml`](../../config/config.yaml), [`.env-example`](../../.env-example), `.gitignore` blocks `*.pem`/`*.key`/`credentials.json`/`*.crt`/`*.p12`/`*.pfx`/`secrets.json` (§7) |
-| 4 | **Tests:** 85 %+ coverage, edge cases, error handling, automated reports | ✅ | **97.17 %** (gate: `--cov-fail-under=85`), 331 tests, CI uploads coverage XML on Python 3.13 |
+| 4 | **Tests:** 85 %+ coverage, edge cases, error handling, automated reports | ✅ | **97.19 %** (gate: `--cov-fail-under=85`), 341 tests, CI uploads coverage XML on Python 3.13 |
 | 5 | **Research:** parameter exploration, sensitivity analysis, comparison notebook, charts | ✅ | [`analysis/multi_seed_robustness.py`](../../analysis/multi_seed_robustness.py) (with bootstrap CIs), [`analysis/alpha_decay_sweep.py`](../../analysis/alpha_decay_sweep.py) (OAT), [`analysis/noise_sweep.py`](../../analysis/noise_sweep.py) (noise OAT — H1), [`notebooks/research_analysis.ipynb`](../../notebooks/research_analysis.ipynb), [`EXPERIMENTS.md`](../assignment-2/EXPERIMENTS.md) |
 | 6 | **Visualisation:** quality charts, screenshots, architecture diagrams | ✅ | `results/comparison/` (scenario PNGs), `results/analysis/` (multi-seed CI-band line chart, alpha-decay sweep bar chart, Q-table heatmap), `assets/assignment-2/` (8 GUI screenshots), ARCHITECTURE.md text-rendered diagrams (C4 framing) |
 | 7 | **Costs:** tokens table, detailed analysis, optimisation | ✅ | [`COST_ANALYSIS.md`](../assignment-2/COST_ANALYSIS.md) — per-model token table (Sonnet 4.x / Opus 4.x / GPT-5-Codex), 5 named optimisation strategies, §11.2 budget management (§11) |

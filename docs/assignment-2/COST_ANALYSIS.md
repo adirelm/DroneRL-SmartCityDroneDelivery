@@ -137,7 +137,7 @@ Beyond the algorithm itself, the project ships with:
 |----------|------|
 | Comparison charts (PNG) | 80–160 KB each, 4 files = ~440 KB |
 | Pygame GUI | RAM dominated by font + tile rendering, idles at ~80 MB |
-| Test suite | 331 tests, ~12 s wall time |
+| Test suite | 341 tests, ~12 s wall time |
 | CI workflow | One run on push: ~3 min cumulative across the 3.11/3.12/3.13 matrix |
 
 CI on GitHub Actions is free for public repos (within Actions minutes

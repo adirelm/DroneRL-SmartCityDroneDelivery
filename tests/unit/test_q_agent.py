@@ -140,9 +140,21 @@ def test_save_load(agent, tmp_path):
     assert agent.q_table[3, 3, 1] == 7.0
 
 
-def test_save_load_preserves_alpha(agent, tmp_path):
+def test_save_load_does_not_persist_alpha(agent, tmp_path):
+    """``save``/``load`` round-trip the Q-table only — α is in-memory training state.
+
+    Documents the actual contract: after ``load`` on a fresh agent (or any
+    instance whose α has drifted), α is whatever the most recent ``save`` /
+    ``_init_decay`` set it to in *memory*. The .npy file does not record α.
+    A future "include α in checkpoint" feature would change this test.
+    """
     agent.alpha = 0.1234
     path = str(tmp_path / "q.npy")
     agent.save(path)
+    # Drift α to a different value before load — load() must NOT restore the
+    # previous α (since alpha was never serialised).
+    agent.alpha = 0.5
     agent.load(path)
-    assert agent.alpha == 0.1234
+    assert agent.alpha == 0.5, (
+        "α must be unchanged by load() — save/load only round-trip the Q-table"
+    )
