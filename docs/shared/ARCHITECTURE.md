@@ -359,19 +359,57 @@ tests instantiate the SDK directly.
 
 ### ADR-002 — Strategy pattern + central registry for algorithms
 
-**Status:** Accepted (refined post-feedback).
-**Decision:** `BaseAgent` is the abstract base; one subclass per
-algorithm; `src/dronerl/algorithms.py` is the registry; `agent_factory.py` is
-a thin validating wrapper.
+**Status:** Accepted (refined post-feedback; hierarchy split refined Pass-3).
+**Decision:** Three-layer agent hierarchy + a central registry:
+1. `BaseAgent` (`src/dronerl/base_agent.py`) — abstract, holds the
+   shared TD update kernel (`_td_update`), ε-greedy policy, save/load,
+   ε-decay, and `_validate_config`. Concrete subclasses override
+   `update()`; the override may delegate straight to `_td_update` or
+   replace the bootstrap rule (extension point for SARSA / Expected
+   SARSA — see the docstring on `_td_update`).
+2. `DecayingAlphaAgent(BaseAgent)` — intermediate base for any agent
+   with a per-episode α-decay schedule. Holds `alpha`, `alpha_end`,
+   `alpha_decay`, `decay_alpha`, and the combined `decay_epsilon` that
+   chains both decays. Both `QLearningAgent` and `DoubleQAgent` extend
+   from here, eliminating the original three-place duplication of the
+   `decay_alpha` / `decay_epsilon` pair.
+3. `BellmanAgent(BaseAgent)` and `QLearningAgent` / `DoubleQAgent`
+   `(DecayingAlphaAgent)` — the three concrete strategies.
+
+`src/dronerl/algorithms.py` is the registry: one `AlgorithmSpec` per
+algorithm + four derived collections (`ALGORITHMS`, `ALGORITHM_LABELS`,
+`ALGORITHM_COLORS`, `AGENT_CLASSES`). `agent_factory.create_agent` is
+a thin validating wrapper. Every registry consumer (factory, GUI
+button labels, GUI keyboard dispatch in `actions._ALGO_KEYS`,
+comparison runner, chart palette, analysis scripts, parametrised
+tests) derives from the registry rather than duplicating the
+algorithm names.
+
 **Alternatives considered:**
 - *if/elif chain in `agent_factory.create_agent()`*. Was the original
   design. Rejected after the "13-places-in-9-files" duplication of the
   algorithm tuple was discovered during the post-feedback Pass 1.
 - *Plugin discovery via `entry_points` in `pyproject.toml`*. Rejected —
   overkill for a 3-algorithm project; not enough plugins to amortise.
+- *Single-level hierarchy with `decay_alpha` re-implemented per
+  subclass.* Rejected after Pass-3 noticed the three-place
+  duplication; the `DecayingAlphaAgent` mid-tier is the smallest
+  abstraction that removes it without forcing Bellman to carry an
+  `alpha_decay` member it doesn't use.
+- *Inline TD update in each subclass.* Rejected after Pass-3
+  extracted `_td_update`; the per-step arithmetic was identical
+  between `BellmanAgent.update` and `QLearningAgent.update` and the
+  shared kernel both reduces duplication and creates the natural
+  override point for SARSA/Expected SARSA.
+
 **Trade-offs:** The registry adds one more file to read when learning
 the codebase; in exchange, every consumer (factory, GUI, comparison
-runner, charts, analysis, tests) reads from one place.
+runner, charts, analysis, tests) reads from one place. The
+three-layer hierarchy adds one indirection between Q-Learning /
+Double-Q and `BaseAgent`; in exchange the α-decay bookkeeping is in
+one file. Verified end-to-end by
+`tests/unit/test_extensibility_recipe.py`, which registers a stub
+SARSA agent through the registry path on every CI run.
 
 ### ADR-003 — Public `editor_cells` frozenset + `restore_editor_cells`
 

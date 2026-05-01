@@ -9,9 +9,12 @@ open_editor) stay in this module.
 import os
 import time
 
-_ALGO_KEYS = {"use_bellman": "bellman",
-              "use_q_learning": "q_learning",
-              "use_double_q": "double_q"}
+from dronerl.algorithms import ALGORITHMS
+
+# Derived from the registry so a new AlgorithmSpec auto-creates its
+# `use_<name>` action slot (§12.1.a — keep the "one-line extension"
+# claim true at the GUI dispatch layer too).
+_ALGO_KEYS = {f"use_{name}": name for name in ALGORITHMS}
 
 _SAVE_LOAD_DEBOUNCE_S = 1.0  # §5.3 — held S/L key shouldn't spam disk writes
 _last_io_t: dict[str, float] = {}  # per-action timestamps; safe under single-threaded Pygame loop
