@@ -9,7 +9,15 @@ The point: show whether the conclusion "decaying alpha helps" holds across a
 range of decay rates, or whether it depends on a specific tuned value. A
 robust conclusion should appear as a flat-ish plateau, not a sharp peak.
 
-Run: uv run python analysis/alpha_decay_sweep.py
+Parallel posture (§15): each (algo, decay, seed) cell is dispatched through
+``analysis._runner.train_cells`` so a 39-cell sweep gets the same
+``multiprocessing.Pool`` speed-up multi_seed_robustness has had since Pass-2.
+Per-decay batching is the simplest correct re-keying pattern (within one
+batch, ``(algo, seed)`` uniquely identifies a cell — across batches the
+outer ``decay`` distinguishes them).
+
+Run: ``uv run python -m analysis.alpha_decay_sweep`` (set ``DRONERL_PARALLEL=4``
+to opt into a 4-worker Pool).
 """
 
 from __future__ import annotations
@@ -22,20 +30,22 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from analysis._runner import (
+from analysis._runner import (  # noqa: E402
     base_raw_config,
     last_window_stats,
-    train_run,
-    with_overrides,
+    resolve_workers,
+    train_cells,
 )
-from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS
+from dronerl.comparison import ALGORITHM_COLORS, ALGORITHM_LABELS  # noqa: E402
 
 DECAY_GRID = (0.999, 0.9993, 0.9995, 0.9997, 0.9999, 1.0)
+ALGOS = ("q_learning", "double_q")
 SEEDS = (3, 11, 23)
 EPISODES = 1500
 NOISE = 0.5
 DENSITY = 0.12
 DIFFICULTY = 0.3
+_BOARD = {"noise_level": NOISE, "hazard_density": DENSITY, "difficulty": DIFFICULTY}
 
 
 def _scenario_overrides(raw: dict, decay: float, algo: str) -> dict:
@@ -49,49 +59,39 @@ def _scenario_overrides(raw: dict, decay: float, algo: str) -> dict:
     return raw
 
 
-def _mean_final_reward(algo: str, decay: float) -> tuple[float, float]:
-    """Train one algorithm at a given decay across SEEDS; return (mean, sem)."""
-    raw = _scenario_overrides(base_raw_config(), decay, algo)
-    raw["dynamic_board"]["enabled"] = True
-    finals = []
-    for seed in SEEDS:
-        cfg = with_overrides(
-            raw, algorithm=algo,
-            noise_level=NOISE, hazard_density=DENSITY,
-            difficulty=DIFFICULTY, seed=seed,
-        )
-        rewards, _ = train_run(cfg, EPISODES, seed=seed)
-        mean, _ = last_window_stats(rewards)
-        finals.append(mean)
-    arr = np.asarray(finals)
-    return float(arr.mean()), float(arr.std(ddof=1) / np.sqrt(len(arr)))
+def _cells_for_decay(decay: float):
+    """Build the 6 (algo, seed) cells for a given decay value, with per-cell raw config."""
+    cells = []
+    for algo in ALGOS:
+        raw = _scenario_overrides(base_raw_config(), decay, algo)
+        raw["dynamic_board"]["enabled"] = True
+        cells.extend((raw, algo, seed, EPISODES, _BOARD) for seed in SEEDS)
+    return cells
 
 
-def _bellman_reference() -> float:
-    """Return Bellman's averaged final reward across seeds (no decay parameter)."""
-    raw = _scenario_overrides(base_raw_config(), decay=1.0, algo="bellman")
-    raw["dynamic_board"]["enabled"] = True
-    finals = []
-    for seed in SEEDS:
-        cfg = with_overrides(
-            raw, algorithm="bellman",
-            noise_level=NOISE, hazard_density=DENSITY,
-            difficulty=DIFFICULTY, seed=seed,
-        )
-        rewards, _ = train_run(cfg, EPISODES, seed=seed)
-        finals.append(last_window_stats(rewards)[0])
-    return float(np.mean(finals))
-
-
-def run() -> dict:
-    """Run the full sweep; return per-algo lists of (decay, mean, sem)."""
-    results: dict[str, list[tuple[float, float, float]]] = {"q_learning": [], "double_q": []}
-    for algo in results:
-        for decay in DECAY_GRID:
-            mean, sem = _mean_final_reward(algo, decay)
+def run(n_workers: int | None = None) -> dict:
+    """Sweep ``alpha_decay`` × algos × seeds via ``train_cells``."""
+    workers = resolve_workers(n_workers)
+    total = len(DECAY_GRID) * len(ALGOS) * len(SEEDS) + len(SEEDS)  # +Bellman cells
+    print(f"  alpha-decay sweep: {total} cells, workers={workers}")
+    results: dict[str, list[tuple[float, float, float]]] = {a: [] for a in ALGOS}
+    for decay in DECAY_GRID:
+        per_algo: dict[str, list[float]] = {a: [] for a in ALGOS}
+        for algo, _seed, rewards, _steps in train_cells(_cells_for_decay(decay), n_workers=workers):
+            per_algo[algo].append(last_window_stats(rewards)[0])
+        for algo in ALGOS:
+            arr = np.asarray(per_algo[algo])
+            mean = float(arr.mean())
+            sem = float(arr.std(ddof=1) / np.sqrt(len(arr)))
             results[algo].append((decay, mean, sem))
             print(f"  {algo:12s} decay={decay:.4f}  final-200 mean={mean:7.1f}  ±sem={sem:5.1f}")
-    bellman_ref = _bellman_reference()
+
+    raw = _scenario_overrides(base_raw_config(), decay=1.0, algo="bellman")
+    raw["dynamic_board"]["enabled"] = True
+    bellman_cells = [(raw, "bellman", seed, EPISODES, _BOARD) for seed in SEEDS]
+    bellman_finals = [last_window_stats(rewards)[0]
+                      for _algo, _seed, rewards, _ in train_cells(bellman_cells, n_workers=workers)]
+    bellman_ref = float(np.mean(bellman_finals))
     print(f"  bellman   reference (no decay)             {bellman_ref:7.1f}")
     return {"sweep": results, "bellman": bellman_ref}
 
@@ -118,8 +118,8 @@ def plot(out: dict, out_path: Path) -> str:
     return str(out_path)
 
 
-def main():
-    print(f"\n=== Alpha-decay sweep ({len(DECAY_GRID)} decays × {len(SEEDS)} seeds × 2 algos) ===")
+def main() -> None:
+    print(f"\n=== Alpha-decay sweep ({len(DECAY_GRID)} decays × {len(SEEDS)} seeds × {len(ALGOS)} algos) ===")
     results = run()
     out = Path("results/analysis/alpha_decay_sweep.png")
     print(f"  -> saved: {plot(results, out)}")
