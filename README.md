@@ -656,7 +656,7 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 341 tests pass, ≥85% line coverage (current: 97.19 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **Pytest + coverage** | pre-push, CI | 344 tests pass, ≥85% line coverage (current: 97.20 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
 | **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 code lines (blank + `#` comment lines excluded per §3.2). |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
@@ -697,7 +697,7 @@ state against that table:
 | **TDD** | Red → Green → Refactor | Workflow | CLAUDE.md mandate; documented in [docs/shared/PROMPTS.md](docs/shared/PROMPTS.md) |
 | **File size** | ≤ 150 code lines | Automated check | `scripts/check_file_sizes.sh` (pre-commit + CI) |
 | **Linter** | 0 ruff violations | `ruff check` | `pyproject.toml` ruff config, gated in pre-commit + CI |
-| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.19 %**, gate via `--cov-fail-under=85` in `addopts` |
+| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.20 %**, gate via `--cov-fail-under=85` in `addopts` |
 | **Hardcoded values** | 0 in source code | Code review | All tunables in `config/config.yaml`; CLAUDE.md "no magic numbers" rule |
 | **Secrets** | `.env-example` + 0 in repo | Automated scan | `.env-example` exists; `.gitignore` blocks secret patterns (`*.pem`, `*.key`, `credentials.json`, etc.) — see §7 audit |
 | **Package manager** | Everything via uv | Automated check | `pyproject.toml` + `uv.lock`; `[build-system] = hatchling` makes `dronerl` installable; CI runs `uv sync --frozen` |
@@ -814,7 +814,7 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/                              # 341 tests, 97.19 % coverage, gate enforced
+uv run pytest tests/                              # 344 tests, 97.20 % coverage, gate enforced
 uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```

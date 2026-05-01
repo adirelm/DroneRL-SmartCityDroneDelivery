@@ -46,14 +46,20 @@ For each characteristic I record:
 > *Time behavior, resource utilization, capacity.*
 
 - **Time behavior.** [docs/assignment-2/COST_ANALYSIS.md §1](../assignment-2/COST_ANALYSIS.md)
-  reports 3.7–4.2 µs / step on the reference machine, and a
+  reports 4.2–4.7 µs / step on the reference machine (refreshed
+  Pass-4 §11 from `results/analysis/cost_profile.json`), and a
   scaling table out to 54 K episodes.
-- **Resource utilization.** Same doc: peak Python heap, Q-table
-  bytes, the artefact-induced bias in Bellman's first-loop
+- **Resource utilization.** Same doc: peak Python heap (~92–95 KB
+  warm), Q-table bytes (4,608 single-table / 9,216 dual-table for
+  Double-Q), and the artefact-induced bias in Bellman's first-loop
   measurement (recorded honestly).
-- **Capacity.** §2 of `COST_ANALYSIS.md` derives the linear
-  scaling rule and projects memory growth to a 24×24 grid.
-  Sample-complexity ceiling discussed in §3 of the same doc.
+- **Capacity.** Verified at the project's reference workload:
+  12×12 grid, 1500 episodes, 5 seeds × 3 algorithms in parallel
+  via `multiprocessing.Pool` (15 cells). Cost-projection in
+  COST_ANALYSIS.md §2 / §3 extends the linear scaling rule to
+  96×96 grids (~50 minutes on a single c7i.large vCPU) and a 36 K
+  state-space ceiling beyond which function approximation (DQN)
+  becomes faster — i.e. the upper bound is named, not implied.
 
 ## 3. Compatibility
 
@@ -74,31 +80,51 @@ For each characteristic I record:
 
 > *Learnability, operability, accessibility, user error protection.*
 
-Already audited under §10 of the submission guidelines. See:
+Detailed Nielsen-heuristic mapping is in §10 of the audit; sub-attributes
+mapped here for 25010 traceability:
 
-- README → "Keyboard Controls" section (every shortcut is in the
-  status bar and in the README — Recognition not Recall).
-- README → "UX & accessibility notes" section (Nielsen heuristics
-  + accessibility considerations + known limitations).
-- `_status_bar()` in `src/dronerl/gui.py` (live operability feedback).
-- Editor refuses placement on start/goal cells (user error
-  protection).
+- **Learnability.** README "User Workflow" walks the edit → train →
+  compare arc; status-bar shortcut row in `_status_bar()`
+  ([gui.py:149-151](../../src/dronerl/gui.py#L149-L151)) means the
+  user never has to read the manual to discover an action.
+- **Operability.** Every action has both keyboard and mouse paths
+  (`actions.dispatch` keys + `dashboard.buttons` clicks). `R`
+  resets, `SPACE` pauses, `1`/`2`/`3` switch algorithms — same
+  semantics in every mode.
+- **Accessibility.** Three distinct hue-separated algorithm colours
+  (no red/green pair) plus redundant line-style and labelled legend
+  on every chart. Colour palette and font sizes are
+  `config/config.yaml`-driven so a user with different contrast
+  needs can adjust without code. Honest scope note: not WCAG-tested
+  via a CVD simulator — see [README "UX & accessibility notes"](../../README.md).
+- **User error protection.** Editor refuses placement on start/goal
+  cells; rejection now surfaces a 2.5 s flash message in the status
+  bar (Pass-4 §10 fix — Nielsen #9). `S`/`L` save/load is a no-op
+  when the savefile is missing rather than crashing.
 
 ## 5. Reliability
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 341 unit + integration tests, 97.19 % coverage
+- **Maturity.** 344 unit + integration tests, 97.20 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
-- **Availability.** GUI can pause / resume mid-training without
-  losing state; algorithm switch never resets the trained Q-table
-  unless explicitly requested.
+- **Availability.** Scope note: a single-process desktop app has
+  no SLO-style availability target — there is no service to be
+  "available". The closest meaningful in-product analogue is
+  *session continuity*: the GUI can pause / resume mid-training
+  without losing state, and an algorithm switch preserves the
+  trained Q-table unless the user explicitly resets. (Operability
+  proper is mapped under §4.)
 - **Fault tolerance.** `_validate_version()` in
   `src/dronerl/config_loader.py` warns on missing/mismatched
   config version. Editor `load` is a no-op when the savefile is
   missing rather than crashing. Factory raises a clear `ValueError`
   for unknown algorithm names (see `agent_factory.create_agent`).
+  YAML parse errors surface as wrapped `ConfigError` rather than
+  raw `yaml.YAMLError`. Editor refusal of protected START/GOAL
+  cells now surfaces a status-bar flash rather than failing
+  silently (Pass-4 §10 fix).
 - **Recoverability.** `DroneRLSDK.save_brain` / `load_brain`
   persist the agent's Q-table(s) to disk; training can resume from
   a checkpoint without re-running episodes.
@@ -124,16 +150,38 @@ Already audited under §10 of the submission guidelines. See:
 
 > *Modularity, reusability, analysability, modifiability, testability.*
 
-Already audited under §12. Summary:
+Detailed coverage in §12 of the audit; sub-attributes mapped here for
+25010 traceability:
 
-- 25 source modules, every file ≤ 150 lines (pre-commit gate +
-  CI gate via `scripts/check_file_sizes.sh`).
-- `BaseAgent` abstract class + `ALGORITHM_REGISTRY` deliver a
-  one-line extension surface for new algorithms.
-- 1:1 module ↔ unit-test mapping (one test file per source module).
-- ARCHITECTURE.md provides module-by-module annotations and ADRs
-  for the non-obvious choices (e.g. ADR-002 — why a registry, not
-  `entry_points`).
+- **Modularity.** 24 source modules in `src/dronerl/`, every file
+  ≤ 150 *code* lines (gate excludes blanks/comments per §3.2;
+  enforced by `scripts/check_file_sizes.sh` in pre-commit and CI).
+  GUI alone splits across `gui.py` / `renderer.py` / `dashboard.py`
+  / `overlays.py` / `buttons.py` / `sliders.py` / `editor.py` /
+  `logger.py` rather than a monolith.
+- **Reusability.** Three-layer agent hierarchy (Pass-3 refactor):
+  `BaseAgent → DecayingAlphaAgent → {Q-Learning, Double-Q}` with
+  shared `_td_update` kernel; `analysis/_runner.py` shared between
+  multi-seed / alpha-decay / noise sweeps; `comparison.py` shared
+  between GUI training mode, comparison-chart script, and analysis.
+- **Analysability.** ARCHITECTURE.md provides module-by-module
+  annotations and ADRs for the non-obvious choices (ADR-002 in
+  particular documents the registry choice, the rejected
+  `entry_points` alternative, and the rejected single-level
+  hierarchy alternative). `BaseAgent._td_update` docstring names
+  SARSA as the canonical override target.
+- **Modifiability.** `ALGORITHM_REGISTRY` is the single source of
+  truth: factory, GUI button labels, GUI keyboard dispatch
+  (`actions._ALGO_KEYS` derives from the registry — Pass-4 fix),
+  comparison runner, chart palette, analysis scripts, and
+  parametrised tests all derive from it. Adding a new algorithm
+  is genuinely one `AlgorithmSpec` line + a new subclass.
+- **Testability.** 1:1 module ↔ unit-test mapping (26 unit-test
+  files in `tests/unit/`, 2 integration files in `tests/integration/`).
+  `TestFactoryAgentApi` is parametrised over `list(ALGORITHMS)`;
+  `tests/unit/test_extensibility_recipe.py` (Pass-4 fix) registers
+  a stub SARSA agent through the registry path on every CI push,
+  validating the "Extending it" recipe end-to-end.
 
 ## 8. Portability
 
@@ -210,7 +258,7 @@ tracking, and traceability. DroneRL alignment:
   rather than crashing downstream. `pyproject.toml` + `uv.lock` pin
   every runtime + dev dependency.
 - **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
-  ≥85 % coverage gate (current: 97.19 %), 1:1 module-to-test mapping,
+  ≥85 % coverage gate (current: 97.20 %), 1:1 module-to-test mapping,
   bit-for-bit determinism test for the parallel sweep
   (`tests/integration/test_parallel_runner.py`).
 - **Code review.** Pre-commit hooks (ruff + EOF + 150-line file
@@ -232,7 +280,7 @@ Google's public eng-practices repo prescribes:
   ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]` rule set in
   `pyproject.toml`. The `N` (PEP 8 naming) rule in particular
   enforces descriptive, consistent names.
-- **Testing pyramid.** Mirrored by `tests/unit/` (24 files, fast,
+- **Testing pyramid.** Mirrored by `tests/unit/` (26 files, fast,
   per-module) ↔ `tests/integration/` (2 files, multi-component +
   parallel-runner determinism). Most coverage lands at the unit
   level by design.
