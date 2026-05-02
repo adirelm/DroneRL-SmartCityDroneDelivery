@@ -1,25 +1,41 @@
-"""Capture Assignment 2 screenshots: algorithm selectors, sliders, Pit cell, comparison."""
+"""Capture Assignment 2 screenshots: algorithm selectors, sliders, Pit cell, comparison.
+
+Seeded for reproducibility — every run produces byte-identical PNGs at
+the cost of a frozen hazard layout. Methodology phase 11 (visual
+regression) relies on this determinism: an unseeded capture would
+produce ~13–48 % pixel drift between runs purely from RNG noise.
+"""
 
 from __future__ import annotations
 
 import os
+import random
 from pathlib import Path
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
+import numpy as np  # noqa: E402
 import pygame  # noqa: E402
 
-from dronerl.agent_factory import create_agent  # noqa: E402
 from dronerl.config_loader import Config, load_config  # noqa: E402
 from dronerl.environment import CellType  # noqa: E402
 from dronerl.gui import GUI  # noqa: E402
+
+CAPTURE_SEED = 42  # frozen so screenshot regression test is byte-deterministic
 
 OUT = Path("assets/assignment-2")
 OUT.mkdir(parents=True, exist_ok=True)
 
 
 def _build_gui() -> GUI:
-    return GUI(Config(load_config("config/config.yaml")))
+    random.seed(CAPTURE_SEED)
+    np.random.seed(CAPTURE_SEED)
+    gui = GUI(Config(load_config("config/config.yaml")))
+    # HazardGenerator owns its own random.Random instance (`_rng`) — global
+    # `random.seed()` doesn't reach it. Pin it explicitly so the hazard
+    # layout is byte-deterministic across capture runs.
+    gui.hazards._rng = random.Random(CAPTURE_SEED)
+    return gui
 
 
 def _save(gui: GUI, name: str) -> None:
@@ -63,8 +79,7 @@ def shot_pit_and_hazards() -> None:
 
 def _train_algo(name: str, episodes: int, filename: str) -> None:
     gui = _build_gui()
-    gui.cfg.algorithm.name = name
-    gui.agent = create_agent(gui.cfg)
+    gui.sdk.switch_algorithm(name)  # `gui.agent` is a property — go through the SDK orchestration surface
     gui.logic.reset(gui.agent, gui.env)
     _train_episodes(gui, episodes)
     gui.paused = True

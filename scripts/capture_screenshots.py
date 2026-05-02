@@ -12,21 +12,28 @@ Run: ``uv run python scripts/capture_screenshots.py``
 from __future__ import annotations
 
 import os
+import random
 from pathlib import Path
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
+import numpy as np  # noqa: E402
 import pygame  # noqa: E402
 
 from dronerl.gui import GUI  # noqa: E402
 from dronerl.sdk import DroneRLSDK  # noqa: E402
 
 OUT_DIR = Path("assets/assignment-2")
+CAPTURE_SEED = 42  # frozen so screenshot regression test is byte-deterministic
 
 
 def _build_gui() -> GUI:
     """Construct a GUI in a deterministic state with some training applied."""
+    random.seed(CAPTURE_SEED)
+    np.random.seed(CAPTURE_SEED)
     sdk = DroneRLSDK("config/config.yaml")
+    # HazardGenerator owns its own random.Random instance — pin it before apply.
+    sdk.hazards._rng = random.Random(CAPTURE_SEED)
     sdk.hazards.apply(sdk.environment)
     sdk.environment.set_wind_drift(sdk.hazards.effective_drift())
     gui = GUI(sdk=sdk)
