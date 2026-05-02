@@ -7,7 +7,7 @@ import numpy as np
 from dronerl.agent_factory import create_agent
 from dronerl.algorithms import ALGORITHMS
 from dronerl.comparison import ComparisonStore, generate_comparison_chart
-from dronerl.config_loader import Config, load_config
+from dronerl.config_loader import Config, load_config, package_relative
 from dronerl.environment import CellType, Environment
 from dronerl.hazard_generator import HazardGenerator
 from dronerl.logger import setup_logger
@@ -99,8 +99,8 @@ class DroneRLSDK:
         return dict(self.comparison.runs)
 
     def generate_chart(self, output_path: str | None = None, title: str = "") -> str:
-        """Generate the comparison chart from currently stored runs."""
-        out = output_path or str(Path(self.config.comparison.output_dir) / "comparison.png")
+        """Generate the comparison chart; relative paths anchor to project root (§14.3)."""
+        out = package_relative(output_path or str(Path(self.config.comparison.output_dir) / "comparison.png"))
         return generate_comparison_chart(
             self.comparison, out,
             title=title or "DroneRL Algorithm Convergence",
@@ -137,13 +137,13 @@ class DroneRLSDK:
         return self.trainer.get_metrics()
 
     def save_brain(self, path: str) -> None:
-        """Persist the agent's Q-table(s) to disk via the agent's save protocol."""
-        self.agent.save(path)
+        """Persist the agent's Q-table(s) to disk; relative paths anchor to project root (§14.3)."""
+        self.agent.save(package_relative(path))
         self.logger.info("Q-table saved to %s", path)
 
     def load_brain(self, path: str) -> None:
-        """Restore Q-table(s) from a previously saved file."""
-        self.agent.load(path)
+        """Restore Q-table(s) from a previously saved file; relative paths anchor to project root (§14.3)."""
+        self.agent.load(package_relative(path))
         self.logger.info("Q-table loaded from %s", path)
 
     def set_cell(self, row: int, col: int, cell_type: CellType, *, editor: bool = False) -> None:

@@ -78,11 +78,12 @@ def dispatch(gui, a):
         if _io_debounced("load"):
             gui.sdk.load_brain(gui.brain_path)
     elif a == "reset":
-        gui.sdk.reset()
-        gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()
-        gui.logic.reset(gui.sdk.agent, gui.sdk.environment)
-        gui.paused = gui.editor.active = True
-        gui.fast_mode = gui.show_heatmap = gui.show_arrows = False
+        if _io_debounced("reset"):
+            gui.sdk.reset()
+            gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()
+            gui.logic.reset(gui.sdk.agent, gui.sdk.environment)
+            gui.paused = gui.editor.active = True
+            gui.fast_mode = gui.show_heatmap = gui.show_arrows = False
     elif a == "cycle_type":
         gui.editor.next_type()
     elif a in _ALGO_KEYS:
@@ -91,7 +92,8 @@ def dispatch(gui, a):
         gui.paused = True
         gui.show_heatmap = gui.show_arrows = False
     elif a == "regenerate_hazards":
-        gui.sdk.regenerate_hazards()
+        if _io_debounced("regenerate_hazards"):
+            gui.sdk.regenerate_hazards()
     elif a == "run_comparison":
         _run_comparison_scripts(gui)
 

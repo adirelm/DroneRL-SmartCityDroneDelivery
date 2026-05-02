@@ -114,7 +114,14 @@ def _validate_schema(data: dict, path: str) -> None:
         )
 
 
-_DEFAULT_CONFIG_PATH = str(Path(__file__).resolve().parents[2] / "config" / "config.yaml")  # §14.3 — anchor to the package, not CWD
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_DEFAULT_CONFIG_PATH = str(_PROJECT_ROOT / "config" / "config.yaml")  # §14.3 — anchor to the package, not CWD
+
+
+def package_relative(path: str) -> str:
+    """Resolve ``path`` against the project root if it's relative; pass-through if absolute (§14.3 / Pass-5 F14.5)."""
+    p = Path(path)
+    return str(p if p.is_absolute() else _PROJECT_ROOT / p)
 
 
 def load_config(path: str = _DEFAULT_CONFIG_PATH) -> dict:

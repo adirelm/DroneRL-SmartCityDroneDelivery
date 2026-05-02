@@ -20,7 +20,13 @@
 
 set -euo pipefail
 
-EXCLUDE_DIRS='\.git|\.venv|\.pytest_cache|\.ruff_cache|__pycache__|results|assets|notebooks|tests|uv\.lock|\.secrets\.baseline|\.gitignore|\.env-example|.*\.png'
+# NOTE: each alternative is anchored later via "^($EXCLUDE_DIRS)" so we
+# must use trailing `/` (or `$`) on directory prefixes — without it,
+# `\.git` matches `.github/` and silently exempts workflow files from
+# the scan. `.github/` is intentionally NOT excluded: CI workflows are
+# exactly where a real GITHUB_TOKEN / API key would accidentally land.
+# Pass-5 §7 finding F7.12 caught this.
+EXCLUDE_DIRS='\.git/|\.venv/|\.pytest_cache/|\.ruff_cache/|__pycache__/|results/|assets/|notebooks/|tests/|uv\.lock|\.secrets\.baseline|\.gitignore|\.env-example|.*\.png'
 
 PATTERNS=(
     'AKIA[0-9A-Z]{16}'                   # AWS access key

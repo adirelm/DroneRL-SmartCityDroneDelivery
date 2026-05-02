@@ -101,6 +101,16 @@ mapped here for 25010 traceability:
   cells; rejection now surfaces a 2.5 s flash message in the status
   bar (Pass-4 §10 fix — Nielsen #9). `S`/`L` save/load is a no-op
   when the savefile is missing rather than crashing.
+- **Appropriateness recognisability.** README's Objectives + What
+  Was Implemented + screenshot gallery (10 PNGs in `assets/assignment-2/`)
+  let a first-time visitor see *what* the project does within ~30 s
+  of opening the repo — they can recognise whether DroneRL fits
+  their need (RL teaching demo, not a production agent).
+- **User interface aesthetics.** Four-panel layout (grid /
+  dashboard / status bar / optional editor) with toggleable overlays
+  (`H` / `A`) keeps the chrome minimal — see screenshot
+  `04_training_q_learning.png`. Detailed Nielsen #8 walk in
+  §18 [14] below.
 
 ## 5. Reliability
 
@@ -145,6 +155,13 @@ mapped here for 25010 traceability:
   Recording this as a scope note rather than fabricating a
   fictional auth layer (CLAUDE.md mandates "no premature
   abstraction").
+- **Non-repudiation.** Same scope: no multi-user transactions, no
+  signed actions, no audit trail of *who* did what (it's a
+  single-user desktop app). What the project *does* have, as the
+  closest analogue, is a per-section audit-driven Git history —
+  every commit names the § + finding ID it closes, providing
+  non-repudiable provenance for *changes* rather than for *user
+  actions*.
 
 ## 7. Maintainability
 
@@ -330,6 +347,14 @@ Google's public eng-practices repo prescribes:
   `TestFactoryAgentApi` exercises every algorithm against the same
   fixtures, doubling as a contract-document for what `BaseAgent`
   subclasses must provide.
+- **Scope note.** Several Google practices (multi-author code-review
+  checklists, post-mortems, design-doc / RFC culture, blameless
+  retrospectives, readability certification) **don't apply** to a
+  solo coursework project — there's no second reviewer to checklist
+  and no production incidents to post-mortem. Recording this
+  honestly per the same calibration as [16] MIT defect-tracking and
+  [18] Microsoft REST scope-note rather than fabricating
+  team-workflow ceremony.
 
 ### [18] Microsoft REST API Guidelines
 
@@ -405,7 +430,12 @@ artefacts and worth naming explicitly:
   Used throughout `src/dronerl/`: e.g. `tuple[int, int]` for
   state, `int | None` for the `n_workers` keyword, `list[float]`
   for histories. Type hints make the §16 Input/Output contracts
-  machine-checkable rather than purely documentary.
+  *machine-readable* and human-auditable; honest scope note —
+  they are NOT machine-*type-checked* by a gate (no mypy / pyright
+  in pre-commit or CI). The annotations are documentation
+  augmentation, not runtime enforcement. Adding mypy is a
+  reasonable Pass-6+ followup but was scope-noted out for the
+  current submission.
 
 These three are arguably the most directly auditable standards in
 the project: any reviewer can run `ruff check`, read a class's

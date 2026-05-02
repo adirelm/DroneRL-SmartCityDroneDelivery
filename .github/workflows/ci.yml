@@ -32,11 +32,14 @@ jobs:
           PY_VERSION: ${{ matrix.python-version }}
         run: uv python install "$PY_VERSION"
 
-      - name: Install dependencies
-        run: uv sync --dev
+      - name: Install dependencies (frozen lockfile)
+        run: uv sync --frozen --dev
 
       - name: Lint (ruff)
         run: uv run ruff check src/ tests/ analysis/ scripts/ main.py
+
+      - name: §7.4 — secret-pattern scan (auditable evidence)
+        run: bash scripts/check_no_secrets.sh
 
       - name: Run tests with coverage gate
         run: |

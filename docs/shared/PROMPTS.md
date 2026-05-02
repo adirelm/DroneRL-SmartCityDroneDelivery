@@ -416,7 +416,7 @@ on this."* That sentence is in there deliberately.
 
 ---
 
-## Multi-Pass Submission Audit (Pass-2 + Pass-3 + Pass-4 in progress)
+## Multi-Pass Submission Audit (Pass-2 + Pass-3 + Pass-4 closed; Pass-5 final)
 
 After the post-feedback iteration closed Pass-1, the project ran
 multiple multi-agent audit passes against the submission guidelines
@@ -514,7 +514,7 @@ Pass-3 surfaced lingering gaps Pass-2 missed:
   (#2, #4, #7, #8, #10) — each with a one-line concrete artefact
   rather than "satisfied implicitly."
 
-### Pass-4 (in progress, section-by-section, 5 lenses per section)
+### Pass-4 (closed: 5 lenses × 20 sections, section-by-section)
 
 Pass-4 swapped the iteration-based cadence for a slower, deeper
 section-by-section walk. Each section gets 5 agents, each running one
@@ -531,7 +531,7 @@ finds: `# what` comments in modules earlier passes hadn't read, test
 counts drifting in README/docs, and one-off prose claims that no
 longer match `git log`.
 
-Cumulative through §1–§8: **31 findings fixed across 8 sections**, no
+Cumulative across §0–§20: **75 findings fixed across all 20 sections** (Pass-4) plus **~16 follow-on findings in Pass-5** (final pass — single deep agent per section, all sections in parallel, surfaced 3 critical security/CI gaps + DRY duplication + write-path portability + several doc/scope tightenings). No
 behavioural regressions, gates green at every commit.
 
 ### Methodology lessons from running multi-pass audits

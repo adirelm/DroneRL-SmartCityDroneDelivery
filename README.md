@@ -218,14 +218,24 @@ all three gaps documented in [What I'd do differently](#what-id-do-differently).
 **Fast-mode indicator — `[FAST]` flag in the status bar; multiple episodes per render frame**
 ![Fast-mode active](assets/assignment-2/08_fast_mode_indicator.png)
 
+**Protected-cell rejection (Nielsen #9) — clicking START or GOAL in editor mode surfaces a 2.5-second status-bar message instead of failing silently**
+![Protected-cell flash](assets/assignment-2/09_protected_cell_flash.png)
+
+**Converged state — green banner + "Watch Optimal Path" / "Continue Training" / "Edit Map" button set; heatmap + arrows show the learned policy across the whole grid**
+![Converged banner](assets/assignment-2/10_converged_banner.png)
+
 The comparison-result view a user sees after pressing `C` is the OS-default
 viewer opened on `results/comparison/scenario1_medium.png` (or the headed
 chart from running the comparison runner directly); both charts are
 included in the *Algorithm Comparison* section below.
 
-> The screenshots numbered `06`–`08` are reproducible from a clean
-> checkout via `uv run python scripts/capture_screenshots.py` (headless
-> Pygame using the `dummy` SDL driver — no display required).
+> All 10 screenshots above (`01`–`10`) are reproducible **byte-for-byte**
+> from a clean checkout via the headless capture scripts in `scripts/`
+> (`SDL_VIDEODRIVER=dummy` + RNG seed pinned across `random` /
+> `numpy.random` / `HazardGenerator._rng`). Methodology phase 11
+> (`instructions/review_methodology/11_screenshot_regression.md`)
+> documents the visual-regression test that runs them on every
+> pre-submission audit.
 
 ---
 
@@ -694,9 +704,9 @@ state against that table:
 
 | Rule | Threshold | Enforcement | Where |
 |---|---|---|---|
-| **SDK architecture** | All business logic flows through the SDK layer | Code review | `src/dronerl/sdk.py` is the single orchestration entry point ([README → "Replacing the GUI"](#extending-it)) |
-| **OOP / no duplication** | Refactor the moment a pattern appears in 2+ places | Code review | `BaseAgent` hierarchy + `ALGORITHM_REGISTRY` (replaced 13-place duplication) |
-| **API gatekeeper** | Single dispatch point that validates input and rejects malformed calls (§5 N/A for HTTP; agent factory is the project's structural analogue) | Code review + tests | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) raises `ValueError` for unknown algorithm names |
+| **SDK architecture** | All business logic flows through the SDK layer | Workflow (CLAUDE.md §4 mandate; no automated gate) | `src/dronerl/sdk.py` is the single orchestration entry point ([README → "Replacing the GUI"](#extending-it)) |
+| **OOP / no duplication** | Refactor the moment a pattern appears in 2+ places | Workflow (CLAUDE.md §5 mandate; no automated gate) | `BaseAgent` hierarchy + `ALGORITHM_REGISTRY` (replaced 13-place duplication); Pass-5 §4 caught and removed a 13-line `_train_one` duplicate |
+| **API gatekeeper** | Single dispatch point that validates input and rejects malformed calls (§5 N/A for HTTP; agent factory is the project's structural analogue) | Tests (`test_agent_factory.py::TestFactoryAgentApi` parametrised over `ALGORITHMS`) | `agent_factory.create_agent` ([src/dronerl/agent_factory.py](src/dronerl/agent_factory.py)) raises `ValueError` for unknown algorithm names |
 | **Rate limits** | From config, not hardcoded | Config check | `config/config.yaml` — `training.max_steps_per_episode`, `training.convergence_window`, `analysis.max_parallel_workers` |
 | **Overflow handling** | Bounded loops, no crash | Code review (no async I/O queue surface — `Trainer` is the only loop) | `Trainer.run_episode` caps each episode at `config.training.max_steps_per_episode`; convergence loop bounded by `convergence_window`; no unbounded `while True:` anywhere |
 | **Version control** | Module starts at 1.00 | Version module | `pyproject.toml` `version = "1.1.1"` ↔ `dronerl.__version__` ↔ `config/config.yaml` `version`, cross-validated by `_validate_version` |

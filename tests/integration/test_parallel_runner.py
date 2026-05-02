@@ -15,7 +15,7 @@ import pytest
 from analysis._runner import base_raw_config, resolve_workers, train_cells
 
 EPISODES = 300  # past the early-ε-greedy random-walk plateau where seeding bugs surface
-ALGOS = ("bellman", "q_learning")  # 2 algos × 2 seeds = 4 cells, fits on any CPU
+ALGOS = ("bellman", "q_learning", "double_q")  # Pass-5 §15 — added double_q to extend determinism guarantee to all 3 algos (was 2)
 SEEDS = (3, 11)
 
 

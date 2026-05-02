@@ -5,35 +5,16 @@ Run: uv run python scripts/generate_comparison_charts.py
 
 from __future__ import annotations
 
-import random
 from pathlib import Path
 
 import numpy as np
 
+from analysis._runner import (
+    train_run as _train_one,  # §4 DRY (Pass-5 F4.9 — was a near-byte-identical copy)
+)
 from dronerl.algorithms import ALGORITHMS
 from dronerl.comparison import ComparisonStore, generate_comparison_chart
 from dronerl.config_loader import Config, load_config
-from dronerl.environment import Environment
-from dronerl.hazard_generator import HazardGenerator
-
-
-def _train_one(cfg: Config, episodes: int, seed: int) -> tuple[list[float], list[int]]:
-    from dronerl.agent_factory import create_agent
-    from dronerl.trainer import Trainer
-
-    random.seed(seed)
-    np.random.seed(seed)
-    env = Environment(cfg)
-    HazardGenerator(cfg).apply(env)
-    env.drift_probability = (
-        cfg.wind.drift_probability * cfg.dynamic_board.noise_level
-        * (1.0 + cfg.dynamic_board.difficulty)
-    )
-    agent = create_agent(cfg)
-    trainer = Trainer(agent, env, cfg)
-    for _ in range(episodes):
-        trainer.run_episode()
-    return list(trainer.reward_history), list(trainer.steps_history)
 
 
 def _scenario_config(noise: float, density: float, difficulty: float, seed: int,
