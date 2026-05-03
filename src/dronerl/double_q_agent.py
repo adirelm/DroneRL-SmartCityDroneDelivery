@@ -83,5 +83,6 @@ class DoubleQAgent(DecayingAlphaAgent):
         path_a, path_b = Path(f"{base}_a.npy"), Path(f"{base}_b.npy")
         if not (path_a.exists() and path_b.exists()):
             return
-        self.q_table_a = np.load(path_a)
-        self.q_table_b = np.load(path_b)
+        # Pass-7 §7 — `allow_pickle=False` refuses object-array .npy (arbitrary-code defence)
+        self.q_table_a = np.load(path_a, allow_pickle=False)
+        self.q_table_b = np.load(path_b, allow_pickle=False)

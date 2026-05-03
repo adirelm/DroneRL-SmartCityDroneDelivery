@@ -116,7 +116,7 @@ mapped here for 25010 traceability:
 
 > *Maturity, availability, fault tolerance, recoverability.*
 
-- **Maturity.** 344 unit + integration tests, 97.22 % coverage
+- **Maturity.** 348 unit + integration tests, 97.58 % coverage
   (gate ≥ 85 % enforced via `addopts = --cov-fail-under=85` in
   `pyproject.toml`). CI matrix on Python 3.11 / 3.12 / 3.13.
 - **Availability.** Scope note: a single-process desktop app has
@@ -307,7 +307,7 @@ tracking, and traceability. DroneRL alignment:
   rather than crashing downstream. `pyproject.toml` + `uv.lock` pin
   every runtime + dev dependency.
 - **Testing strategy.** TDD per CLAUDE.md (RED → GREEN → REFACTOR),
-  ≥85 % coverage gate (current: 97.22 %), 1:1 module-to-test mapping,
+  ≥85 % coverage gate (current: 97.58 %), 1:1 module-to-test mapping,
   bit-for-bit determinism test for the parallel sweep
   (`tests/integration/test_parallel_runner.py`).
 - **Code review.** Pre-commit hooks (ruff + EOF + 150-line file

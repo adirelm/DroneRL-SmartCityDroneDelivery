@@ -113,7 +113,7 @@ class BaseAgent:
         """Load Q-table from a numpy file. Missing path is a no-op (graceful)."""
         if not Path(path).exists():
             return
-        self.q_table = np.load(path)
+        self.q_table = np.load(path, allow_pickle=False)  # Pass-7 §7 — refuse object-array .npy (arbitrary code-exec defence)
 
 
 class DecayingAlphaAgent(BaseAgent):

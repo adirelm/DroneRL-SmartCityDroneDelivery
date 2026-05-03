@@ -124,6 +124,27 @@ def package_relative(path: str) -> str:
     return str(p if p.is_absolute() else _PROJECT_ROOT / p)
 
 
+def assert_in_project(path: str) -> str:
+    """Pass-7 §7 — for *relative* paths, resolve against project root and refuse escapes (`../../etc/...`).
+
+    Absolute paths pass through: the caller has explicitly chosen where to
+    write, so the guard's job (block config-driven traversal in defaults)
+    is already moot. The threat model is a poisoned config like
+    ``paths.brain: "../../../etc/passwd"`` slipping past a default code-path,
+    not an explicit ``sdk.save_brain("/tmp/x.npy")`` from a knowing caller.
+    """
+    p = Path(path)
+    if p.is_absolute():
+        return str(p)
+    candidate = (_PROJECT_ROOT / p).resolve()
+    if _PROJECT_ROOT not in candidate.parents and candidate != _PROJECT_ROOT:
+        raise ValueError(
+            f"relative path {path!r} resolves to {candidate!r}, "
+            f"outside project root {_PROJECT_ROOT!r} — refusing for §13 path-traversal safety."
+        )
+    return str(candidate)
+
+
 def load_config(path: str = _DEFAULT_CONFIG_PATH) -> dict:
     """Load YAML config, validate version + schema, return as a dict.
 

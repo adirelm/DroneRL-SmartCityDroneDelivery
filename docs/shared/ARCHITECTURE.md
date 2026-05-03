@@ -28,7 +28,7 @@ points to the file that backs it up.
 
 ```bash
 uv sync --dev                                          # install dependencies
-uv run pytest tests/                                   # 344 tests, 97.22 % coverage
+uv run pytest tests/                                   # 348 tests, 97.58 % coverage
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 uv run python scripts/generate_comparison_charts.py    # regenerate scenario PNGs
 uv run python -m analysis.multi_seed_robustness        # 5 seeds × 1500 ep × 3 algos

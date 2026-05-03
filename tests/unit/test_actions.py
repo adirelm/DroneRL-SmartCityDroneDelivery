@@ -136,3 +136,52 @@ def test_regenerate_hazards_modifies_grid(pygame_ready, ui_config):
     before = gui.env.grid.copy()
     dispatch(gui, "regenerate_hazards")
     assert (gui.env.grid != before).any()
+
+
+def test_path_traversal_guard_in_resolve_output_path(pygame_ready, ui_config):
+    """§13 / Pass-7 §7 — path-traversal guard refuses output_dir that escapes project root.
+
+    Recurring across Pass-5 F6.8 / Pass-6 / Pass-7 — test was missing across all
+    five prior pass cycles even though the guard exists. This is the long-overdue
+    RED test that pins the guard's behaviour: GUI-triggered chart generation
+    must refuse a config-driven `comparison.output_dir` that resolves outside
+    the project root.
+    """
+    import pytest
+
+    from dronerl.actions import _resolve_output_path
+    from dronerl.gui import GUI
+
+    gui = GUI(ui_config)
+    gui.cfg.comparison.output_dir = "../../../../etc"
+    with pytest.raises(ValueError, match="path-traversal"):
+        _resolve_output_path(gui, "evil.png")
+
+
+def test_path_traversal_guard_accepts_legitimate_path(pygame_ready, ui_config):
+    """Happy-path twin to the path-traversal test — legitimate output_dir resolves fine."""
+    from dronerl.actions import _resolve_output_path
+    from dronerl.gui import GUI
+
+    gui = GUI(ui_config)
+    gui.cfg.comparison.output_dir = "results/comparison"
+    resolved = _resolve_output_path(gui, "comparison.png")
+    assert "results/comparison/comparison.png" in str(resolved)
+
+
+def test_assert_in_project_refuses_relative_traversal():
+    """SDK save/load_brain rejects relative paths that resolve outside project root."""
+    import pytest
+
+    from dronerl.config_loader import assert_in_project
+
+    with pytest.raises(ValueError, match="path-traversal"):
+        assert_in_project("../../../etc/passwd")
+
+
+def test_assert_in_project_passes_through_absolute_paths(tmp_path):
+    """Absolute paths are caller-explicit — pass-through (e.g. pytest's tmp_path)."""
+    from dronerl.config_loader import assert_in_project
+
+    target = tmp_path / "x.npy"
+    assert assert_in_project(str(target)) == str(target)

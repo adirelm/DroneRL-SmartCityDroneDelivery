@@ -113,9 +113,11 @@ class GUI:
               pygame.K_e: "open_editor", pygame.K_d: "start_demo",
               pygame.K_s: "save", pygame.K_l: "load",
               pygame.K_r: "reset", pygame.K_t: "cycle_type",
-              pygame.K_1: "use_bellman", pygame.K_2: "use_q_learning",
-              pygame.K_3: "use_double_q", pygame.K_g: "regenerate_hazards",
-              pygame.K_c: "run_comparison"}
+              pygame.K_g: "regenerate_hazards", pygame.K_c: "run_comparison"}
+        # Pass-7 §12 — derive K_1/K_2/K_3/... from the registry order so a 4th algorithm auto-binds
+        from dronerl.algorithms import ALGORITHMS
+        for i, name in enumerate(ALGORITHMS):
+            km[pygame.K_1 + i] = f"use_{name}"
         if key in km:
             dispatch(self, km[key])
 

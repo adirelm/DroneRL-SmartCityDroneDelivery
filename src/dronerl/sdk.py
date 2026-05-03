@@ -7,7 +7,7 @@ import numpy as np
 from dronerl.agent_factory import create_agent
 from dronerl.algorithms import ALGORITHMS
 from dronerl.comparison import ComparisonStore, generate_comparison_chart
-from dronerl.config_loader import Config, load_config, package_relative
+from dronerl.config_loader import Config, assert_in_project, load_config, package_relative
 from dronerl.environment import CellType, Environment
 from dronerl.hazard_generator import HazardGenerator
 from dronerl.logger import setup_logger
@@ -137,13 +137,13 @@ class DroneRLSDK:
         return self.trainer.get_metrics()
 
     def save_brain(self, path: str) -> None:
-        """Persist the agent's Q-table(s) to disk; relative paths anchor to project root (§14.3)."""
-        self.agent.save(package_relative(path))
+        """Persist the agent's Q-table(s) to disk; refuses paths escaping project root (§13 / Pass-7)."""
+        self.agent.save(assert_in_project(path))
         self.logger.info("Q-table saved to %s", path)
 
     def load_brain(self, path: str) -> None:
-        """Restore Q-table(s) from a previously saved file; relative paths anchor to project root (§14.3)."""
-        self.agent.load(package_relative(path))
+        """Restore Q-table(s) from a saved file; refuses paths escaping project root (§13 / Pass-7)."""
+        self.agent.load(assert_in_project(path))
         self.logger.info("Q-table loaded from %s", path)
 
     def set_cell(self, row: int, col: int, cell_type: CellType, *, editor: bool = False) -> None:

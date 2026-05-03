@@ -80,7 +80,6 @@ def dispatch(gui, a):
     elif a == "reset":
         if _io_debounced("reset"):
             gui.sdk.reset()
-            gui.sdk.environment.drift_probability = gui.sdk.hazards.effective_drift()
             gui.logic.reset(gui.sdk.agent, gui.sdk.environment)
             gui.paused = gui.editor.active = True
             gui.fast_mode = gui.show_heatmap = gui.show_arrows = False

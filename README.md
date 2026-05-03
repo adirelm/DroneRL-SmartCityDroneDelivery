@@ -243,6 +243,16 @@ included in the *Algorithm Comparison* section below.
 
 ### Scenario 1 — Medium difficulty (noisy environment)
 
+> ⚠️ **Single-seed headline — read with the multi-seed result below.**
+> This chart is rendered from one favorable seed (`seed=11`), which sits
+> in Double-Q's *good basin* on this board. The
+> [multi-seed robustness experiment](docs/assignment-2/EXPERIMENTS.md#hypothesis-1)
+> proves Double-Q is bimodal at the same difficulty: 3/5 seeds converge
+> to ~75 reward, 2/5 collapse to ~−190. The σ column below is *within-run*
+> step-to-step noise for one seed, **not** seed-variance. The
+> bottom-of-chart caveats and EXPERIMENTS.md §H1 are the load-bearing
+> evidence; this image is illustrative.
+
 ![Scenario 1](results/comparison/scenario1_medium.png)
 
 **Setup**: 12×12 grid, noise=0.5, density=0.12, difficulty=0.3, 3,500 episodes, seed=11. Bellman lr=0.7 (amplifies instability to make the effect visible).
@@ -505,9 +515,9 @@ uv run python -m analysis.cost_profile
 
 | Algorithm  | Wall time | Episodes/s | µs/episode | Q-table memory |
 |------------|----------:|-----------:|-----------:|---------------:|
-| Bellman    | 6.49 s    | 231        | 4,330      | 4,608 B        |
-| Q-Learning | 6.33 s    | 237        | 4,220      | 4,608 B        |
-| Double-Q   | 7.09 s    | 212        | 4,724      | 9,216 B (2 tables) |
+| Bellman    | 5.9–6.5 s | 230–255    | 3,950–4,330 | 4,608 B        |
+| Q-Learning | 5.6–6.3 s | 235–270    | 3,720–4,220 | 4,608 B        |
+| Double-Q   | 6.2–7.1 s | 210–240    | 4,170–4,724 | 9,216 B (2 tables) |
 
 **Reading the numbers.** Q-Learning is the cheapest per episode (4,220 µs);
 Bellman trails by ~3 % (one extra `decay_epsilon` call the constant-α
@@ -672,7 +682,7 @@ state silently lands on a branch.
 | Gate | Where it runs | What it enforces |
 |------|---------------|------------------|
 | **Ruff** | pre-commit, CI | Zero lint violations; auto-fixes formatting on commit. |
-| **Pytest + coverage** | pre-push, CI | 344 tests pass, ≥85% line coverage (current: 97.22 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
+| **Pytest + coverage** | pre-push, CI | 348 tests pass, ≥85% line coverage (current: 97.58 %). Coverage gate is in `pyproject.toml`'s `addopts`, so any plain `uv run pytest` enforces it. |
 | **150-line file limit** | pre-commit, CI | Custom hook fails if any `.py` file under `src/`, `tests/`, `scripts/`, or `analysis/` exceeds 150 code lines (blank + `#` comment lines excluded per §3.2). |
 | **Python 3.11/3.12/3.13 matrix** | CI | Every push / PR is tested across three Python versions before merge. |
 | **Dependabot** | scheduled, weekly | Auto-PRs for outdated GitHub Actions and pip dependencies, grouped by family. |
@@ -713,7 +723,7 @@ state against that table:
 | **TDD** | Red → Green → Refactor | Workflow | CLAUDE.md mandate; documented in [docs/shared/PROMPTS.md](docs/shared/PROMPTS.md) |
 | **File size** | ≤ 150 code lines | Automated check | `scripts/check_file_sizes.sh` (pre-commit + CI) |
 | **Linter** | 0 ruff violations | `ruff check` | `pyproject.toml` ruff config, gated in pre-commit + CI |
-| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.22 %**, gate via `--cov-fail-under=85` in `addopts` |
+| **Test coverage** | ≥ 85 % | `pytest --cov` | Current: **97.58 %**, gate via `--cov-fail-under=85` in `addopts` |
 | **Hardcoded values** | 0 algorithm-relevant magic numbers in source | Workflow (CLAUDE.md §4 mandate; no automated gate — UI-styling literals stay local per CLAUDE.md scope) | All RL hyperparameters / rewards / colours / dimensions in `config/config.yaml`; `Config` is the typed accessor |
 | **Secrets** | `.env-example` + 0 in repo | Automated scan | `.env-example` exists; `.gitignore` blocks secret patterns (`*.pem`, `*.key`, `credentials.json`, etc.) — see §7 audit |
 | **Package manager** | Everything via uv | Automated check | `pyproject.toml` + `uv.lock`; `[build-system] = hatchling` makes `dronerl` installable; CI runs `uv sync --frozen` |
@@ -799,7 +809,7 @@ process is at least as much of the assignment as the final code is.
 │   ├── dashboard.py / buttons.py / overlays.py / renderer.py / editor.py
 │   ├── actions.py / config_loader.py / logger.py
 │   └── __init__.py
-├── tests/                  # 344 pytest tests, 97 %+ coverage
+├── tests/                  # 348 pytest tests, 97 %+ coverage
 ├── analysis/               # Headless research experiments (multi-seed, sweep, cost)
 ├── scripts/
 │   ├── generate_comparison_charts.py
@@ -811,7 +821,7 @@ process is at least as much of the assignment as the final code is.
 │   ├── comparison/         # Required Scenario 1 / Scenario 2 PNGs
 │   └── analysis/           # Multi-seed CI band, decay sweep, cost JSON, Q-table heatmap
 ├── assets/
-│   └── assignment-2/       # 8 GUI screenshots referenced from README (editor / training / paused / demo / fast)
+│   └── assignment-2/       # 10 GUI screenshots referenced from README (editor / training × 3 / paused / demo / fast / protected-cell flash / converged banner)
 ├── notebooks/              # Reproducible analysis notebooks
 ├── docs/
 │   ├── assignment-1/       # PRD, PLAN, TODO from Assignment 1
@@ -830,7 +840,7 @@ process is at least as much of the assignment as the final code is.
 ## Running Tests
 
 ```bash
-uv run pytest tests/                              # 344 tests, 97.22 % coverage, gate enforced
+uv run pytest tests/                              # 348 tests, 97.58 % coverage, gate enforced
 uv run pytest tests/ -v --cov-report=term-missing # verbose + per-file misses
 uv run ruff check src/ tests/ analysis/ scripts/ main.py
 ```

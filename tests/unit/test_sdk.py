@@ -16,9 +16,13 @@ def sdk():
 
 class TestInit:
     def test_sdk_creates_components(self, sdk):
-        assert sdk.agent is not None
-        assert sdk.environment is not None
-        assert sdk.trainer is not None
+        # Pass-7 §6 — assert structural facts instead of `is not None` stubs.
+        from dronerl.base_agent import BaseAgent
+        from dronerl.environment import Environment
+        from dronerl.trainer import Trainer
+        assert isinstance(sdk.agent, BaseAgent)
+        assert isinstance(sdk.environment, Environment)
+        assert isinstance(sdk.trainer, Trainer)
 
     def test_initial_episode_count(self, sdk):
         assert sdk.episode_count == 0

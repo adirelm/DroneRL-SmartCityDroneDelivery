@@ -22,11 +22,11 @@ tables below were copied verbatim from one such run on a 2023 MacBook Pro
 1500 training episodes per algorithm, 12×12 grid, medium difficulty
 (noise=0.5, density=0.12, difficulty=0.3), seed=11:
 
-| Algorithm  | Wall time | Episodes/s | µs/episode | Peak Python heap | Q-table bytes |
-|------------|-----------|-----------:|-----------:|-----------------:|--------------:|
-| Bellman    | 6.49 s    | 231        | 4,330      | 93.7 KB *        | 4,608         |
-| Q-Learning | 6.33 s    | 237        | 4,220      | 91.9 KB          | 4,608         |
-| Double-Q   | 7.09 s    | 212        | 4,724      | 95.4 KB          | 9,216         |
+| Algorithm  | Wall time (typical band) | Episodes/s | µs/episode | Peak Python heap | Q-table bytes |
+|------------|--------------------------|-----------:|-----------:|-----------------:|--------------:|
+| Bellman    | 5.9–6.5 s                | 230–255    | 3,950–4,330 | ~94 KB *         | 4,608         |
+| Q-Learning | 5.6–6.3 s                | 235–270    | 3,720–4,220 | ~92 KB           | 4,608         |
+| Double-Q   | 6.2–7.1 s                | 210–240    | 4,170–4,724 | ~95 KB           | 9,216         |
 
 \* Bellman is reported first in the loop and absorbs cold-start
 allocations from NumPy / Matplotlib lazy imports; the per-algorithm
@@ -38,7 +38,7 @@ Q-table footprint is 4,608 bytes on every algorithm except Double-Q
 **Methodology note.** Each row is the wall time of a *single* sequential
 run on a warm interpreter. The µs-per-episode column is `wall_time
 / (episodes × avg_steps)`. **Variance across repeated runs was not
-measured** — treat the 4.2–4.7 µs spread as an order-of-magnitude
+measured** — treat the 3.7–4.7 µs spread as an order-of-magnitude
 estimate, not a statistically controlled benchmark. The numbers
 above are paste-from-current `results/analysis/cost_profile.json`;
 re-running `uv run python -m analysis.cost_profile` will overwrite
@@ -66,7 +66,7 @@ Wall time ≈ episodes × avg_steps_per_episode × T_step
 Memory   ≈ rows × cols × actions × tables × 8 bytes  (float64)
 ```
 
-Where `T_step` is roughly **4.2–4.7 µs** on the reference machine for
+Where `T_step` is roughly **3.7–4.7 µs** on the reference machine for
 tabular Bellman / Q-Learning / Double-Q. The implied scaling table
 (numbers below come from the same `cost_profile.json` projections row,
 not back-of-envelope multiplication):

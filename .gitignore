@@ -53,6 +53,23 @@ credentials.json
 *.p12
 *.pfx
 secrets.json
+# Pass-7 §7 — extended canonical patterns (defence-in-depth)
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+id_ecdsa
+id_ecdsa.pub
+*.cer
+*.csr
+*.kdbx
+*.gpg
+*.kubeconfig
+.aws/
+.netrc
+.npmrc
+.pypirc
+.ssh/
 
 # Codex agent definitions (mirror of CLAUDE.md, kept local)
 AGENTS.md
